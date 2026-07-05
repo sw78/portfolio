@@ -20,10 +20,13 @@ zastępuje rozproszone arkusze Excel/Word jednym ustrukturyzowanym narzędziem: 
 wymagania FIT/GAP z priorytetami MoSCoW, harmonogram projektu (Gantt), kosztorys. Zabezpieczona licencyjnie (HWID).Electron, SQLite
 
 Jak to uruchomić
+Index- startuje z wyborem aplikacji.
 
 Każdy projekt HTML to pojedynczy plik — otwierasz i działa, bez instalacji.
 Aplikacje mają wbudowane dane demo (przycisk "🧪 Wczytaj dane demo"), więc widać
 je w akcji od razu, bez podpinania własnych danych.
+
+Aplikacja do analizy przedwdrozeniowej - należy pobrać plik exe, zainstalować i postępowac zgodnie z dalszymi informacjami.
 
 Wszystkie dane w plikach demo są fikcyjne — wygenerowane wyłącznie do celów
 prezentacyjnych, nie pochodzą z żadnego realnego wdrożenia ani klienta.
