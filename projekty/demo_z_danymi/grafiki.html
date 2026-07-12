@@ -141,38 +141,6 @@
         @media print { body{padding:0;background:white;font-size:10px;} #welcome-screen,#toastContainer,.card:nth-child(1),#controlBar,.flow-card,footer,#docModal{display:none !important;} .table-container{box-shadow:none;border:none;overflow:visible;} table{font-size:9px;} th,td{padding:3px 2px;min-width:35px;} td:first-child,th:first-child{position:static;} @page{size:landscape;margin:10mm;} }
     </style>
 </head>
-<!-- ============================================================
-     LICZNIK WEJŚĆ DLA TEJ APLIKACJI — wklej przed </body>
-     Każdy plik dostaje SWÓJ WŁASNY klucz (zmień COUNTER_KEY poniżej).
-     ============================================================ -->
-<script>
-(function () {
-  // --- ZMIEŃ TYLKO TĘ LINIĘ w każdym pliku apki ---
-  var COUNTER_KEY = "sw78_app_NAZWA_9f3k2";
-  // Przykładowe klucze do użycia:
-  //   Dashboard Produkcyjny  -> "sw78_app_dashboard_9f3k2"
-  //   Grafik Pro             -> "sw78_app_grafikpro_9f3k2"
-  //   MPM-MFG                -> "sw78_app_mpmmfg_9f3k2"
-
-  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
-  var now = Date.now();
-  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
-  var THIRTY_MIN = 30 * 60 * 1000;
-
-  if (now - last < THIRTY_MIN) {
-    return; // ta sama osoba odwiedziła niedawno — nie liczymy ponownie
-  }
-
-  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
-    .then(function (r) { return r.json(); })
-    .then(function () {
-      localStorage.setItem(LAST_VISIT_KEY, String(now));
-    })
-    .catch(function () {
-      // Cicho ignorujemy błędy — licznik nie może psuć działania apki.
-    });
-})();
-</script>
 <body>
 
 <div id="welcome-screen">
@@ -1341,5 +1309,26 @@ init();
     szwolniewicz@gmail.com, +48 690 894 326<br>
     Copyright © 2026 Szymon Wolniewicz & AI. Wszystkie prawa zastrzeżone.
 </footer>
+<!-- LICZNIK WEJŚĆ — Grafik Pro -->
+<script>
+(function () {
+  var COUNTER_KEY = "sw78_app_grafikpro_9f3k2";
+  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+  var now = Date.now();
+  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+  var THIRTY_MIN = 30 * 60 * 1000;
+
+  if (now - last < THIRTY_MIN) {
+    return;
+  }
+
+  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+    .then(function (r) { return r.json(); })
+    .then(function () {
+      localStorage.setItem(LAST_VISIT_KEY, String(now));
+    })
+    .catch(function () {});
+})();
+</script>
 </body>
 </html>
