@@ -255,38 +255,6 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 </style>
 </head>
-<!-- ============================================================
-     LICZNIK WEJŚĆ DLA TEJ APLIKACJI — wklej przed </body>
-     Każdy plik dostaje SWÓJ WŁASNY klucz (zmień COUNTER_KEY poniżej).
-     ============================================================ -->
-<script>
-(function () {
-  // --- ZMIEŃ TYLKO TĘ LINIĘ w każdym pliku apki ---
-  var COUNTER_KEY = "sw78_app_NAZWA_9f3k2";
-  // Przykładowe klucze do użycia:
-  //   Dashboard Produkcyjny  -> "sw78_app_dashboard_9f3k2"
-  //   Grafik Pro             -> "sw78_app_grafikpro_9f3k2"
-  //   MPM-MFG                -> "sw78_app_mpmmfg_9f3k2"
-
-  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
-  var now = Date.now();
-  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
-  var THIRTY_MIN = 30 * 60 * 1000;
-
-  if (now - last < THIRTY_MIN) {
-    return; // ta sama osoba odwiedziła niedawno — nie liczymy ponownie
-  }
-
-  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
-    .then(function (r) { return r.json(); })
-    .then(function () {
-      localStorage.setItem(LAST_VISIT_KEY, String(now));
-    })
-    .catch(function () {
-      // Cicho ignorujemy błędy — licznik nie może psuć działania apki.
-    });
-})();
-</script>
 <body>
 
 <!-- TOPBAR -->
@@ -1344,6 +1312,28 @@ function exportReport() {
 }
 
 
+</script>
+
+<!-- LICZNIK WEJŚĆ — MPM-MFG -->
+<script>
+(function () {
+  var COUNTER_KEY = "sw78_app_mpmmfg_9f3k2";
+  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+  var now = Date.now();
+  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+  var THIRTY_MIN = 30 * 60 * 1000;
+
+  if (now - last < THIRTY_MIN) {
+    return;
+  }
+
+  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+    .then(function (r) { return r.json(); })
+    .then(function () {
+      localStorage.setItem(LAST_VISIT_KEY, String(now));
+    })
+    .catch(function () {});
+})();
 </script>
 </body>
 </html>
