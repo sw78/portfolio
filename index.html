@@ -137,39 +137,6 @@
   }
 </style>
 </head>
-<!-- ============================================================
-     LICZNIK WEJŚĆ — wklej ten blok tuż przed </body> w index.html
-     Nie renderuje niczego, działa w tle, nie wpływa na wygląd strony.
-     ============================================================ -->
-<script>
-(function () {
-  // Unikalny klucz Twojego licznika — NIE zmieniaj go bez potrzeby,
-  // bo zresetujesz historię. Klucze w tym serwisie są publiczne,
-  // więc nazwa musi być na tyle unikalna, żeby nikt jej nie zgadł.
-  var COUNTER_KEY = "sw78_portfolio_visits_9f3k2";
-
-  // Zabezpieczenie przed wielokrotnym liczeniem tej samej osoby
-  // w krótkim czasie (np. odświeżenie strony) — liczy max 1x/30 min.
-  var LAST_VISIT_KEY = "sw78_portfolio_last_visit";
-  var now = Date.now();
-  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
-  var THIRTY_MIN = 30 * 60 * 1000;
-
-  if (now - last < THIRTY_MIN) {
-    return; // ta sama osoba odwiedziła niedawno — nie liczymy ponownie
-  }
-
-  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
-    .then(function (r) { return r.json(); })
-    .then(function () {
-      localStorage.setItem(LAST_VISIT_KEY, String(now));
-    })
-    .catch(function () {
-      // Cicho ignorujemy błędy (np. brak sieci, adblock) —
-      // licznik nie może psuć działania strony.
-    });
-})();
-</script>
 <body>
 
 <div class="wrap">
@@ -343,6 +310,28 @@
 
   // Podmień na swoje CV, jeśli plik istnieje w tym samym folderze
   document.getElementById("cvLink").href = "CV_Szymon_Wolniewicz_2026.pdf";
+</script>
+
+<!-- LICZNIK WEJŚĆ — Strona główna -->
+<script>
+(function () {
+  var COUNTER_KEY = "sw78_portfolio_visits_9f3k2";
+  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+  var now = Date.now();
+  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+  var THIRTY_MIN = 30 * 60 * 1000;
+
+  if (now - last < THIRTY_MIN) {
+    return;
+  }
+
+  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+    .then(function (r) { return r.json(); })
+    .then(function () {
+      localStorage.setItem(LAST_VISIT_KEY, String(now));
+    })
+    .catch(function () {});
+})();
 </script>
 
 </body>
