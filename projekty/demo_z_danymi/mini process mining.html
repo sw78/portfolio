@@ -1319,20 +1319,31 @@ function exportReport() {
 (function () {
   var COUNTER_KEY = "sw78_app_mpmmfg_9f3k2";
   var LAST_VISIT_KEY = COUNTER_KEY + "_last";
-  var now = Date.now();
-  var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
   var THIRTY_MIN = 30 * 60 * 1000;
 
-  if (now - last < THIRTY_MIN) {
-    return;
+  function sendHit() {
+    var now = Date.now();
+    var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+    if (now - last < THIRTY_MIN) return;
+
+    fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        localStorage.setItem(LAST_VISIT_KEY, String(now));
+      })
+      .catch(function () {});
   }
 
-  fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
-    .then(function (r) { return r.json(); })
-    .then(function () {
-      localStorage.setItem(LAST_VISIT_KEY, String(now));
-    })
-    .catch(function () {});
+  if (document.visibilityState === "visible") {
+    sendHit();
+  } else {
+    document.addEventListener("visibilitychange", function once() {
+      if (document.visibilityState === "visible") {
+        document.removeEventListener("visibilitychange", once);
+        sendHit();
+      }
+    });
+  }
 })();
 </script>
 </body>
