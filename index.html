@@ -67,6 +67,15 @@
   .meta-row{display:flex; flex-wrap:wrap; gap:10px 28px; font-family:var(--mono); font-size:13px; color:var(--text-faint);}
   .meta-row b{color:var(--text-dim); font-weight:500;}
 
+  /* ---------- TOP NAV ---------- */
+  .top-nav{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
+  .top-nav a{
+    font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.04em;
+    color:var(--text-dim); text-decoration:none; border:1px solid var(--border-light);
+    border-radius:4px; padding:8px 14px; transition:border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .top-nav a:hover{border-color:var(--cyan); color:var(--cyan); background:var(--panel);}
+
   /* ---------- SECTION LABELS ---------- */
   .section-label{
     font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
@@ -143,8 +152,12 @@
 
   <header>
     <div class="eyebrow"><span class="led"></span> PANEL PROJEKTÓW — TRYB LOKALNY</div>
-    <h1>Szymon <span>/ Business Support &amp; Data Analysis</span></h1>
-    <div class="section-label">Projekty</div>
+    <div class="top-nav">
+      <a href="#opis">Projekty - Opis</a>
+      <a href="#demo">Projekty - Apki DEMO</a>
+    </div>
+    <h1>Szymon Wolniewicz <span>/ Business Support &amp; Data Analysis</span></h1>
+    <div class="section-label" id="opis">Projekty - opis</div>
 
 <div style="color:var(--text-dim); max-width:760px; padding-bottom:32px; line-height:1.6;">
 
@@ -207,13 +220,13 @@
     </div>
   </header>
 
-  <div class="section-label">Projekty — kliknij Uruchom</div>
+  <div class="section-label" id="demo">Projekty — Działające apki DEMO - kliknij Uruchom</div>
 
   <div class="grid" id="grid"></div>
 
   <div class="section-label">O mnie</div>
   <p style="color:var(--text-dim); max-width:700px; padding-bottom:20px;">
-    Od ponad 20 lat wspieram operacje i obsługę klientów B2B, biorąc udział we wdrożeniach systemów ERP/WMS/MES.
+    Od ponad 20 lat wspieram operacje i obsługę klientów B2B, także biorąc udział we wdrożeniach systemów ERP/WMS/MES.
     Powyższe narzędzia budowałem we współpracy z AI, żeby rozwiązać realne problemy z codziennej pracy — od zgodności grafików
     z przepisami BHP, po monitorowanie produkcji i analizę procesów. Każde z nich to pojedynczy plik, który możesz
     otworzyć i przetestować bez instalacji czegokolwiek.
