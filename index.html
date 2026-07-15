@@ -7,358 +7,344 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#14171A;
-    --panel:#1B1F23;
-    --panel-hover:#20252A;
-    --border:#2D3339;
-    --border-light:#3A4148;
-    --text:#E7E5E0;
-    --text-dim:#8B9198;
-    --text-faint:#565D64;
-    --amber:#E8A33D;
-    --cyan:#4FC3D9;
-    --green:#6FCF97;
-    --mono:'IBM Plex Mono', 'Courier New', monospace;
-    --sans:'IBM Plex Sans', -apple-system, sans-serif;
-  }
-
-  *{box-sizing:border-box; margin:0; padding:0;}
-
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--sans);
-    line-height:1.55;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size:64px 64px;
-    background-attachment:fixed;
-    background-position:center;
-    background-color:var(--bg);
-  }
-  body::before{
-    content:"";
-    position:fixed; inset:0;
-    background:radial-gradient(ellipse at 50% 0%, rgba(20,23,26,0) 0%, var(--bg) 70%);
-    pointer-events:none;
-    z-index:0;
-  }
-
-  a{color:inherit;}
-  :focus-visible{outline:2px solid var(--cyan); outline-offset:3px;}
-
-  .wrap{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:0 24px;}
-
-  /* ---------- HEADER ---------- */
-  header{padding:72px 0 56px; border-bottom:1px solid var(--border);}
-  .eyebrow{
-    font-family:var(--mono); font-size:12px; letter-spacing:.14em; color:var(--cyan);
-    text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:20px;
-  }
-  .led{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); flex-shrink:0;}
-  h1{
-    font-family:var(--mono); font-weight:700; font-size:clamp(32px,5vw,52px);
-    letter-spacing:-0.01em; color:var(--text); margin-bottom:14px;
-  }
-  h1 span{color:var(--text-faint);}
-  .role{font-size:17px; color:var(--text-dim); max-width:600px; margin-bottom:28px;}
-  .meta-row{display:flex; flex-wrap:wrap; gap:10px 28px; font-family:var(--mono); font-size:13px; color:var(--text-faint);}
-  .meta-row b{color:var(--text-dim); font-weight:500;}
-
-  /* ---------- TOP NAV ---------- */
-  .top-nav{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
-  .top-nav a{
-    font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.04em;
-    color:var(--text-dim); text-decoration:none; border:1px solid var(--border-light);
-    border-radius:4px; padding:8px 14px; transition:border-color .15s ease, color .15s ease, background .15s ease;
-  }
-  .top-nav a:hover{border-color:var(--cyan); color:var(--cyan); background:var(--panel);}
-
-  /* ---------- SECTION LABELS ---------- */
-  .section-label{
-    font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--text-faint); display:flex; align-items:center; gap:12px; margin:64px 0 24px;
-  }
-  .section-label::after{content:""; flex:1; height:1px; background:var(--border);}
-
-  /* ---------- PROJECT GRID ---------- */
-  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:16px; padding-bottom:40px;}
-
-  .card{
-    background:var(--panel); border:1px solid var(--border); border-radius:6px;
-    padding:22px 22px 20px; display:flex; flex-direction:column; gap:14px;
-    transition:border-color .15s ease, background .15s ease, transform .15s ease;
-    position:relative; overflow:hidden;
-  }
-  .card::before{
-    content:""; position:absolute; top:0; left:0; width:3px; height:100%;
-    background:var(--card-accent, var(--cyan)); opacity:.7;
-  }
-  .card:hover{border-color:var(--border-light); background:var(--panel-hover); transform:translateY(-2px);}
-
-  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
-  .card-code{font-family:var(--mono); font-size:12px; color:var(--card-accent, var(--cyan)); letter-spacing:.06em;}
-  .status{
-    font-family:var(--mono); font-size:11px; color:var(--text-faint);
-    display:flex; align-items:center; gap:6px; white-space:nowrap;
-  }
-  .status .dot{width:6px; height:6px; border-radius:50%; background:var(--green);}
-  .status.offline .dot{background:var(--text-faint);}
-
-  .card-title{font-family:var(--mono); font-weight:600; font-size:18px; color:var(--text);}
-  .card-desc{font-size:14.5px; color:var(--text-dim); flex:1;}
-
-  .tags{display:flex; flex-wrap:wrap; gap:6px;}
-  .tag{
-    font-family:var(--mono); font-size:11px; color:var(--text-dim);
-    border:1px solid var(--border); border-radius:3px; padding:3px 8px;
-  }
-
-  .card-actions{display:flex; gap:10px; margin-top:4px;}
-  .btn{
-    font-family:var(--mono); font-size:13px; font-weight:500; text-decoration:none;
-    padding:9px 16px; border-radius:4px; text-align:center; flex:1;
-    border:1px solid var(--border-light); color:var(--text);
-    transition:background .15s ease, border-color .15s ease, color .15s ease;
-  }
-  .btn.primary{background:var(--card-accent, var(--cyan)); border-color:transparent; color:#0F1113;}
-  .btn.primary:hover{filter:brightness(1.1);}
-  .btn.ghost:hover{border-color:var(--card-accent, var(--cyan)); color:var(--card-accent, var(--cyan));}
-
-  .empty-hint{
-    font-family:var(--mono); font-size:12.5px; color:var(--text-faint);
-    border:1px dashed var(--border-light); border-radius:4px; padding:10px 12px; margin-top:2px;
-  }
-
-  /* ---------- FOOTER ---------- */
-  footer{border-top:1px solid var(--border); padding:36px 0 60px; margin-top:20px;}
-  .foot-row{display:flex; flex-wrap:wrap; justify-content:space-between; gap:20px; align-items:center;}
-  .foot-note{font-family:var(--mono); font-size:12px; color:var(--text-faint); max-width:560px;}
-  .foot-links{display:flex; gap:18px; font-family:var(--mono); font-size:13px;}
-  .foot-links a{color:var(--text-dim); text-decoration:none; border-bottom:1px solid transparent;}
-  .foot-links a:hover{color:var(--cyan); border-color:var(--cyan);}
-
-  @media (max-width:600px){
-    header{padding:48px 0 36px;}
-    .grid{grid-template-columns:1fr;}
-  }
+:root{
+--bg:#14171A;
+--panel:#1B1F23;
+--panel-hover:#20252A;
+--border:#2D3339;
+--border-light:#3A4148;
+--text:#E7E5E0;
+--text-dim:#8B9198;
+--text-faint:#565D64;
+--amber:#E8A33D;
+--cyan:#4FC3D9;
+--green:#6FCF97;
+--mono:'IBM Plex Mono', 'Courier New', monospace;
+--sans:'IBM Plex Sans', -apple-system, sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+background:var(--bg);
+color:var(--text);
+font-family:var(--sans);
+line-height:1.55;
+background-image:
+linear-gradient(var(--border) 1px, transparent 1px),
+linear-gradient(90deg, var(--border) 1px, transparent 1px);
+background-size:64px 64px;
+background-attachment:fixed;
+background-position:center;
+background-color:var(--bg);
+}
+body::before{
+content:"";
+position:fixed; inset:0;
+background:radial-gradient(ellipse at 50% 0%, rgba(20,23,26,0) 0%, var(--bg) 70%);
+pointer-events:none;
+z-index:0;
+}
+a{color:inherit;}
+:focus-visible{outline:2px solid var(--cyan); outline-offset:3px;}
+.wrap{position:relative; z-index:1; max-width:1080px; margin:0 auto; padding:0 24px;}
+/* ---------- HEADER ---------- */
+header{padding:72px 0 56px; border-bottom:1px solid var(--border);}
+.eyebrow{
+font-family:var(--mono); font-size:12px; letter-spacing:.14em; color:var(--cyan);
+text-transform:uppercase; display:flex; align-items:center; gap:10px; margin-bottom:20px;
+}
+.led{width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); flex-shrink:0;}
+h1{
+font-family:var(--mono); font-weight:700; font-size:clamp(32px,5vw,52px);
+letter-spacing:-0.01em; color:var(--text); margin-bottom:14px;
+}
+h1 span{color:var(--text-faint);}
+.role{font-size:17px; color:var(--text-dim); max-width:600px; margin-bottom:28px;}
+.meta-row{display:flex; flex-wrap:wrap; gap:10px 28px; font-family:var(--mono); font-size:13px; color:var(--text-faint);}
+.meta-row b{color:var(--text-dim); font-weight:500;}
+/* ---------- TOP NAV ---------- */
+.top-nav{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px;}
+.top-nav a{
+font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.04em;
+color:var(--text-dim); text-decoration:none; border:1px solid var(--border-light);
+border-radius:4px; padding:8px 14px; transition:border-color .15s ease, color .15s ease, background .15s ease;
+}
+.top-nav a:hover{border-color:var(--cyan); color:var(--cyan); background:var(--panel);}
+/* ---------- SECTION LABELS ---------- */
+.section-label{
+font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+color:var(--text-faint); display:flex; align-items:center; gap:12px; margin:64px 0 24px;
+}
+.section-label::after{content:""; flex:1; height:1px; background:var(--border);}
+/* ---------- PROJECT GRID ---------- */
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:16px; padding-bottom:40px;}
+.card{
+background:var(--panel); border:1px solid var(--border); border-radius:6px;
+padding:22px 22px 20px; display:flex; flex-direction:column; gap:14px;
+transition:border-color .15s ease, background .15s ease, transform .15s ease;
+position:relative; overflow:hidden;
+}
+.card::before{
+content:""; position:absolute; top:0; left:0; width:3px; height:100%;
+background:var(--card-accent, var(--cyan)); opacity:.7;
+}
+.card:hover{border-color:var(--border-light); background:var(--panel-hover); transform:translateY(-2px);}
+.card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
+.card-code{font-family:var(--mono); font-size:12px; color:var(--card-accent, var(--cyan)); letter-spacing:.06em;}
+.status{
+font-family:var(--mono); font-size:11px; color:var(--text-faint);
+display:flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.status .dot{width:6px; height:6px; border-radius:50%; background:var(--green);}
+.status.offline .dot{background:var(--text-faint);}
+.card-title{font-family:var(--mono); font-weight:600; font-size:18px; color:var(--text);}
+.card-desc{font-size:14.5px; color:var(--text-dim); flex:1;}
+.tags{display:flex; flex-wrap:wrap; gap:6px;}
+.tag{
+font-family:var(--mono); font-size:11px; color:var(--text-dim);
+border:1px solid var(--border); border-radius:3px; padding:3px 8px;
+}
+.card-actions{display:flex; gap:10px; margin-top:4px;}
+.btn{
+font-family:var(--mono); font-size:13px; font-weight:500; text-decoration:none;
+padding:9px 16px; border-radius:4px; text-align:center; flex:1;
+border:1px solid var(--border-light); color:var(--text);
+transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.btn.primary{background:var(--card-accent, var(--cyan)); border-color:transparent; color:#0F1113;}
+.btn.primary:hover{filter:brightness(1.1);}
+.btn.ghost:hover{border-color:var(--card-accent, var(--cyan)); color:var(--card-accent, var(--cyan));}
+.empty-hint{
+font-family:var(--mono); font-size:12.5px; color:var(--text-faint);
+border:1px dashed var(--border-light); border-radius:4px; padding:10px 12px; margin-top:2px;
+}
+/* ---------- FOOTER ---------- */
+footer{border-top:1px solid var(--border); padding:36px 0 60px; margin-top:20px;}
+.foot-row{display:flex; flex-wrap:wrap; justify-content:space-between; gap:20px; align-items:center;}
+.foot-note{font-family:var(--mono); font-size:12px; color:var(--text-faint); max-width:560px;}
+.foot-links{display:flex; gap:18px; font-family:var(--mono); font-size:13px;}
+.foot-links a{color:var(--text-dim); text-decoration:none; border-bottom:1px solid transparent;}
+.foot-links a:hover{color:var(--cyan); border-color:var(--cyan);}
+@media (max-width:600px){
+header{padding:48px 0 36px;}
+.grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
-
 <div class="wrap">
-
-  <header>
-    <div class="eyebrow"><span class="led"></span> PANEL PROJEKTÓW — TRYB LOKALNY</div>
-    <div class="top-nav">
-      <a href="#opis">Projekty - Opis</a>
-      <a href="#demo">Projekty - Apki DEMO</a>
-    </div>
-    <h1>Szymon Wolniewicz <span>/ Business Support &amp; Data Analysis</span></h1>
-    <div class="section-label" id="opis">Projekty - opis</div>
-
+<header>
+<div class="eyebrow"><span class="led"></span> PANEL PROJEKTÓW — TRYB LOKALNY</div>
+<div class="top-nav">
+<a href="#opis">Projekty - Opis</a>
+<a href="#demo">Projekty - Apki DEMO</a>
+</div>
+<h1>Szymon Wolniewicz <span>/ Business Support &amp; Data Analysis</span></h1>
+<div class="section-label" id="opis">Projekty - opis</div>
 <div style="color:var(--text-dim); max-width:760px; padding-bottom:32px; line-height:1.6;">
-
-  <h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">Dashboard Produkcyjny</h3>
-  <p style="margin:0 0 4px;">
-    Panel monitorowania produkcji w czasie rzeczywistym — OEE, realizacja planu,
-    przestoje, koszty, WIP, traceability. Automatyczne alerty (np. wykrywanie
-    maszyny psującej się zbyt często).
-  </p>
-  <p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 26px;">
-    Stack: HTML/JS, Chart.js, IndexedDB
-  </p>
-
-  <h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">Grafik Pro</h3>
-  <p style="margin:0 0 4px;">
-    System grafikowania zmianowego z automatyczną walidacją Kodeksu Pracy
-    (11h odpoczynku, 35h/tydzień, wykrywanie zbyt długich ciągów zmian bez wolnego)
-    i eksportem do Excela.
-  </p>
-  <p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 26px;">
-    Stack: HTML/JS, localStorage
-  </p>
-
-  <h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">MPM-MFG — Process Mining</h3>
-  <p style="margin:0 0 4px;">
-    Odkrywanie procesów produkcyjnych z danych CSV — analiza wariantów, wąskich
-    gardeł, obciążenia zasobów.
-  </p>
-  <p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 20px;">
-    Stack: HTML/JS, PapaParse, Chart.js
-  </p>
-
-  <p style="border-left:3px solid var(--cyan); background:var(--panel); padding:12px 16px; border-radius:4px; margin:0 0 30px;">
-    <strong style="color:var(--text);">Wszystkie trzy powyższe</strong> mają wbudowany przycisk
-    <strong style="color:var(--cyan);">"🧪 Wczytaj dane demo"</strong> — jedno kliknięcie i aplikacja
-    pokazuje się w pełni wypełniona przykładowymi danymi, bez potrzeby wskazywania żadnych plików.
-  </p>
-
-  <h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">System Analizy Przedwdrożeniowej ERP</h3>
-  <p style="margin:0 0 12px;">
-    Aplikacja desktopowa (Electron) dla konsultantów ERP — zastępuje rozproszone
-    arkusze Excel i dokumenty Word jednym ustrukturyzowanym narzędziem: 14 sekcji
-    analizy, wymagania FIT/GAP z priorytetami MoSCoW, harmonogram projektu (Gantt),
-    kosztorys.
-  </p>
-  <p style="border-left:3px solid var(--amber); background:var(--panel); padding:12px 16px; border-radius:4px; margin:0 0 30px;">
-    <strong style="color:var(--text);">Ta aplikacja działa inaczej niż pozostałe trzy</strong> — to nie
-    strona internetowa, tylko program do zainstalowania na Windows, dodatkowo zabezpieczony licencyjnie
-    (przypisanie do konkretnego komputera). Na stronie głównej portfolio, w karcie tego projektu,
-    znajdziesz plik instalatora do pobrania oraz przycisk kontaktowy "Zapytaj o demo" — po instalacji
-    aplikacja sama poprowadzi dalej (ekran aktywacji wyświetli, jakie dane należy przesłać, żeby
-    otrzymać licencję demonstracyjną).
-  </p>
-
+<h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">Dashboard Produkcyjny</h3>
+<p style="margin:0 0 4px;">
+Panel monitorowania produkcji w czasie rzeczywistym — OEE, realizacja planu,
+przestoje, koszty, WIP, traceability. Automatyczne alerty (np. wykrywanie
+maszyny psującej się zbyt często).
+</p>
+<p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 26px;">
+Stack: HTML/JS, Chart.js, IndexedDB
+</p>
+<h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">Grafik Pro</h3>
+<p style="margin:0 0 4px;">
+System grafikowania zmianowego z automatyczną walidacją Kodeksu Pracy
+(11h odpoczynku, 35h/tydzień, wykrywanie zbyt długich ciągów zmian bez wolnego)
+i eksportem do Excela.
+</p>
+<p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 26px;">
+Stack: HTML/JS, localStorage
+</p>
+<h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">MPM-MFG — Process Mining</h3>
+<p style="margin:0 0 4px;">
+Odkrywanie procesów produkcyjnych z danych CSV — analiza wariantów, wąskich
+gardeł, obciążenia zasobów.
+</p>
+<p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 20px;">
+Stack: HTML/JS, PapaParse, Chart.js
+</p>
+<p style="border-left:3px solid var(--cyan); background:var(--panel); padding:12px 16px; border-radius:4px; margin:0 0 30px;">
+<strong style="color:var(--text);">Wszystkie trzy powyższe</strong> mają wbudowany przycisk
+<strong style="color:var(--cyan);">"🧪 Wczytaj dane demo"</strong> — jedno kliknięcie i aplikacja
+pokazuje się w pełni wypełniona przykładowymi danymi, bez potrzeby wskazywania żadnych plików.
+</p>
+<h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">Wymagania → UML</h3>
+<p style="margin:0 0 4px;">
+Arkusz analizy przekształcający notatki ze spotkań analitycznych w wymagania
+biznesowe i techniczne oraz diagramy UML (przypadków użycia i klas). Działa
+w całości offline, bez żadnego AI — logika oparta wyłącznie o reguły, żadne
+dane nie opuszczają przeglądarki.
+</p>
+<p style="font-family:var(--mono); font-size:13px; color:var(--text-faint); font-style:italic; margin:0 0 26px;">
+Stack: HTML/JS, Mermaid.js, SheetJS (eksport do Excel), 100% offline
+</p>
+<h3 style="font-family:var(--mono); color:var(--text); font-size:19px; margin:0 0 6px;">System Analizy Przedwdrożeniowej ERP</h3>
+<p style="margin:0 0 12px;">
+Aplikacja desktopowa (Electron) dla konsultantów ERP — zastępuje rozproszone
+arkusze Excel i dokumenty Word jednym ustrukturyzowanym narzędziem: 14 sekcji
+analizy, wymagania FIT/GAP z priorytetami MoSCoW, harmonogram projektu (Gantt),
+kosztorys.
+</p>
+<p style="border-left:3px solid var(--amber); background:var(--panel); padding:12px 16px; border-radius:4px; margin:0 0 30px;">
+<strong style="color:var(--text);">Ta aplikacja działa inaczej niż pozostałe</strong> — to nie
+strona internetowa, tylko program do zainstalowania na Windows, dodatkowo zabezpieczony licencyjnie
+(przypisanie do konkretnego komputera). Na stronie głównej portfolio, w karcie tego projektu,
+znajdziesz plik instalatora do pobrania oraz przycisk kontaktowy "Zapytaj o demo" — po instalacji
+aplikacja sama poprowadzi dalej (ekran aktywacji wyświetli, jakie dane należy przesłać, żeby
+otrzymać licencję demonstracyjną).
+</p>
 </div>
-    <div class="meta-row">
-      <span><b>20+ lat</b> B2B / ERP / WMS / MES</span>
-      <span><b>Stack:</b> vanilla JS, HTML, CSS</span>
-      <span><b>Wdrożenia:</b> produkcja, logistyka, biuro</span>
-    </div>
-  </header>
-
-  <div class="section-label" id="demo">Projekty — Działające apki DEMO - kliknij Uruchom</div>
-
-  <div class="grid" id="grid"></div>
-
-  <div class="section-label">O mnie</div>
-  <p style="color:var(--text-dim); max-width:700px; padding-bottom:20px;">
-    Od ponad 20 lat wspieram operacje i obsługę klientów B2B, także biorąc udział we wdrożeniach systemów ERP/WMS/MES.
-    Powyższe narzędzia budowałem we współpracy z AI, żeby rozwiązać realne problemy z codziennej pracy — od zgodności grafików
-    z przepisami BHP, po monitorowanie produkcji i analizę procesów. Każde z nich to pojedynczy plik, który możesz
-    otworzyć i przetestować bez instalacji czegokolwiek.
-  </p>
-
-  <footer>
-    <div class="foot-row">
-      <p class="foot-note">Strona działa lokalnie w Twojej przeglądarce — nie zbiera danych osobowych. Korzysta jedynie z anonimowego licznika odwiedzin.</p>
-      <div class="foot-links">
-        <a href="#" id="cvLink">CV (PDF)</a>
-        <a href="mailto:twoj@email.pl">Kontakt</a>
-      </div>
-    </div>
-  </footer>
-
+<div class="meta-row">
+<span><b>20+ lat</b> B2B / ERP / WMS / MES</span>
+<span><b>Stack:</b> vanilla JS, HTML, CSS</span>
+<span><b>Wdrożenia:</b> produkcja, logistyka, biuro</span>
 </div>
-
+</header>
+<div class="section-label" id="demo">Projekty — Działające apki DEMO - kliknij Uruchom</div>
+<div class="grid" id="grid"></div>
+<div class="section-label">O mnie</div>
+<p style="color:var(--text-dim); max-width:700px; padding-bottom:20px;">
+Od ponad 20 lat wspieram operacje i obsługę klientów B2B, także biorąc udział we wdrożeniach systemów ERP/WMS/MES.
+Powyższe narzędzia budowałem we współpracy z AI, żeby rozwiązać realne problemy z codziennej pracy — od zgodności grafików
+z przepisami BHP, po monitorowanie produkcji i analizę procesów. Każde z nich to pojedynczy plik, który możesz
+otworzyć i przetestować bez instalacji czegokolwiek.
+</p>
+<footer>
+<div class="foot-row">
+<p class="foot-note">Strona działa lokalnie w Twojej przeglądarce — nie zbiera danych osobowych. Korzysta jedynie z anonimowego licznika odwiedzin.</p>
+<div class="foot-links">
+<a href="#" id="cvLink">CV (PDF)</a>
+<a href="mailto:twoj@email.pl">Kontakt</a>
+</div>
+</div>
+</footer>
+</div>
 <script>
-  // ---------------------------------------------------------------
-  // EDYTUJ TĘ LISTĘ, żeby dodać / zmienić projekty.
-  // "link" to ścieżka do pliku Twojego projektu (np. w folderze projekty/).
-  // Jeśli pliku jeszcze nie wgrałeś, zostaw link jako "" — pokaże się info zamiast przycisku.
-  // "accent" to kolor akcentu karty: "cyan" | "amber" | "green"
-  // ---------------------------------------------------------------
-  const PROJECTS = [
-    {
-      code: "PRD-011",
-      title: "Dashboard Produkcyjny",
-      desc: "Panel monitorowania produkcji w czasie rzeczywistym — wskaźniki wydajności, statusy linii, alerty.",
-      tags: ["HTML/JS", "Chart.js", "Single-file"],
-      link: "projekty/demo_z_danymi/panel_zarządzania_produkcją.html",
-      accent: "cyan"
-    },
-    {
-      code: "GRF-004",
-      title: "Grafik Pro",
-      desc: "System grafikowania zmianowego z automatyczną walidacją Kodeksu Pracy (11h odpoczynku, 35h tygodniowo) i eksportem do Excela.",
-      tags: ["HTML/JS", "Kodeks Pracy", "Excel export"],
-      link: "projekty/demo_z_danymi/grafiki.html",
-      accent: "amber"
-    },
-    {
-      code: "MPM-001",
-      title: "MPM-MFG — Process Mining",
-      desc: "Odkrywanie procesów produkcyjnych z danych CSV — analiza wariantów, wąskich gardeł, zasobów.",
-      tags: ["PapaParse", "Chart.js", "Dark UI"],
-      link: "projekty/demo_z_danymi/mini process mining.html",
-      accent: "cyan"
-    },
-	{
-      code: "ERP-101",
-      title: "System Analizy Przedwdrożeniowej ERP",
-      desc: "Aplikacja desktopowa stworzona z myślą o konsultantach ERP. Zastępuje rozproszone arkusze Excel i dokumenty Word — zbierając całą wiedzę o projekcie wdrożeniowym w jednym, ustrukturyzowanym narzędziu.",
-      tags: ["Electron", "Aplikacja desktopowa", "Windows"],
-      link: "https://github.com/sw78/portfolio/releases/download/v1.0.0/System.Analizy.ERP.Setup.1.0.0.exe",
-      linkLabel: "⬇ Pobierz instalator (.exe, 86 MB)",
-      altLink: "mailto:szwolniewicz@gmail.com?subject=Prośba%20o%20demo%20-%20System%20Analizy%20Przedwdrożeniowej%20ERP",
-      altLabel: "✉ Zapytaj o demo",
-      accent: "cyan"
-    }
-  ];
+// ---------------------------------------------------------------
+// EDYTUJ TĘ LISTĘ, żeby dodać / zmienić projekty.
+// "link" to ścieżka do pliku Twojego projektu (np. w folderze projekty/).
+// Jeśli pliku jeszcze nie wgrałeś, zostaw link jako "" — pokaże się info zamiast przycisku.
+// "accent" to kolor akcentu karty: "cyan" | "amber" | "green"
+// ---------------------------------------------------------------
+const PROJECTS = [
+{
+code: "PRD-011",
+title: "Dashboard Produkcyjny",
+desc: "Panel monitorowania produkcji w czasie rzeczywistym — wskaźniki wydajności, statusy linii, alerty.",
+tags: ["HTML/JS", "Chart.js", "Single-file"],
+link: "projekty/demo_z_danymi/panel_zarządzania_produkcją.html",
+accent: "cyan"
+},
+{
+code: "GRF-004",
+title: "Grafik Pro",
+desc: "System grafikowania zmianowego z automatyczną walidacją Kodeksu Pracy (11h odpoczynku, 35h tygodniowo) i eksportem do Excela.",
+tags: ["HTML/JS", "Kodeks Pracy", "Excel export"],
+link: "projekty/demo_z_danymi/grafiki.html",
+accent: "amber"
+},
+{
+code: "MPM-001",
+title: "MPM-MFG — Process Mining",
+desc: "Odkrywanie procesów produkcyjnych z danych CSV — analiza wariantów, wąskich gardeł, zasobów.",
+tags: ["PapaParse", "Chart.js", "Dark UI"],
+link: "projekty/demo_z_danymi/mini process mining.html",
+accent: "cyan"
+},
+{
+code: "UML-005",
+title: "Wymagania → UML",
+desc: "Zamienia notatki ze spotkań analitycznych na wymagania biznesowe/techniczne oraz diagramy UML (use-case + klasy). Bez AI, w pełni offline.",
+tags: ["Mermaid.js", "SheetJS", "Offline / bez AI"],
+link: "projekty/demo_z_danymi/analiza-wymagan-uml.html",
+accent: "green"
+},
+{
+code: "ERP-101",
+title: "System Analizy Przedwdrożeniowej ERP",
+desc: "Aplikacja desktopowa stworzona z myślą o konsultantach ERP. Zastępuje rozproszone arkusze Excel i dokumenty Word — zbierając całą wiedzę o projekcie wdrożeniowym w jednym, ustrukturyzowanym narzędziu.",
+tags: ["Electron", "Aplikacja desktopowa", "Windows"],
+link: "https://github.com/sw78/portfolio/releases/download/v1.0.0/System.Analizy.ERP.Setup.1.0.0.exe",
+linkLabel: "⬇ Pobierz instalator (.exe, 86 MB)",
+altLink: "mailto:szwolniewicz@gmail.com?subject=Prośba%20o%20demo%20-%20System%20Analizy%20Przedwdrożeniowej%20ERP",
+altLabel: "✉ Zapytaj o demo",
+accent: "cyan"
+}
+];
 
-  const accentVar = { cyan: "var(--cyan)", amber: "var(--amber)", green: "var(--green)" };
+const accentVar = { cyan: "var(--cyan)", amber: "var(--amber)", green: "var(--green)" };
+const grid = document.getElementById("grid");
 
-  const grid = document.getElementById("grid");
+PROJECTS.forEach(p => {
+const hasLink = p.link && p.link.trim().length > 0;
+const isMailto = hasLink && p.link.trim().toLowerCase().startsWith("mailto:");
+const hasAlt = p.altLink && p.altLink.trim().length > 0;
+const isAltMailto = hasAlt && p.altLink.trim().toLowerCase().startsWith("mailto:");
 
-  PROJECTS.forEach(p => {
-    const hasLink = p.link && p.link.trim().length > 0;
-    const isMailto = hasLink && p.link.trim().toLowerCase().startsWith("mailto:");
-    const hasAlt = p.altLink && p.altLink.trim().length > 0;
-    const isAltMailto = hasAlt && p.altLink.trim().toLowerCase().startsWith("mailto:");
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.setProperty("--card-accent", accentVar[p.accent] || accentVar.cyan);
+const card = document.createElement("div");
+card.className = "card";
+card.style.setProperty("--card-accent", accentVar[p.accent] || accentVar.cyan);
 
-    card.innerHTML = `
-      <div class="card-top">
-        <span class="card-code">${p.code}</span>
-        <span class="status ${hasLink ? "" : "offline"}"><span class="dot"></span>${hasLink ? (isMailto ? "NA ZAPYTANIE" : "GOTOWY") : "BRAK PLIKU"}</span>
-      </div>
-      <div class="card-title">${p.title}</div>
-      <div class="card-desc">${p.desc}</div>
-      <div class="tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
-      ${hasLink
-        ? `<div class="card-actions">
-             <a class="btn primary" href="${p.link}" ${isMailto ? "" : 'target="_blank" rel="noopener"'}>${p.linkLabel || (isMailto ? "✉ Poproś o demo" : "Uruchom ↗")}</a>
-             ${hasAlt ? `<a class="btn ghost" href="${p.altLink}" ${isAltMailto ? "" : 'target="_blank" rel="noopener"'}>${p.altLabel || (isAltMailto ? "✉ Kontakt" : "Więcej")}</a>` : ""}
-           </div>`
-        : `<div class="empty-hint">Wgraj plik do ./projekty/ i uzupełnij "link" w index.html</div>`
-      }
-    `;
-    grid.appendChild(card);
-  });
+card.innerHTML = `
+<div class="card-top">
+<span class="card-code">${p.code}</span>
+<span class="status ${hasLink ? "" : "offline"}"><span class="dot"></span>${hasLink ? (isMailto ? "NA ZAPYTANIE" : "GOTOWY") : "BRAK PLIKU"}</span>
+</div>
+<div class="card-title">${p.title}</div>
+<div class="card-desc">${p.desc}</div>
+<div class="tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+${hasLink
+? `<div class="card-actions">
+<a class="btn primary" href="${p.link}" ${isMailto ? "" : 'target="_blank" rel="noopener"'}>${p.linkLabel || (isMailto ? "✉ Poproś o demo" : "Uruchom ↗")}</a>
+${hasAlt ? `<a class="btn ghost" href="${p.altLink}" ${isAltMailto ? "" : 'target="_blank" rel="noopener"'}>${p.altLabel || (isAltMailto ? "✉ Kontakt" : "Więcej")}</a>` : ""}
+</div>`
+: `<div class="empty-hint">Wgraj plik do ./projekty/ i uzupełnij "link" w index.html</div>`
+}
+`;
+grid.appendChild(card);
+});
 
-  // Podmień na swoje CV, jeśli plik istnieje w tym samym folderze
-  document.getElementById("cvLink").href = "CV_Szymon_Wolniewicz_2026.pdf";
+// Podmień na swoje CV, jeśli plik istnieje w tym samym folderze
+document.getElementById("cvLink").href = "CV_Szymon_Wolniewicz_2026.pdf";
 </script>
 
 <!-- LICZNIK WEJŚĆ — Strona główna -->
 <script>
 (function () {
-  var COUNTER_KEY = "sw78_portfolio_visits_9f3k2";
-  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
-  var THIRTY_MIN = 30 * 60 * 1000;
+var COUNTER_KEY = "sw78_portfolio_visits_9f3k2";
+var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+var THIRTY_MIN = 30 * 60 * 1000;
 
-  function sendHit() {
-    var now = Date.now();
-    var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
-    if (now - last < THIRTY_MIN) return;
+function sendHit() {
+var now = Date.now();
+var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+if (now - last < THIRTY_MIN) return;
 
-    fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
-      .then(function (r) { return r.json(); })
-      .then(function () {
-        localStorage.setItem(LAST_VISIT_KEY, String(now));
-      })
-      .catch(function () {});
-  }
+fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+.then(function (r) { return r.json(); })
+.then(function () {
+localStorage.setItem(LAST_VISIT_KEY, String(now));
+})
+.catch(function () {});
+}
 
-  // Nie licz wejść z preładowań w tle (np. Chrome "Preload pages") —
-  // czekaj, aż strona jest faktycznie widoczna na ekranie.
-  if (document.visibilityState === "visible") {
-    sendHit();
-  } else {
-    document.addEventListener("visibilitychange", function once() {
-      if (document.visibilityState === "visible") {
-        document.removeEventListener("visibilitychange", once);
-        sendHit();
-      }
-    });
-  }
+// Nie licz wejść z preładowań w tle (np. Chrome "Preload pages") —
+// czekaj, aż strona jest faktycznie widoczna na ekranie.
+if (document.visibilityState === "visible") {
+sendHit();
+} else {
+document.addEventListener("visibilitychange", function once() {
+if (document.visibilityState === "visible") {
+document.removeEventListener("visibilitychange", once);
+sendHit();
+}
+});
+}
 })();
 </script>
-
 </body>
 </html>
