@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arkusz Analizy — Wymagania → UML</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --paper:#EEF2F4;
+  --paper-white:#FBFCFD;
+  --line:#C3D0D8;
+  --line-strong:#9FB2BC;
+  --ink:#16232E;
+  --ink-soft:#5B6B78;
+  --biz:#B8763A;
+  --biz-soft:#F4E6D3;
+  --biz-line:#E0BE8E;
+  --tech:#2F6E73;
+  --tech-soft:#DCEBEC;
+  --tech-line:#A9CBCD;
+  --blueprint:#3E6FA8;
+  --danger:#B04A3F;
+  --radius:2px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0/28px 28px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/28px 28px,
+    var(--paper);
+  background-blend-mode: normal, normal, normal;
+  opacity:1;
+  font-family:'IBM Plex Sans', sans-serif;
+  color:var(--ink);
+  padding:32px 20px 80px;
+}
+.wrap{max-width:1180px;margin:0 auto;}
+
+/* ---- Title block (signature element) ---- */
+.titleblock{
+  background:var(--paper-white);
+  border:1.5px solid var(--ink);
+  display:grid;
+  grid-template-columns: 1fr auto;
+  margin-bottom:28px;
+  box-shadow: 4px 4px 0 rgba(22,35,46,0.08);
+}
+.titleblock-main{padding:22px 26px;border-right:1.5px solid var(--ink);}
+.eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+h1{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:30px;
+  font-weight:700;
+  margin:4px 0 6px;
+  letter-spacing:-0.01em;
+}
+.subtitle{color:var(--ink-soft);font-size:14.5px;max-width:520px;line-height:1.5;}
+.stamp{
+  padding:16px 20px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:6px;
+  min-width:170px;
+}
+.stamp-row{display:flex;justify-content:space-between;gap:14px;color:var(--ink-soft);}
+.stamp-row b{color:var(--ink);font-weight:600;}
+
+/* ---- Sections ---- */
+.section{
+  background:var(--paper-white);
+  border:1px solid var(--line-strong);
+  margin-bottom:22px;
+}
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;
+  border-bottom:1px solid var(--line-strong);
+}
+.section-head h2{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:16px;font-weight:600;margin:0;
+  display:flex;align-items:center;gap:10px;
+}
+.section-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;color:var(--ink-soft);
+  border:1px solid var(--line-strong);
+  padding:1px 6px;
+}
+.section-body{padding:20px;}
+
+textarea{
+  width:100%;min-height:180px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;line-height:1.55;
+  padding:14px;border:1px solid var(--line-strong);
+  background:var(--paper);color:var(--ink);
+  resize:vertical;
+}
+textarea:focus{outline:2px solid var(--blueprint);outline-offset:1px;}
+
+.btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+button{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13.5px;font-weight:600;
+  border:1.5px solid var(--ink);
+  background:var(--paper-white);color:var(--ink);
+  padding:9px 16px;cursor:pointer;
+  border-radius:var(--radius);
+  transition:transform .05s ease, background .15s ease;
+}
+button:hover{background:var(--ink);color:var(--paper-white);}
+button:active{transform:translateY(1px);}
+button:focus-visible{outline:2px solid var(--blueprint);outline-offset:2px;}
+button.primary{background:var(--ink);color:var(--paper-white);}
+button.primary:hover{background:var(--blueprint);border-color:var(--blueprint);}
+button.ghost{border-color:var(--line-strong);color:var(--ink-soft);font-weight:500;}
+button.ghost:hover{background:var(--paper);color:var(--ink);}
+button.small{padding:5px 10px;font-size:12px;}
+button:disabled{opacity:.4;cursor:not-allowed;}
+button:disabled:hover{background:var(--paper-white);color:var(--ink);}
+
+/* ---- Actor chips ---- */
+.chiplist{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--tech-soft);border:1px solid var(--tech-line);
+  padding:6px 10px;font-size:13px;font-family:'IBM Plex Mono',monospace;
+}
+.chip input{border:none;background:transparent;font-family:inherit;font-size:inherit;color:var(--ink);width:auto;min-width:60px;}
+.chip input:focus{outline:none;}
+.chip button{border:none;background:none;padding:0 2px;font-size:14px;color:var(--tech);}
+.chip button:hover{background:none;color:var(--danger);}
+
+/* ---- Requirement bridge rows ---- */
+.reqrow{
+  display:grid;
+  grid-template-columns: 28px 1fr 34px 1fr 150px 34px;
+  gap:0;align-items:stretch;
+  border:1px solid var(--line-strong);
+  margin-bottom:10px;
+  background:var(--paper-white);
+}
+.reqrow .idcell{
+  background:var(--ink);color:var(--paper-white);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+}
+.reqcell{padding:10px 12px;}
+.reqcell label{
+  display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;
+}
+.biz-cell{background:var(--biz-soft);border-right:1px solid var(--line-strong);}
+.biz-cell label{color:var(--biz);}
+.tech-cell{background:var(--tech-soft);}
+.tech-cell label{color:var(--tech);}
+.bridge{
+  display:flex;align-items:center;justify-content:center;
+  border-right:1px solid var(--line-strong);border-left:1px solid var(--line-strong);
+  color:var(--blueprint);font-size:16px;
+}
+.reqrow textarea{
+  min-height:56px;border:1px solid var(--line);background:var(--paper-white);
+  font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:6px 8px;
+}
+.reqcell.meta{padding:10px 10px;border-left:1px solid var(--line-strong);}
+.reqcell.meta label{color:var(--ink-soft);}
+.reqcell.meta input{
+  width:100%;border:1px solid var(--line);padding:5px 6px;font-size:12.5px;
+  font-family:'IBM Plex Mono',monospace;margin-bottom:6px;background:var(--paper-white);color:var(--ink);
+}
+.reqrow .delcell{display:flex;align-items:center;justify-content:center;}
+.reqrow .delcell button{border:none;background:none;color:var(--ink-soft);font-size:16px;padding:4px;}
+.reqrow .delcell button:hover{color:var(--danger);background:none;}
+
+/* ---- Entity table ---- */
+.enttable{width:100%;border-collapse:collapse;font-size:13px;}
+.enttable th{
+  text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10.5px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);
+  padding:8px 10px;border-bottom:1.5px solid var(--ink);
+}
+.enttable td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+.enttable input{width:100%;border:1px solid var(--line);padding:5px 7px;font-size:13px;background:var(--paper-white);color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+.enttable .delcell button{border:none;background:none;color:var(--ink-soft);}
+.enttable .delcell button:hover{color:var(--danger);background:none;}
+
+/* ---- Diagram containers ---- */
+.diagram-box{
+  border:1px dashed var(--line-strong);
+  background:var(--paper-white);
+  padding:18px;
+  overflow-x:auto;
+}
+.diagram-box svg{max-width:100%;height:auto;}
+.empty-state{
+  padding:40px 20px;text-align:center;color:var(--ink-soft);font-size:13.5px;
+  font-family:'IBM Plex Mono',monospace;
+}
+
+.hint{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.5;}
+.legend{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
+.swatch{width:12px;height:12px;display:inline-block;border:1px solid var(--ink);}
+.swatch.biz{background:var(--biz-soft);border-color:var(--biz-line);}
+.swatch.tech{background:var(--tech-soft);border-color:var(--tech-line);}
+
+@media (max-width:760px){
+  .reqrow{grid-template-columns: 1fr;}
+  .reqrow .idcell{display:none;}
+  .bridge{border:none;padding:6px 0;}
+  .titleblock{grid-template-columns:1fr;}
+  .titleblock-main{border-right:none;border-bottom:1.5px solid var(--ink);}
+}
+:focus-visible{outline:2px solid var(--blueprint);outline-offset:1px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="titleblock">
+    <div class="titleblock-main">
+      <div class="eyebrow">Narzędzie analityczne · działa w 100% lokalnie, bez AI</div>
+      <h1>Wymagania biznesowe → techniczne → UML</h1>
+      <div class="subtitle">Wklej notatki ze spotkania analitycznego. Silnik regułowy wykryje aktorów, wymagania i encje, a Ty poprawiasz wynik przed wygenerowaniem diagramów.</div>
+    </div>
+    <div class="stamp">
+      <div class="stamp-row"><span>Silnik</span><b>Reguły + słowniki</b></div>
+      <div class="stamp-row"><span>Diagramy</span><b>Use Case / Klas</b></div>
+      <div class="stamp-row"><span>Dane</span><b>Nie opuszczają przeglądarki</b></div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: input -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">01</span>Notatki ze spotkania</h2>
+    </div>
+    <div class="section-body">
+      <textarea id="notesInput" placeholder="Wklej tutaj notatki, np.: System musi umożliwiać rejestrację nowych zamówień klienta. Jako handlowiec chcę edytować dane zamówienia przed jego zatwierdzeniem. Magazynier powinien mieć możliwość aktualizacji stanu magazynowego..."></textarea>
+      <div class="btnrow">
+        <button class="primary" id="btnAnalyze">Analizuj notatki</button>
+        <button class="ghost" id="btnSample">Wczytaj przykład</button>
+        <button class="ghost" id="btnClear">Wyczyść wszystko</button>
+      </div>
+      <div class="hint">Rozpoznawane są zdania zawierające typowe sformułowania wymagań ("musi", "powinien", "chcę", "należy"...) oraz wzorzec user story ("jako &lt;rola&gt; chcę &lt;cel&gt;").</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: actors -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">02</span>Aktorzy</h2>
+      <button class="ghost small" id="btnAddActor">+ Dodaj aktora</button>
+    </div>
+    <div class="section-body">
+      <div class="chiplist" id="actorList"></div>
+      <div class="hint" id="actorEmptyHint">Brak wykrytych aktorów — kliknij "Analizuj notatki" albo dodaj ręcznie.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: requirements -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">03</span>Wymagania — biznesowe → techniczne</h2>
+      <button class="ghost small" id="btnAddReq">+ Dodaj wiersz</button>
+    </div>
+    <div class="section-body">
+      <div class="legend">
+        <div class="legend-item"><span class="swatch biz"></span>Warstwa biznesowa (co chce użytkownik)</div>
+        <div class="legend-item"><span class="swatch tech"></span>Warstwa techniczna (co musi zbudować system)</div>
+      </div>
+      <div id="reqList" style="margin-top:16px;"></div>
+      <div class="empty-state" id="reqEmptyHint">Brak wymagań. Wklej notatki i kliknij "Analizuj", albo dodaj wiersz ręcznie.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: entities -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">04</span>Encje (kandydaci do diagramu klas)</h2>
+      <button class="ghost small" id="btnAddEntity">+ Dodaj encję</button>
+    </div>
+    <div class="section-body">
+      <table class="enttable">
+        <thead>
+          <tr><th style="width:20%">Nazwa encji</th><th style="width:38%">Atrybuty (po przecinku)</th><th style="width:34%">Powiązane encje</th><th style="width:8%"></th></tr>
+        </thead>
+        <tbody id="entityTableBody"></tbody>
+      </table>
+      <div class="empty-state" id="entityEmptyHint">Brak encji — pojawią się po analizie notatek.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: diagram generation -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">05</span>Diagramy UML</h2>
+      <button class="primary small" id="btnGenerate">Generuj diagramy z powyższych danych</button>
+    </div>
+    <div class="section-body">
+      <h3 style="font-family:'Space Grotesk';font-size:14.5px;margin:0 0 10px;">Diagram przypadków użycia</h3>
+      <div class="diagram-box" id="usecaseBox"><div class="empty-state">Diagram pojawi się po kliknięciu "Generuj diagramy".</div></div>
+      <div class="btnrow"><button class="ghost small" id="btnDownloadUsecase" disabled>Pobierz SVG</button></div>
+
+      <h3 style="font-family:'Space Grotesk';font-size:14.5px;margin:26px 0 10px;">Diagram klas</h3>
+      <div class="diagram-box" id="classBox"><div class="empty-state">Diagram pojawi się po kliknięciu "Generuj diagramy".</div></div>
+      <div class="btnrow">
+        <button class="ghost small" id="btnDownloadClass" disabled>Pobierz SVG</button>
+        <button class="ghost small" id="btnCopyMermaid" disabled>Kopiuj kod Mermaid</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: export -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">06</span>Eksport</h2>
+    </div>
+    <div class="section-body">
+      <div class="btnrow">
+        <button id="btnExportExcel">Eksportuj wymagania do Excela (.xlsx)</button>
+      </div>
+      <div class="hint">Eksport zawiera tabelę: wymaganie biznesowe, wymaganie techniczne, aktor, powiązane encje.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+mermaid.initialize({ startOnLoad:false, theme:'neutral', securityLevel:'loose',
+  themeVariables:{ fontFamily:'IBM Plex Sans, sans-serif' } });
+
+/* ============ STATE ============ */
+let state = {
+  actors: [],       // [{id, name}]
+  requirements: [], // [{id, business, technical, actor, entities:[names]}]
+  entities: {}      // name -> {attributes:[...], relations:Set(names)}
+};
+let uid = 1;
+const newId = () => 'r' + (uid++);
+
+/* ============ HEURYSTYKI ============ */
+const ROLES = ['klient','pracownik','administrator','magazynier','handlowiec','kierownik',
+  'użytkownik','uzytkownik','menadżer','menedżer','księgowy','ksiegowy','operator','dostawca',
+  'sprzedawca','kupiec','dyrektor','specjalista','konsultant','analityk','system','aplikacja',
+  'kasjer','logistyk','planista','audytor'];
+
+const ENTITY_DICT = ['zamówieni','zamowieni','zamówien','fakturr','faktur','produkt','klient',
+  'magazyn','dostawc','pracownik','raport','płatnoś','platnos','umow','kontrahent','dokument',
+  'towar','kontrakt','zlecen','reklamacj','dostaw','cennik','cen','rol','uprawnien','budżet',
+  'budzet','projekt','zadani','harmonogram','użytkownik','uzytkownik'];
+
+const ENTITY_MAP = {
+  'zamówieni':'Zamówienie','zamowieni':'Zamówienie','zamówien':'Zamówienie',
+  'fakturr':'Faktura','faktur':'Faktura','produkt':'Produkt','klient':'Klient',
+  'magazyn':'Magazyn','dostawc':'Dostawca','pracownik':'Pracownik','raport':'Raport',
+  'płatnoś':'Płatność','platnos':'Płatność','umow':'Umowa','kontrahent':'Kontrahent',
+  'dokument':'Dokument','towar':'Towar','kontrakt':'Kontrakt','zlecen':'Zlecenie',
+  'reklamacj':'Reklamacja','dostaw':'Dostawa','cennik':'Cennik','cen':'Cena',
+  'rol':'Rola','uprawnien':'Uprawnienie','budżet':'Budżet','budzet':'Budżet',
+  'projekt':'Projekt','zadani':'Zadanie','harmonogram':'Harmonogram',
+  'użytkownik':'Użytkownik','uzytkownik':'Użytkownik'
+};
+
+const REQ_TRIGGERS = /(musi|musz(ą|a)|powin(ien|na|no|ny)|chc(e|ę|emy)|wymaga(ją|ja)?|wymagam|będzie mog(ł|ła)|bedzie mog|ma możliwoś|ma mozliwos|umożliwia(ć)?|umozliwia|pozwala(ć)?|pozwoli|potrzebuj(e|emy)|konieczne jest|należy|nalezy|ma być|ma byc|zapewni(a)?)/i;
+
+function splitSentences(text){
+  return text.split(/(?<=[.!?;\n])\s+/).map(s=>s.trim()).filter(Boolean);
+}
+function capitalize(w){ return w.charAt(0).toUpperCase()+w.slice(1); }
+
+function findRole(sentence){
+  const jakoMatch = sentence.match(/jako\s+([a-ząćęłńóśźż]+)/i);
+  if (jakoMatch) return capitalize(jakoMatch[1]);
+  const lower = sentence.toLowerCase();
+  const matches = [];
+  for (const r of ROLES){ const idx = lower.indexOf(r); if (idx !== -1) matches.push({role:r, idx}); }
+  if (!matches.length) return 'Użytkownik';
+  const human = matches.filter(m => m.role !== 'system' && m.role !== 'aplikacja');
+  const pool = human.length ? human : matches;
+  pool.sort((a,b)=>a.idx-b.idx);
+  return capitalize(pool[0].role);
+}
+
+function findEntities(sentence){
+  const lower = sentence.toLowerCase();
+  const found = new Set();
+  for (const stem of ENTITY_DICT){ if (lower.includes(stem)) found.add(ENTITY_MAP[stem] || capitalize(stem)); }
+  return [...found];
+}
+
+function techFromSentence(sentence, entities, actor){
+  const l = sentence.toLowerCase();
+  const ent = entities.length ? entities.join(', ') : '[encja niewykryta — uzupełnij ręcznie]';
+  if (/raport|zestawien|statystyk/.test(l))
+    return `Funkcja raportująca: zapytanie agregujące dane z tabel [${ent}]; eksport PDF/Excel; uprawnienia: ${actor}.`;
+  if (/rejestr|doda(j|wać)|wprowadz|utwórz|utworz|nowy rekord/.test(l))
+    return `Formularz/API tworzenia rekordu [${ent}]; walidacja pól wejściowych; zapis w bazie danych; log operacji (${actor}).`;
+  if (/edytow|zmian|aktualizacj|modyfikacj/.test(l))
+    return `Endpoint/formularz edycji rekordu [${ent}]; historia zmian (audit log); uprawnienia edycji: ${actor}.`;
+  if (/usuń|usun|kasow|archiwizacj/.test(l))
+    return `Mechanizm usuwania/archiwizacji rekordu [${ent}]; wymagane potwierdzenie; log usunięcia.`;
+  if (/powiadom|alert|informowa/.test(l))
+    return `Mechanizm powiadomień (e-mail/push) wyzwalany zmianą stanu [${ent}].`;
+  if (/integrac|wymian(a|ę) danych|\bapi\b/.test(l))
+    return `Integracja API z systemem zewnętrznym; mapowanie pól [${ent}]; obsługa błędów komunikacji.`;
+  if (/zatwier|akceptacj|autoryzacj/.test(l))
+    return `Workflow zatwierdzania [${ent}] z historią decyzji; uprawnienia: ${actor}.`;
+  return `Funkcjonalność systemowa obsługująca proces opisany w wymaganiu; dotyczy encji: [${ent}]; aktor: ${actor}.`;
+}
+
+function useCaseName(sentence, entities){
+  const l = sentence.toLowerCase();
+  const ent = entities[0] || 'danych';
+  if (/raport|zestawien/.test(l)) return `Generowanie raportu (${ent})`;
+  if (/rejestr|dodaj|wprowadz|utwórz|utworz/.test(l)) return `Rejestracja ${ent}`;
+  if (/edytow|zmian|aktualizacj/.test(l)) return `Edycja ${ent}`;
+  if (/usuń|usun|kasow/.test(l)) return `Usuwanie ${ent}`;
+  if (/powiadom|alert/.test(l)) return `Powiadomienie o ${ent}`;
+  if (/zatwier|akceptacj/.test(l)) return `Zatwierdzanie ${ent}`;
+  return `Obsługa: ${ent}`;
+}
+
+function analyzeNotes(text){
+  const sentences = splitSentences(text).filter(s => REQ_TRIGGERS.test(s));
+  const actorsSet = new Set();
+  const requirements = [];
+  const entities = {};
+
+  sentences.forEach(s => {
+    const actor = findRole(s);
+    const ents = findEntities(s);
+    actorsSet.add(actor);
+    requirements.push({
+      id: newId(),
+      business: s,
+      technical: techFromSentence(s, ents, actor),
+      actor,
+      useCase: useCaseName(s, ents),
+      entities: ents
+    });
+    ents.forEach(e => {
+      if (!entities[e]) entities[e] = { attributes: ['id','nazwa','dataUtworzenia'], relations: new Set() };
+      ents.forEach(other => { if (other !== e) entities[e].relations.add(other); });
+    });
+  });
+
+  return { actors: [...actorsSet], requirements, entities };
+}
+
+/* ============ RENDER: ACTORS ============ */
+function renderActors(){
+  const list = document.getElementById('actorList');
+  list.innerHTML = '';
+  state.actors.forEach((a, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<input type="text" value="${escapeAttr(a.name)}" data-idx="${i}"><button title="Usuń aktora" data-idx="${i}">×</button>`;
+    list.appendChild(chip);
+  });
+  list.querySelectorAll('input').forEach(inp => inp.addEventListener('input', e => {
+    state.actors[+e.target.dataset.idx].name = e.target.value;
+  }));
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', e => {
+    state.actors.splice(+e.target.dataset.idx, 1);
+    renderActors();
+  }));
+  document.getElementById('actorEmptyHint').style.display = state.actors.length ? 'none' : 'block';
+}
+
+/* ============ RENDER: REQUIREMENTS ============ */
+function renderRequirements(){
+  const list = document.getElementById('reqList');
+  list.innerHTML = '';
+  state.requirements.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.className = 'reqrow';
+    row.innerHTML = `
+      <div class="idcell">${String(i+1).padStart(2,'0')}</div>
+      <div class="reqcell biz-cell">
+        <label>Wymaganie biznesowe</label>
+        <textarea data-field="business" data-idx="${i}">${escapeHtml(r.business)}</textarea>
+      </div>
+      <div class="bridge">→</div>
+      <div class="reqcell tech-cell">
+        <label>Wymaganie techniczne</label>
+        <textarea data-field="technical" data-idx="${i}">${escapeHtml(r.technical)}</textarea>
+      </div>
+      <div class="reqcell meta">
+        <label>Aktor</label>
+        <input type="text" data-field="actor" data-idx="${i}" value="${escapeAttr(r.actor)}">
+        <label>Przypadek użycia</label>
+        <input type="text" data-field="useCase" data-idx="${i}" value="${escapeAttr(r.useCase)}">
+      </div>
+      <div class="delcell"><button title="Usuń wiersz" data-idx="${i}">×</button></div>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('textarea, input').forEach(el => el.addEventListener('input', e => {
+    const idx = +e.target.dataset.idx, field = e.target.dataset.field;
+    state.requirements[idx][field] = e.target.value;
+  }));
+  list.querySelectorAll('.delcell button').forEach(btn => btn.addEventListener('click', e => {
+    state.requirements.splice(+e.target.dataset.idx, 1);
+    renderRequirements();
+  }));
+  document.getElementById('reqEmptyHint').style.display = state.requirements.length ? 'none' : 'block';
+}
+
+/* ============ RENDER: ENTITIES ============ */
+function renderEntities(){
+  const body = document.getElementById('entityTableBody');
+  body.innerHTML = '';
+  const names = Object.keys(state.entities);
+  names.forEach(name => {
+    const ent = state.entities[name];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeAttr(name)}" data-orig="${escapeAttr(name)}" data-field="name"></td>
+      <td><input type="text" value="${escapeAttr(ent.attributes.join(', '))}" data-orig="${escapeAttr(name)}" data-field="attributes"></td>
+      <td><input type="text" value="${escapeAttr([...ent.relations].join(', '))}" data-orig="${escapeAttr(name)}" data-field="relations"></td>
+      <td class="delcell"><button title="Usuń encję" data-orig="${escapeAttr(name)}">×</button></td>
+    `;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input[data-field="name"]').forEach(inp => inp.addEventListener('change', e => {
+    const orig = e.target.dataset.orig, val = e.target.value.trim();
+    if (val && val !== orig && state.entities[orig]) {
+      state.entities[val] = state.entities[orig];
+      delete state.entities[orig];
+      renderEntities();
+    }
+  }));
+  body.querySelectorAll('input[data-field="attributes"]').forEach(inp => inp.addEventListener('input', e => {
+    const orig = e.target.dataset.orig;
+    if (state.entities[orig]) state.entities[orig].attributes = e.target.value.split(',').map(s=>s.trim()).filter(Boolean);
+  }));
+  body.querySelectorAll('input[data-field="relations"]').forEach(inp => inp.addEventListener('input', e => {
+    const orig = e.target.dataset.orig;
+    if (state.entities[orig]) state.entities[orig].relations = new Set(e.target.value.split(',').map(s=>s.trim()).filter(Boolean));
+  }));
+  body.querySelectorAll('.delcell button').forEach(btn => btn.addEventListener('click', e => {
+    delete state.entities[e.target.dataset.orig];
+    renderEntities();
+  }));
+  document.getElementById('entityEmptyHint').style.display = names.length ? 'none' : 'block';
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s).replace(/'/g,'&#39;'); }
+
+/* ============ DIAGRAM: USE CASE (custom SVG) ============ */
+function buildUseCaseSVG(){
+  const actorNames = [...new Set(state.requirements.map(r => r.actor).filter(Boolean))];
+  const usecases = state.requirements.map(r => ({ label: r.useCase || 'Przypadek użycia', actor: r.actor }));
+
+  if (!actorNames.length || !usecases.length) return null;
+
+  const rowH = 76;
+  const topPad = 50;
+  const height = topPad*2 + Math.max(actorNames.length, usecases.length) * rowH;
+  const width = 880;
+  const boundaryX = 330, boundaryW = 500;
+  const actorX = 70;
+  const ucCenterX = boundaryX + boundaryW/2;
+
+  const actorPos = {};
+  actorNames.forEach((name, i) => { actorPos[name] = topPad + i*rowH + rowH/2; });
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Sans, sans-serif">`;
+  svg += `<rect x="0" y="0" width="${width}" height="${height}" fill="#FBFCFD"/>`;
+
+  // system boundary
+  svg += `<rect x="${boundaryX}" y="${topPad-30}" width="${boundaryW}" height="${height-topPad*2+60}" fill="none" stroke="#3E6FA8" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+  svg += `<text x="${boundaryX+16}" y="${topPad-10}" font-size="12" letter-spacing="1" fill="#3E6FA8" font-family="IBM Plex Mono, monospace">SYSTEM</text>`;
+
+  // connections first (so they sit behind shapes)
+  usecases.forEach((uc, i) => {
+    const y = topPad + i*rowH + rowH/2;
+    const ay = actorPos[uc.actor];
+    if (ay === undefined) return;
+    svg += `<line x1="${actorX+22}" y1="${ay}" x2="${ucCenterX-125}" y2="${y}" stroke="#9FB2BC" stroke-width="1.5"/>`;
+    svg += `<circle cx="${actorX+22}" cy="${ay}" r="2.5" fill="#3E6FA8"/>`;
+    svg += `<circle cx="${ucCenterX-125}" cy="${y}" r="2.5" fill="#3E6FA8"/>`;
+  });
+
+  // actors (stick figures)
+  actorNames.forEach(name => {
+    const y = actorPos[name];
+    svg += `
+      <g stroke="#16232E" stroke-width="1.6" fill="none">
+        <circle cx="${actorX}" cy="${y-24}" r="8" fill="#FBFCFD"/>
+        <line x1="${actorX}" y1="${y-16}" x2="${actorX}" y2="${y+6}"/>
+        <line x1="${actorX-12}" y1="${y-6}" x2="${actorX+12}" y2="${y-6}"/>
+        <line x1="${actorX}" y1="${y+6}" x2="${actorX-10}" y2="${y+22}"/>
+        <line x1="${actorX}" y1="${y+6}" x2="${actorX+10}" y2="${y+22}"/>
+      </g>
+      <text x="${actorX}" y="${y+38}" font-size="12" text-anchor="middle" fill="#16232E">${escapeHtml(name)}</text>
+    `;
+  });
+
+  // use case ellipses
+  usecases.forEach((uc, i) => {
+    const y = topPad + i*rowH + rowH/2;
+    const label = escapeHtml(uc.label);
+    const lines = wrapText(label, 26);
+    svg += `<ellipse cx="${ucCenterX}" cy="${y}" rx="128" ry="30" fill="#DCEBEC" stroke="#2F6E73" stroke-width="1.5"/>`;
+    lines.forEach((line, li) => {
+      const dy = y - ((lines.length-1)*7) + li*14;
+      svg += `<text x="${ucCenterX}" y="${dy+4}" font-size="12" text-anchor="middle" fill="#16232E">${line}</text>`;
+    });
+  });
+
+  svg += `</svg>`;
+  return svg;
+}
+
+function wrapText(text, maxChars){
+  const words = text.split(' ');
+  const lines = []; let cur = '';
+  words.forEach(w => {
+    if ((cur+' '+w).trim().length > maxChars) { if (cur) lines.push(cur.trim()); cur = w; }
+    else cur = (cur+' '+w).trim();
+  });
+  if (cur) lines.push(cur);
+  return lines.slice(0,3);
+}
+
+/* ============ DIAGRAM: CLASS (Mermaid) ============ */
+function buildMermaidClassCode(){
+  const names = Object.keys(state.entities);
+  if (!names.length) return null;
+  let lines = ['classDiagram'];
+  const DIACRITICS = {'ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z',
+    'Ą':'A','Ć':'C','Ę':'E','Ł':'L','Ń':'N','Ó':'O','Ś':'S','Ź':'Z','Ż':'Z'};
+  const safeName = (n) => n.split('').map(c => DIACRITICS[c] || c).join('').replace(/[^a-zA-Z0-9_]/g,'_');
+  names.forEach(name => {
+    const attrs = state.entities[name].attributes;
+    const safe = safeName(name);
+    const header = safe !== name ? `class ${safe}["${name}"]` : `class ${safe}`;
+    lines.push(`  ${header} {`);
+    attrs.forEach(a => lines.push(`    +${safeName(a.replace(/\s+/g,''))}`));
+    lines.push(`  }`);
+  });
+  const seen = new Set();
+  names.forEach(name => {
+    const safeA = safeName(name);
+    state.entities[name].relations.forEach(rel => {
+      if (!state.entities[rel]) return;
+      const safeB = safeName(rel);
+      const key = [safeA, safeB].sort().join('--');
+      if (seen.has(key) || safeA === safeB) return;
+      seen.add(key);
+      lines.push(`  ${safeA} -- ${safeB} : powiązanie`);
+    });
+  });
+  return lines.join('\n');
+}
+
+async function renderClassDiagram(){
+  const code = buildMermaidClassCode();
+  const box = document.getElementById('classBox');
+  if (!code) { box.innerHTML = '<div class="empty-state">Brak encji do zbudowania diagramu klas.</div>'; return null; }
+  try {
+    const { svg } = await mermaid.render('classDiagramSvg_' + Date.now(), code);
+    box.innerHTML = svg;
+    return code;
+  } catch(err) {
+    box.innerHTML = '<div class="empty-state">Nie udało się wyrenderować diagramu klas: ' + escapeHtml(err.message||String(err)) + '</div>';
+    return null;
+  }
+}
+
+/* ============ ACTIONS ============ */
+document.getElementById('btnAnalyze').addEventListener('click', () => {
+  const text = document.getElementById('notesInput').value;
+  if (!text.trim()) return;
+  const result = analyzeNotes(text);
+  state.actors = result.actors.map(name => ({ name }));
+  state.requirements = result.requirements;
+  state.entities = result.entities;
+  renderActors(); renderRequirements(); renderEntities();
+});
+
+document.getElementById('btnAddActor').addEventListener('click', () => {
+  state.actors.push({ name: 'Nowy aktor' });
+  renderActors();
+});
+
+document.getElementById('btnAddReq').addEventListener('click', () => {
+  state.requirements.push({ id:newId(), business:'', technical:'', actor:'Użytkownik', useCase:'Nowy przypadek użycia', entities:[] });
+  renderRequirements();
+});
+
+document.getElementById('btnAddEntity').addEventListener('click', () => {
+  let name = 'NowaEncja', n=1;
+  while (state.entities[name]) { n++; name = 'NowaEncja'+n; }
+  state.entities[name] = { attributes:['id','nazwa'], relations:new Set() };
+  renderEntities();
+});
+
+document.getElementById('btnClear').addEventListener('click', () => {
+  document.getElementById('notesInput').value = '';
+  state = { actors:[], requirements:[], entities:{} };
+  renderActors(); renderRequirements(); renderEntities();
+  document.getElementById('usecaseBox').innerHTML = '<div class="empty-state">Diagram pojawi się po kliknięciu "Generuj diagramy".</div>';
+  document.getElementById('classBox').innerHTML = '<div class="empty-state">Diagram pojawi się po kliknięciu "Generuj diagramy".</div>';
+  document.getElementById('btnDownloadUsecase').disabled = true;
+  document.getElementById('btnDownloadClass').disabled = true;
+  document.getElementById('btnCopyMermaid').disabled = true;
+});
+
+document.getElementById('btnSample').addEventListener('click', () => {
+  document.getElementById('notesInput').value =
+`Podczas spotkania z działem sprzedaży ustalono, że system musi umożliwiać rejestrację nowych zamówień klienta.
+Jako handlowiec chcę edytować dane zamówienia przed jego zatwierdzeniem.
+Magazynier powinien mieć możliwość aktualizacji stanu magazynowego po każdej dostawie towaru.
+Kierownik chce otrzymywać raport sprzedaży za wybrany okres.
+System musi wysyłać powiadomienie do klienta o zmianie statusu zamówienia.
+Należy zintegrować system z zewnętrznym systemem księgowym w celu wymiany danych o fakturach.
+Administrator musi mieć możliwość zarządzania uprawnieniami użytkowników.
+Kierownik musi zatwierdzać zlecenia zakupu powyżej ustalonego budżetu.`;
+});
+
+let lastMermaidCode = null;
+
+document.getElementById('btnGenerate').addEventListener('click', async () => {
+  const usecaseBox = document.getElementById('usecaseBox');
+  const svg = buildUseCaseSVG();
+  if (svg) {
+    usecaseBox.innerHTML = svg;
+    document.getElementById('btnDownloadUsecase').disabled = false;
+  } else {
+    usecaseBox.innerHTML = '<div class="empty-state">Brak danych — potrzebni są aktorzy i wymagania (kolumna "Przypadek użycia").</div>';
+    document.getElementById('btnDownloadUsecase').disabled = true;
+  }
+  lastMermaidCode = await renderClassDiagram();
+  document.getElementById('btnDownloadClass').disabled = !lastMermaidCode;
+  document.getElementById('btnCopyMermaid').disabled = !lastMermaidCode;
+});
+
+document.getElementById('btnDownloadUsecase').addEventListener('click', () => {
+  const svgEl = document.querySelector('#usecaseBox svg');
+  if (svgEl) downloadSVG(svgEl, 'diagram-przypadkow-uzycia.svg');
+});
+document.getElementById('btnDownloadClass').addEventListener('click', () => {
+  const svgEl = document.querySelector('#classBox svg');
+  if (svgEl) downloadSVG(svgEl, 'diagram-klas.svg');
+});
+document.getElementById('btnCopyMermaid').addEventListener('click', () => {
+  if (lastMermaidCode) {
+    navigator.clipboard.writeText(lastMermaidCode).then(() => {
+      const btn = document.getElementById('btnCopyMermaid');
+      const old = btn.textContent; btn.textContent = 'Skopiowano ✓';
+      setTimeout(() => btn.textContent = old, 1600);
+    });
+  }
+});
+
+function downloadSVG(svgEl, filename){
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svgEl);
+  if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+    source = source.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  const blob = new Blob([source], { type:'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('btnExportExcel').addEventListener('click', () => {
+  const rows = [['Wymaganie biznesowe','Wymaganie techniczne','Aktor','Przypadek użycia','Encje']];
+  state.requirements.forEach(r => rows.push([r.business, r.technical, r.actor, r.useCase, (r.entities||[]).join(', ')]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:45},{wch:55},{wch:16},{wch:28},{wch:22}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Wymagania');
+  XLSX.writeFile(wb, 'wymagania-biznesowe-techniczne.xlsx');
+});
+
+/* init */
+renderActors(); renderRequirements(); renderEntities();
+</script>
+</body>
+</html>
