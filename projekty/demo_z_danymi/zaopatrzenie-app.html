@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zaopatrzenie — Panel Zakupowca</title>
+<style>
+:root{
+  --bg:#0f1419;
+  --bg-panel:#161d25;
+  --bg-panel-alt:#1c2530;
+  --bg-raised:#212b37;
+  --border:#2b3746;
+  --border-soft:#232d3a;
+  --text:#e6ebf0;
+  --text-dim:#8b98a6;
+  --text-faint:#5d6a78;
+  --accent:#e8a33d;
+  --accent-dim:#8a6524;
+  --accent-2:#4ea3b8;
+  --danger:#d1495b;
+  --danger-bg:#3a1e24;
+  --success:#4caf7d;
+  --success-bg:#16302a;
+  --warn-bg:#3a2e14;
+  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --sans: 'Segoe UI', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --radius: 3px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.45;
+  overflow:hidden;
+}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--bg-panel);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+::-webkit-scrollbar-thumb:hover{background:var(--text-faint);}
+
+a{color:inherit;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* hazard tape signature element */
+.tape{
+  background: repeating-linear-gradient(135deg, var(--accent) 0 10px, #1a1305 10px 20px);
+  height:4px;
+  width:100%;
+  opacity:.9;
+}
+.tape-thin{height:3px;}
+
+#app{
+  display:grid;
+  grid-template-columns:230px 1fr;
+  height:100vh;
+}
+
+/* SIDEBAR */
+#sidebar{
+  background:var(--bg-panel);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+.brand{
+  padding:18px 18px 14px 18px;
+  border-bottom:1px solid var(--border);
+}
+.brand-title{
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:2.5px;
+  color:var(--text);
+}
+.brand-sub{
+  font-size:11px;
+  color:var(--accent);
+  letter-spacing:1px;
+  margin-top:3px;
+  text-transform:uppercase;
+}
+nav{
+  flex:1;
+  overflow-y:auto;
+  padding:10px 0;
+}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 18px;
+  color:var(--text-dim);
+  font-size:13px;
+  cursor:pointer;
+  border-left:3px solid transparent;
+  transition:background .1s, color .1s;
+}
+.nav-item:hover{background:var(--bg-panel-alt);color:var(--text);}
+.nav-item.active{
+  background:var(--bg-panel-alt);
+  color:var(--text);
+  border-left-color:var(--accent);
+}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:.85;}
+.nav-badge{
+  margin-left:auto;
+  background:var(--danger);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  padding:1px 6px;
+  border-radius:10px;
+  min-width:16px;
+  text-align:center;
+}
+.nav-section-label{
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:var(--text-faint);
+  padding:14px 18px 4px 18px;
+  text-transform:uppercase;
+}
+.sidebar-footer{
+  border-top:1px solid var(--border);
+  padding:12px 18px;
+  font-size:11px;
+  color:var(--text-faint);
+}
+.sidebar-footer button{
+  background:none;border:1px solid var(--border);color:var(--text-dim);
+  font-size:11px;padding:5px 8px;border-radius:var(--radius);width:100%;margin-top:6px;
+}
+.sidebar-footer button:hover{border-color:var(--accent);color:var(--accent);}
+
+/* MAIN */
+#main{display:flex;flex-direction:column;min-width:0;min-height:0;}
+#topbar{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:14px 24px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg-panel);
+}
+#topbar h1{font-size:17px;font-weight:600;}
+#topbar .crumb{color:var(--text-faint);font-size:12px;margin-top:2px;}
+#global-search{
+  margin-left:auto;
+  background:var(--bg-raised);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:7px 10px;
+  border-radius:var(--radius);
+  font-size:12px;
+  width:230px;
+}
+#global-search:focus{outline:none;border-color:var(--accent-2);}
+.btn{
+  background:var(--bg-raised);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:7px 13px;
+  border-radius:var(--radius);
+  font-size:12.5px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.btn:hover{border-color:var(--text-dim);}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#1a1305;}
+.btn-accent:hover{background:#f0b356;}
+.btn-danger{background:transparent;border-color:var(--danger);color:var(--danger);}
+.btn-danger:hover{background:var(--danger-bg);}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:4px 9px;font-size:11.5px;}
+
+#content{
+  flex:1;
+  overflow-y:auto;
+  padding:22px 26px 60px 26px;
+}
+.view{display:none;}
+.view.active{display:block;}
+
+.section-title{
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  margin:26px 0 10px 0;
+}
+.section-title:first-child{margin-top:0;}
+
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.kpi-card{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 14px;
+  position:relative;
+  overflow:hidden;
+}
+.kpi-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--kpi-color, var(--accent-2));
+}
+.kpi-label{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.8px;}
+.kpi-value{font-family:var(--mono);font-size:24px;font-weight:600;margin-top:6px;}
+.kpi-sub{font-size:11px;color:var(--text-dim);margin-top:4px;}
+
+.grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start;}
+
+.panel{
+  background:var(--bg-panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+.panel-head{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.panel-head h3{font-size:13px;font-weight:600;}
+.panel-body{padding:14px 16px;}
+.panel-body.pad0{padding:0;}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{
+  text-align:left;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  color:var(--text-faint);
+  padding:9px 12px;
+  border-bottom:1px solid var(--border);
+  font-weight:600;
+  white-space:nowrap;
+}
+td{padding:9px 12px;border-bottom:1px solid var(--border-soft);vertical-align:middle;}
+tbody tr{cursor:pointer;transition:background .1s;}
+tbody tr:hover{background:var(--bg-panel-alt);}
+tbody tr:last-child td{border-bottom:none;}
+.num{font-family:var(--mono);text-align:right;}
+.mono{font-family:var(--mono);}
+
+.badge{
+  display:inline-block;
+  font-size:10.5px;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:10px;
+  letter-spacing:.3px;
+  white-space:nowrap;
+}
+.badge-success{background:var(--success-bg);color:var(--success);}
+.badge-danger{background:var(--danger-bg);color:var(--danger);}
+.badge-warn{background:var(--warn-bg);color:var(--accent);}
+.badge-neutral{background:var(--bg-raised);color:var(--text-dim);}
+.badge-info{background:#122a30;color:var(--accent-2);}
+
+.stars{color:var(--accent);font-size:13px;letter-spacing:1px;}
+.stars .off{color:var(--border);}
+
+.tag{
+  display:inline-block;background:var(--bg-raised);border:1px solid var(--border);
+  color:var(--text-dim);font-size:10.5px;padding:1px 7px;border-radius:9px;margin:1px 3px 1px 0;
+}
+.tag-accent{border-color:var(--accent-dim);color:var(--accent);}
+
+.risk-flag{
+  display:inline-flex;align-items:center;gap:5px;color:var(--danger);font-size:11px;font-weight:600;
+}
+.risk-flag::before{content:"";width:7px;height:7px;background:var(--danger);display:inline-block;}
+
+.empty-state{
+  padding:40px 20px;text-align:center;color:var(--text-faint);font-size:12.5px;
+}
+.empty-state .big{font-size:26px;margin-bottom:8px;opacity:.5;}
+
+.bar-track{background:var(--bg-raised);border-radius:3px;height:7px;overflow:hidden;position:relative;}
+.bar-fill{height:100%;border-radius:3px;}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.field-row.single{grid-template-columns:1fr;}
+.field-row.triple{grid-template-columns:1fr 1fr 1fr;}
+.field label{
+  display:block;font-size:11px;color:var(--text-dim);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;
+}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);
+  padding:8px 10px;border-radius:var(--radius);font-size:13px;
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent-2);}
+.field textarea{resize:vertical;min-height:60px;}
+.field-hint{font-size:10.5px;color:var(--text-faint);margin-top:4px;}
+
+/* MODAL */
+#modal-overlay{
+  position:fixed;inset:0;background:rgba(6,9,12,.7);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:40px 20px;overflow-y:auto;z-index:100;
+}
+#modal-overlay.open{display:flex;}
+.modal{
+  background:var(--bg-panel);border:1px solid var(--border);border-radius:4px;
+  width:100%;max-width:640px;box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.modal.wide{max-width:920px;}
+.modal-head{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head h2{font-size:15px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--text-faint);font-size:20px;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:20px;max-height:70vh;overflow-y:auto;}
+.modal-foot{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:8px;
+}
+
+/* TOAST */
+#toast-wrap{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--bg-raised);border:1px solid var(--border);border-left:3px solid var(--accent-2);
+  padding:10px 16px;border-radius:var(--radius);font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  animation:toastin .15s ease-out;
+}
+.toast.err{border-left-color:var(--danger);}
+@keyframes toastin{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* line item table in order form */
+.li-table td, .li-table th{padding:6px 8px;}
+.li-table input,.li-table select{padding:5px 7px;font-size:12px;}
+.li-remove{color:var(--danger);background:none;border:none;font-size:15px;}
+
+.small-note{font-size:11px;color:var(--text-faint);}
+
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:16px;}
+.tab{
+  padding:8px 14px;font-size:12.5px;color:var(--text-dim);cursor:pointer;
+  border-bottom:2px solid transparent;
+}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);}
+
+.detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.detail-title{font-size:18px;font-weight:600;}
+.detail-meta{font-size:12px;color:var(--text-faint);margin-top:3px;}
+.back-link{font-size:12px;color:var(--accent-2);cursor:pointer;display:inline-block;margin-bottom:12px;}
+.back-link:hover{text-decoration:underline;}
+
+.stat-mini{display:flex;gap:22px;flex-wrap:wrap;margin:8px 0 4px 0;}
+.stat-mini div{font-size:11px;color:var(--text-faint);}
+.stat-mini strong{display:block;font-family:var(--mono);font-size:16px;color:var(--text);font-weight:600;}
+
+.kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.kanban-col{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);min-height:120px;}
+.kanban-col-head{padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);display:flex;justify-content:space-between;}
+.kanban-card{
+  background:var(--bg-raised);border:1px solid var(--border);border-radius:3px;margin:8px;padding:9px 10px;
+  font-size:12px;cursor:pointer;
+}
+.kanban-card:hover{border-color:var(--accent-2);}
+.kanban-card .kc-num{font-family:var(--mono);font-weight:600;font-size:12.5px;}
+.kanban-card .kc-sup{color:var(--text-dim);margin-top:2px;}
+.kanban-card .kc-date{margin-top:6px;font-size:10.5px;color:var(--text-faint);}
+.kanban-card .kc-date.late{color:var(--danger);font-weight:600;}
+
+.comparison-best{background:var(--success-bg) !important;}
+.comparison-best td:first-child{border-left:2px solid var(--success);}
+
+.subst-chip{
+  display:inline-flex;align-items:center;gap:6px;background:var(--bg-raised);border:1px solid var(--border);
+  border-radius:14px;padding:3px 10px 3px 4px;font-size:12px;margin:2px 4px 2px 0;
+}
+.subst-chip .x{cursor:pointer;color:var(--text-faint);font-weight:700;}
+.subst-chip .x:hover{color:var(--danger);}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-dim);}
+.checkbox-row input{width:auto;}
+
+/* PRINT AREA */
+#print-area{display:none;}
+@media print{
+  body *{visibility:hidden;}
+  #print-area, #print-area *{visibility:visible;}
+  #print-area{
+    display:block;position:absolute;top:0;left:0;width:100%;
+    background:#fff;color:#111;font-family:Arial,sans-serif;padding:20px;
+  }
+  .po-doc table{width:100%;border-collapse:collapse;}
+  .po-doc th,.po-doc td{border:1px solid #999;padding:6px 8px;font-size:11px;}
+  .po-doc h1{font-size:18px;}
+}
+.po-doc{max-width:760px;}
+.po-head{display:flex;justify-content:space-between;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:14px;}
+.po-parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;}
+.po-parties h4{font-size:11px;text-transform:uppercase;color:#555;margin-bottom:4px;}
+.po-totals{margin-top:10px;text-align:right;font-size:13px;}
+.po-sign{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:50px;font-size:11px;}
+.po-sign div{border-top:1px solid #333;padding-top:6px;text-align:center;color:#555;}
+
+@media (max-width:1100px){
+  .kpi-row{grid-template-columns:repeat(3,1fr);}
+  .grid-2{grid-template-columns:1fr;}
+  .kanban{grid-template-columns:repeat(3,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="sidebar">
+    <div class="brand">
+      <div class="brand-title">ZAOPATRZENIE</div>
+      <div class="brand-sub">Panel Zakupowca</div>
+    </div>
+    <div class="tape"></div>
+    <nav id="nav">
+      <div class="nav-section-label">Przegląd</div>
+      <div class="nav-item" data-view="dashboard">◆ Pulpit</div>
+      <div class="nav-section-label">Baza</div>
+      <div class="nav-item" data-view="suppliers">▤ Dostawcy</div>
+      <div class="nav-item" data-view="products">▥ Katalog produktów</div>
+      <div class="nav-item" data-view="substitutes">⇄ Zamienniki</div>
+      <div class="nav-section-label">Zakupy</div>
+      <div class="nav-item" data-view="compare">≈ Porównanie cen</div>
+      <div class="nav-item" data-view="orders">▦ Zamówienia <span class="nav-badge" id="badge-orders" style="display:none"></span></div>
+      <div class="nav-item" data-view="delays">! Terminowość <span class="nav-badge" id="badge-delays" style="display:none"></span></div>
+      <div class="nav-section-label">System</div>
+      <div class="nav-item" data-view="settings">⚙ Ustawienia / Dane</div>
+    </nav>
+    <div class="sidebar-footer">
+      Dane przechowywane lokalnie w przeglądarce (offline).
+      <button id="btn-export-sidebar">Eksportuj kopię zapasową</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="topbar">
+      <div>
+        <h1 id="page-title">Pulpit</h1>
+        <div class="crumb" id="page-crumb">Przegląd sytuacji zakupowej</div>
+      </div>
+      <input type="text" id="global-search" placeholder="Szukaj: dostawca, produkt, nr zamówienia…">
+      <button class="btn btn-accent" id="btn-new-order">+ Nowe zamówienie</button>
+    </div>
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div class="view" id="view-dashboard">
+        <div id="dashboard-empty-banner"></div>
+        <div class="kpi-row" id="kpi-row"></div>
+        <div class="grid-2" style="margin-top:18px;">
+          <div class="panel">
+            <div class="panel-head"><h3>Wymaga uwagi</h3></div>
+            <div class="panel-body pad0"><table id="tbl-attention"><thead><tr>
+              <th>Nr</th><th>Dostawca</th><th>Status</th><th>Termin</th><th></th>
+            </tr></thead><tbody></tbody></table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Ranking jakości dostawców</h3></div>
+            <div class="panel-body" id="quality-ranking"></div>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:16px;">
+          <div class="panel">
+            <div class="panel-head"><h3>Produkty jednoźródłowe — ryzyko dostaw</h3></div>
+            <div class="panel-body pad0"><table id="tbl-singlesource"><thead><tr>
+              <th>Produkt</th><th>Kategoria</th><th>Dostawca</th><th>Cena</th>
+            </tr></thead><tbody></tbody></table></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Wartość zamówień — bieżący miesiąc</h3></div>
+            <div class="panel-body" id="spend-panel"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUPPLIERS LIST -->
+      <div class="view" id="view-suppliers">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+          <button class="btn btn-accent" id="btn-add-supplier">+ Nowy dostawca</button>
+        </div>
+        <div class="panel"><div class="panel-body pad0">
+          <table id="tbl-suppliers"><thead><tr>
+            <th>Dostawca</th><th>Kategorie</th><th>Czas dostawy</th><th>Jakość</th>
+            <th>Terminowość</th><th>Warunki płatności</th><th>Status</th>
+          </tr></thead><tbody></tbody></table>
+        </div></div>
+      </div>
+
+      <!-- SUPPLIER DETAIL -->
+      <div class="view" id="view-supplier-detail"></div>
+
+      <!-- PRODUCTS LIST -->
+      <div class="view" id="view-products">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+          <button class="btn btn-accent" id="btn-add-product">+ Nowy produkt</button>
+        </div>
+        <div class="panel"><div class="panel-body pad0">
+          <table id="tbl-products"><thead><tr>
+            <th>Kod</th><th>Nazwa</th><th>Kategoria</th><th>Jedn.</th>
+            <th>Dostawcy</th><th>Najlepsza cena</th><th>Zamienniki</th>
+          </tr></thead><tbody></tbody></table>
+        </div></div>
+      </div>
+
+      <!-- PRODUCT DETAIL -->
+      <div class="view" id="view-product-detail"></div>
+
+      <!-- SUBSTITUTES -->
+      <div class="view" id="view-substitutes">
+        <div class="panel"><div class="panel-head"><h3>Grupy zamienników (produkty równoważne)</h3></div>
+        <div class="panel-body" id="substitutes-body"></div></div>
+      </div>
+
+      <!-- COMPARE -->
+      <div class="view" id="view-compare">
+        <div class="panel">
+          <div class="panel-body">
+            <div class="field-row">
+              <div class="field">
+                <label>Produkt</label>
+                <select id="compare-product"></select>
+              </div>
+              <div class="field" style="align-self:end;">
+                <div class="checkbox-row" style="margin-top:10px;">
+                  <input type="checkbox" id="compare-include-subst" checked>
+                  <label style="margin:0;text-transform:none;">Uwzględnij oferty na zamienniki</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:14px;">
+          <div class="panel-head"><h3>Wyniki porównania</h3></div>
+          <div class="panel-body pad0"><table id="tbl-compare"><thead><tr>
+            <th>Dostawca</th><th>Produkt</th><th>Cena</th><th>Jedn. min.</th>
+            <th>Czas dostawy</th><th>Jakość</th><th>Aktualność cennika</th><th></th>
+          </tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="view" id="view-orders">
+        <div class="tabs">
+          <div class="tab active" data-ordertab="board">Tablica statusów</div>
+          <div class="tab" data-ordertab="list">Lista</div>
+        </div>
+        <div id="orders-board"><div class="kanban" id="kanban"></div></div>
+        <div id="orders-list" style="display:none;">
+          <div class="panel"><div class="panel-body pad0">
+            <table id="tbl-orders"><thead><tr>
+              <th>Nr zamówienia</th><th>Dostawca</th><th>Data</th><th>Termin dostawy</th>
+              <th>Status</th><th>Wartość netto</th><th></th>
+            </tr></thead><tbody></tbody></table>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- ORDER DETAIL -->
+      <div class="view" id="view-order-detail"></div>
+
+      <!-- DELAYS -->
+      <div class="view" id="view-delays">
+        <div class="section-title">Aktualnie opóźnione zamówienia</div>
+        <div class="panel"><div class="panel-body pad0">
+          <table id="tbl-delayed"><thead><tr>
+            <th>Nr</th><th>Dostawca</th><th>Termin</th><th>Dni opóźnienia</th><th>Status</th><th></th>
+          </tr></thead><tbody></tbody></table>
+        </div></div>
+        <div class="section-title">Terminowość dostawców</div>
+        <div class="panel"><div class="panel-body" id="otd-panel"></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="view-settings">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-head"><h3>Dane nabywcy (do dokumentu zamówienia)</h3></div>
+            <div class="panel-body" id="buyer-form"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Dane i kopia zapasowa</h3></div>
+            <div class="panel-body">
+              <p class="small-note" style="margin-bottom:12px;">Wszystkie dane aplikacji są zapisywane wyłącznie lokalnie w przeglądarce (localStorage). Nie są wysyłane do żadnego serwera. Aby przenieść dane na inny komputer lub zabezpieczyć je, wyeksportuj plik kopii zapasowej.</p>
+              <button class="btn" id="btn-export">⬇ Eksportuj dane (JSON)</button>
+              <button class="btn" id="btn-import-trigger" style="margin-left:8px;">⬆ Importuj dane</button>
+              <input type="file" id="file-import" accept="application/json" style="display:none;">
+              <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
+                <p class="small-note" style="margin-bottom:10px;">Chcesz zobaczyć aplikację wypełnioną przykładowymi dostawcami, produktami i zamówieniami?</p>
+                <button class="btn btn-accent" id="btn-load-demo">▶ Wgraj dane demo</button>
+              </div>
+              <div style="margin-top:18px;border-top:1px solid var(--border);padding-top:14px;">
+                <button class="btn btn-danger" id="btn-reset">Wyczyść wszystkie dane</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay"><div class="modal" id="modal"></div></div>
+<div id="toast-wrap"></div>
+<div id="print-area"></div>
+
+<script>
+/* ============================= STATE ============================= */
+const STORAGE_KEY = 'zakupy_app_data_v1';
+let state = null;
+
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+function nowIso(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function fmtMoney(v,cur){ cur = cur||'PLN'; return (Math.round(v*100)/100).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' ' + cur; }
+function daysBetween(a,b){ const d1=new Date(a+'T00:00:00'), d2=new Date(b+'T00:00:00'); return Math.round((d2-d1)/86400000); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){ try{ state = JSON.parse(raw); return true; }catch(e){ console.error(e); } }
+  return false;
+}
+
+function emptyState(){
+  return {
+    buyer: { name:'', nip:'', address:'', vatRate:23 },
+    suppliers: [],
+    products: [],
+    priceLists: [],
+    orders: [],
+    assessments: []
+  };
+}
+
+function loadDemoData(){
+  state = {
+    buyer: { name:'Metaltech Produkcja Sp. z o.o.', nip:'949-123-45-67', address:'ul. Przemysłowa 14, 42-200 Częstochowa', vatRate:23 },
+    suppliers: [],
+    products: [],
+    priceLists: [],
+    orders: [],
+    assessments: []
+  };
+
+  const s = (name,cats,lead,contact,email,phone,terms,active=true)=>{
+    const id=uid('sup');
+    state.suppliers.push({id,name,categories:cats,leadTimeDays:lead,contact,email,phone,paymentTerms:terms,active,nip:'',notes:''});
+    return id;
+  };
+  const s1=s('Stalprofil Południe S.A.',['stal','blacha'],7,'Marek Kowalczyk','zakupy@stalprofil-przyklad.pl','34 111 22 33','przelew 30 dni');
+  const s2=s('Metal-Tech Sp. z o.o.',['stal','blacha','profile'],5,'Anna Wiśniewska','biuro@metaltech-przyklad.pl','34 222 33 44','przelew 21 dni');
+  const s3=s('FerroPol Dystrybucja',['złącza','śruby','normalia'],3,'Piotr Zając','handel@ferropol-przyklad.pl','34 333 44 55','przelew 14 dni');
+  const s4=s('Hydraulika Przemysłowa Sp.j.',['hydraulika','uszczelnienia'],10,'Tomasz Nowak','oferty@hydraprzem-przyklad.pl','34 444 55 66','przelew 30 dni');
+  const s5=s('ElektroKomponent',['elektryka','automatyka'],14,'Katarzyna Zielińska','zamowienia@elektrokomponent-przyklad.pl','34 555 66 77','przedpłata',true);
+  const s6=s('Łożyska i Napędy Sp. z o.o.',['łożyska','napędy'],4,'Rafał Dąbrowski','handlowy@lozyska-przyklad.pl','34 666 77 88','przelew 21 dni');
+  const s7=s('SprężTech Dostawy',['normalia','śruby'],6,'Grzegorz Malinowski','biuro@spreztech-przyklad.pl','34 777 88 99','przelew 14 dni', false);
+
+  const p=(code,name,cat,unit)=>{ const id=uid('prod'); state.products.push({id,code,name,category:cat,unit,substitutes:[]}); return id; };
+  const p1=p('BL-DC01-2','Blacha stalowa DC01 2mm','stal','arkusz');
+  const p2=p('SR-M8X30','Śruba M8x30 DIN 933','normalia','szt');
+  const p3=p('LOZ-6205','Łożysko kulkowe 6205 2RS','łożyska','szt');
+  const p4=p('PAS-SPZ1250','Pasek klinowy SPZ 1250','napędy','szt');
+  const p5=p('SIL-3KW','Silnik elektryczny 3kW 1450obr','elektryka','szt');
+  const p6=p('USZ-O50X3','Uszczelka O-ring 50x3mm','hydraulika','szt');
+  const p7=p('PROF-40X40','Profil zamknięty 40x40x2','stal','mb');
+  const p8=p('LOZ-6205-B','Łożysko kulkowe 6205 (zamiennik)','łożyska','szt');
+  const p9=p('SR-M8X30-B','Śruba M8x30 DIN 933 (zamiennik ocynk)','normalia','szt');
+
+  // substitutes linking (bidirectional)
+  linkSubstitute(p3,p8);
+  linkSubstitute(p2,p9);
+
+  const pl=(prodId,supId,price,cur,minQty,validFrom,validTo)=>{
+    state.priceLists.push({id:uid('pl'),productId:prodId,supplierId:supId,price,currency:cur||'PLN',minQty:minQty||1,validFrom,validTo});
+  };
+  pl(p1,s1,142.50,'PLN',10,'2026-04-01','2026-12-31');
+  pl(p1,s2,138.90,'PLN',5,'2026-05-01','2026-12-31');
+  pl(p2,s3,0.28,'PLN',500,'2026-01-01','2026-12-31');
+  pl(p9,s3,0.24,'PLN',500,'2026-01-01','2026-12-31');
+  pl(p2,s7,0.31,'PLN',200,'2026-01-01','2026-11-30');
+  pl(p3,s6,18.40,'PLN',20,'2026-03-01','2026-12-31');
+  pl(p8,s6,16.90,'PLN',20,'2026-03-01','2026-12-31');
+  pl(p4,s6,64.00,'PLN',4,'2026-02-01','2026-12-31');
+  pl(p5,s5,890.00,'PLN',1,'2026-01-01','2026-12-31');
+  pl(p6,s4,3.20,'PLN',100,'2026-01-01','2026-12-31');
+  pl(p7,s1,29.80,'PLN',50,'2026-04-01','2026-12-31');
+  pl(p7,s2,31.20,'PLN',20,'2026-05-01','2026-12-31');
+
+  const ord=(num,supId,date,expected,status,items,delivered,notes)=>{
+    state.orders.push({id:uid('ord'),number:num,supplierId:supId,date,expectedDate:expected,deliveredDate:delivered||null,status,items,notes:notes||''});
+  };
+  const T = todayStr();
+  const past = (n)=> new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+  const future = (n)=> new Date(Date.now()+n*86400000).toISOString().slice(0,10);
+
+  ord('ZAM/2026/0114', s1, past(20), past(13), 'dostarczone', [{productId:p1,qty:40,price:142.50,unit:'arkusz'}], past(12));
+  ord('ZAM/2026/0119', s3, past(15), past(12), 'dostarczone', [{productId:p2,qty:2000,price:0.28,unit:'szt'}], past(9));
+  ord('ZAM/2026/0122', s6, past(10), past(4), 'opóźnione', [{productId:p3,qty:60,price:18.40,unit:'szt'}], null);
+  ord('ZAM/2026/0126', s5, past(9), future(2), 'potwierdzone', [{productId:p5,qty:3,price:890.00,unit:'szt'}], null);
+  ord('ZAM/2026/0128', s4, past(6), past(1), 'opóźnione', [{productId:p6,qty:300,price:3.20,unit:'szt'}], null);
+  ord('ZAM/2026/0131', s2, past(3), future(4), 'wysłane', [{productId:p7,qty:80,price:31.20,unit:'mb'}], null);
+  ord('ZAM/2026/0133', s1, past(1), future(6), 'szkic', [{productId:p1,qty:20,price:142.50,unit:'arkusz'}], null);
+
+  const qa=(supId,date,q,t,c,d,comment)=>{
+    state.assessments.push({id:uid('qa'),supplierId:supId,date,quality:q,timeliness:t,communication:c,docs:d,comment:comment||''});
+  };
+  qa(s1,past(60),5,4,4,5,'Solidna jakość blach, drobne opóźnienia przy większych partiach.');
+  qa(s2,past(50),4,5,5,4,'Bardzo dobra komunikacja handlowca.');
+  qa(s3,past(40),4,5,4,4,'Standardowe normalia, bez zastrzeżeń.');
+  qa(s4,past(30),3,2,3,3,'Powtarzające się opóźnienia dostaw uszczelnień.');
+  qa(s5,past(20),5,4,4,5,'Wysoka jakość silników, dłuższy czas realizacji.');
+  qa(s6,past(15),4,3,4,4,'Ostatnie opóźnienie łożysk — do monitorowania.');
+
+  save();
+  toast('Wgrano dane demonstracyjne.');
+  navigate(currentView||'dashboard');
+}
+
+function hasAnyData(){
+  return state && (state.suppliers.length || state.products.length || state.orders.length);
+}
+
+function confirmLoadDemoData(){
+  if(hasAnyData()){
+    if(!confirm('W aplikacji są już dane. Wgranie danych demo zastąpi je całkowicie. Zalecany wcześniejszy eksport kopii zapasowej. Kontynuować?')) return;
+  }
+  loadDemoData();
+}
+
+function linkSubstitute(a,b){
+  const pa = state.products.find(p=>p.id===a), pb = state.products.find(p=>p.id===b);
+  if(pa && !pa.substitutes.includes(b)) pa.substitutes.push(b);
+  if(pb && !pb.substitutes.includes(a)) pb.substitutes.push(a);
+}
+function unlinkSubstitute(a,b){
+  const pa = state.products.find(p=>p.id===a), pb = state.products.find(p=>p.id===b);
+  if(pa) pa.substitutes = pa.substitutes.filter(x=>x!==b);
+  if(pb) pb.substitutes = pb.substitutes.filter(x=>x!==a);
+}
+
+/* ============================= HELPERS / COMPUTED ============================= */
+function getSupplier(id){ return state.suppliers.find(s=>s.id===id); }
+function getProduct(id){ return state.products.find(p=>p.id===id); }
+
+function isOrderLate(o){
+  if(['dostarczone','anulowane'].includes(o.status)) return false;
+  return o.expectedDate && o.expectedDate < todayStr();
+}
+function effectiveStatus(o){
+  if(isOrderLate(o) && o.status!=='opóźnione') return 'opóźnione';
+  return o.status;
+}
+function orderNetValue(o){
+  return o.items.reduce((sum,it)=> sum + it.qty*it.price, 0);
+}
+function supplierStats(supId){
+  const orders = state.orders.filter(o=>o.supplierId===supId);
+  const delivered = orders.filter(o=>o.status==='dostarczone' && o.deliveredDate);
+  const onTime = delivered.filter(o=> o.deliveredDate <= o.expectedDate).length;
+  const otdPct = delivered.length ? Math.round(onTime/delivered.length*100) : null;
+  const delays = delivered.filter(o=>o.deliveredDate > o.expectedDate).map(o=>daysBetween(o.expectedDate,o.deliveredDate));
+  const avgDelay = delays.length ? (delays.reduce((a,b)=>a+b,0)/delays.length) : 0;
+  const totalSpend = orders.filter(o=>o.status!=='anulowane').reduce((s,o)=>s+orderNetValue(o),0);
+  return { orderCount: orders.length, deliveredCount: delivered.length, otdPct, avgDelay, totalSpend, delayedNow: orders.filter(isOrderLate).length };
+}
+function supplierQualityAvg(supId){
+  const list = state.assessments.filter(a=>a.supplierId===supId);
+  if(!list.length) return null;
+  const avg = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
+  const overall = list.map(a=>(a.quality+a.timeliness+a.communication+a.docs)/4);
+  return avg(overall);
+}
+function bestPriceForProduct(prodId){
+  const rows = state.priceLists.filter(pl=>pl.productId===prodId);
+  if(!rows.length) return null;
+  return rows.reduce((best,r)=> (!best || r.price<best.price) ? r : best, null);
+}
+function starsHtml(score){
+  if(score==null) return '<span class="small-note">brak ocen</span>';
+  const rounded = Math.round(score);
+  let html = '<span class="stars">';
+  for(let i=1;i<=5;i++){ html += i<=rounded ? '★' : '<span class="off">★</span>'; }
+  html += '</span> <span class="small-note">'+score.toFixed(1)+'/5</span>';
+  return html;
+}
+function statusBadge(status){
+  const map = {
+    'szkic':'badge-neutral','wysłane':'badge-info','potwierdzone':'badge-info',
+    'częściowo dostarczone':'badge-warn','dostarczone':'badge-success',
+    'opóźnione':'badge-danger','anulowane':'badge-neutral'
+  };
+  return `<span class="badge ${map[status]||'badge-neutral'}">${status}</span>`;
+}
+
+/* ============================= NAV / ROUTER ============================= */
+let currentView = 'dashboard';
+let currentDetailId = null;
+
+const PAGE_META = {
+  dashboard:['Pulpit','Przegląd sytuacji zakupowej'],
+  suppliers:['Dostawcy','Baza dostawców i ocena jakości'],
+  products:['Katalog produktów','Produkty i cenniki dostawców'],
+  substitutes:['Zamienniki','Zarządzanie produktami równoważnymi'],
+  compare:['Porównanie cen','Zestawienie ofert na wybrany produkt'],
+  orders:['Zamówienia','Składanie i monitoring zamówień'],
+  delays:['Terminowość','Opóźnienia i wskaźniki OTD'],
+  settings:['Ustawienia','Dane firmy i kopia zapasowa'],
+};
+
+function navigate(view){
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el = document.getElementById('view-'+view);
+  if(el) el.classList.add('active');
+  const navEl = document.querySelector(`.nav-item[data-view="${view}"]`);
+  if(navEl) navEl.classList.add('active');
+  const meta = PAGE_META[view];
+  if(meta){ document.getElementById('page-title').textContent = meta[0]; document.getElementById('page-crumb').textContent = meta[1]; }
+  renderView(view);
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(el=>{
+  el.addEventListener('click', ()=> navigate(el.dataset.view));
+});
+
+function renderView(view){
+  if(view==='dashboard') renderDashboard();
+  else if(view==='suppliers') renderSuppliers();
+  else if(view==='products') renderProducts();
+  else if(view==='substitutes') renderSubstitutesView();
+  else if(view==='compare') renderCompare();
+  else if(view==='orders') renderOrders();
+  else if(view==='delays') renderDelays();
+  else if(view==='settings') renderSettings();
+  updateNavBadges();
+}
+
+function updateNavBadges(){
+  const delayed = state.orders.filter(isOrderLate).length;
+  const pending = state.orders.filter(o=>['szkic','wysłane'].includes(effectiveStatus(o))).length;
+  const b1 = document.getElementById('badge-orders');
+  const b2 = document.getElementById('badge-delays');
+  if(pending>0){ b1.style.display='inline-block'; b1.textContent=pending; } else b1.style.display='none';
+  if(delayed>0){ b2.style.display='inline-block'; b2.textContent=delayed; } else b2.style.display='none';
+}
+
+/* ============================= DASHBOARD ============================= */
+function renderDashboard(){
+  const banner = document.getElementById('dashboard-empty-banner');
+  if(!hasAnyData()){
+    banner.innerHTML = `
+      <div class="panel" style="padding:26px 22px;margin-bottom:18px;border-color:var(--accent-dim);">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Baza jest pusta</div>
+            <div class="small-note">Zacznij od dodania własnych dostawców i produktów, albo wgraj przykładowe dane, żeby zobaczyć jak działa aplikacja.</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-accent" onclick="confirmLoadDemoData()">▶ Wgraj dane demo</button>
+            <button class="btn" onclick="navigate('suppliers')">+ Dodaj dostawcę</button>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    banner.innerHTML = '';
+  }
+  const activeSuppliers = state.suppliers.filter(s=>s.active).length;
+  const inProgress = state.orders.filter(o=>!['dostarczone','anulowane'].includes(effectiveStatus(o))).length;
+  const avgLead = state.suppliers.length ? Math.round(state.suppliers.reduce((s,x)=>s+x.leadTimeDays,0)/state.suppliers.length) : 0;
+  const delivered = state.orders.filter(o=>o.status==='dostarczone' && o.deliveredDate);
+  const onTime = delivered.filter(o=>o.deliveredDate<=o.expectedDate).length;
+  const otd = delivered.length ? Math.round(onTime/delivered.length*100) : null;
+  const delayedNow = state.orders.filter(isOrderLate).length;
+  const monthSpend = state.orders.filter(o=>o.date.slice(0,7)===todayStr().slice(0,7) && o.status!=='anulowane')
+    .reduce((s,o)=>s+orderNetValue(o),0);
+
+  const kpis = [
+    ['Aktywni dostawcy', activeSuppliers, state.suppliers.length+' łącznie', 'var(--accent-2)'],
+    ['Zamówienia w toku', inProgress, 'niezakończone statusy', 'var(--accent)'],
+    ['Śr. czas dostawy', avgLead+' dni', 'wg deklaracji dostawców', 'var(--accent-2)'],
+    ['Terminowość (OTD)', otd==null?'—':otd+'%', 'dostawy zrealizowane', otd!=null && otd<80?'var(--danger)':'var(--success)'],
+    ['Opóźnione teraz', delayedNow, delayedNow>0?'wymaga interwencji':'brak', delayedNow>0?'var(--danger)':'var(--success)'],
+    ['Wartość zamówień / m-c', fmtMoney(monthSpend), 'bieżący miesiąc', 'var(--accent)'],
+  ];
+  document.getElementById('kpi-row').innerHTML = kpis.map(([label,val,sub,color])=>`
+    <div class="kpi-card" style="--kpi-color:${color}">
+      <div class="kpi-label">${label}</div>
+      <div class="kpi-value">${val}</div>
+      <div class="kpi-sub">${sub}</div>
+    </div>`).join('');
+
+  const attention = state.orders.filter(o=> isOrderLate(o) || o.status==='wysłane').sort((a,b)=>(a.expectedDate||'').localeCompare(b.expectedDate||''));
+  const tbody = document.querySelector('#tbl-attention tbody');
+  tbody.innerHTML = attention.length ? attention.map(o=>{
+    const sup = getSupplier(o.supplierId);
+    return `<tr onclick="openOrderDetail('${o.id}')">
+      <td class="mono">${o.number}</td><td>${sup?sup.name:'—'}</td>
+      <td>${statusBadge(effectiveStatus(o))}</td>
+      <td>${fmtDate(o.expectedDate)}</td>
+      <td><button class="btn btn-sm btn-ghost">Otwórz →</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" class="empty-state">Brak zamówień wymagających uwagi.</td></tr>`;
+
+  const ranked = state.suppliers.map(s=>({s, q:supplierQualityAvg(s.id)})).filter(x=>x.q!=null).sort((a,b)=>b.q-a.q).slice(0,5);
+  document.getElementById('quality-ranking').innerHTML = ranked.length ? ranked.map(({s,q},i)=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;${i? 'border-top:1px solid var(--border-soft);':''}">
+      <div><strong style="font-size:12.5px;">${i+1}. ${s.name}</strong></div>
+      <div>${starsHtml(q)}</div>
+    </div>`).join('') : `<div class="empty-state">Brak ocen jakości.</div>`;
+
+  const singleSource = state.products.filter(p=> new Set(state.priceLists.filter(pl=>pl.productId===p.id).map(pl=>pl.supplierId)).size===1);
+  const tbody2 = document.querySelector('#tbl-singlesource tbody');
+  tbody2.innerHTML = singleSource.length ? singleSource.map(p=>{
+    const best = bestPriceForProduct(p.id);
+    const sup = best?getSupplier(best.supplierId):null;
+    return `<tr onclick="openProductDetail('${p.id}')">
+      <td>${p.name}</td><td><span class="tag">${p.category}</span></td>
+      <td>${sup?sup.name:'—'}</td><td class="num">${best?fmtMoney(best.price,best.currency):'—'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="4" class="empty-state">Każdy produkt ma co najmniej dwóch dostawców.</td></tr>`;
+
+  const bySupplier = {};
+  state.orders.filter(o=>o.date.slice(0,7)===todayStr().slice(0,7) && o.status!=='anulowane').forEach(o=>{
+    bySupplier[o.supplierId] = (bySupplier[o.supplierId]||0) + orderNetValue(o);
+  });
+  const rows = Object.entries(bySupplier).sort((a,b)=>b[1]-a[1]);
+  const max = rows.length? rows[0][1] : 1;
+  document.getElementById('spend-panel').innerHTML = rows.length ? rows.map(([supId,val])=>{
+    const sup = getSupplier(supId);
+    const pct = Math.max(4, Math.round(val/max*100));
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+        <span>${sup?sup.name:'—'}</span><span class="mono">${fmtMoney(val)}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--accent-2);"></div></div>
+    </div>`;
+  }).join('') : `<div class="empty-state">Brak zamówień w tym miesiącu.</div>`;
+}
+
+/* ============================= SUPPLIERS ============================= */
+function renderSuppliers(){
+  const tbody = document.querySelector('#tbl-suppliers tbody');
+  tbody.innerHTML = state.suppliers.map(s=>{
+    const stats = supplierStats(s.id);
+    const q = supplierQualityAvg(s.id);
+    return `<tr onclick="openSupplierDetail('${s.id}')">
+      <td><strong>${s.name}</strong></td>
+      <td>${s.categories.map(c=>`<span class="tag">${c}</span>`).join('')}</td>
+      <td class="num">${s.leadTimeDays} dni</td>
+      <td>${starsHtml(q)}</td>
+      <td>${stats.otdPct==null?'<span class="small-note">brak danych</span>':stats.otdPct+'%'}</td>
+      <td>${s.paymentTerms}</td>
+      <td>${s.active? '<span class="badge badge-success">aktywny</span>' : '<span class="badge badge-neutral">zawieszony</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openSupplierDetail(id){
+  currentDetailId = id;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-supplier-detail').classList.add('active');
+  document.getElementById('page-title').textContent = 'Dostawca';
+  document.getElementById('page-crumb').textContent = 'Szczegóły i historia współpracy';
+  renderSupplierDetail(id);
+}
+
+function renderSupplierDetail(id){
+  const s = getSupplier(id);
+  const stats = supplierStats(id);
+  const q = supplierQualityAvg(id);
+  const prices = state.priceLists.filter(pl=>pl.supplierId===id);
+  const orders = state.orders.filter(o=>o.supplierId===id).sort((a,b)=>b.date.localeCompare(a.date));
+  const assessments = state.assessments.filter(a=>a.supplierId===id).sort((a,b)=>b.date.localeCompare(a.date));
+
+  const el = document.getElementById('view-supplier-detail');
+  el.innerHTML = `
+    <div class="back-link" onclick="navigate('suppliers')">← Powrót do listy dostawców</div>
+    <div class="detail-header">
+      <div>
+        <div class="detail-title">${s.name} ${s.active?'':'<span class="badge badge-neutral">zawieszony</span>'}</div>
+        <div class="detail-meta">${s.contact} · ${s.email} · ${s.phone}</div>
+      </div>
+      <div>
+        <button class="btn" onclick="openSupplierForm('${id}')">Edytuj</button>
+      </div>
+    </div>
+    <div class="stat-mini">
+      <div><strong>${stats.orderCount}</strong>zamówień łącznie</div>
+      <div><strong>${stats.otdPct==null?'—':stats.otdPct+'%'}</strong>terminowość (OTD)</div>
+      <div><strong>${s.leadTimeDays} dni</strong>deklarowany czas dostawy</div>
+      <div><strong>${fmtMoney(stats.totalSpend)}</strong>łączna wartość zamówień</div>
+      <div>${starsHtml(q)}<div style="margin-top:2px;">ocena jakości</div></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px;">
+      <div class="panel">
+        <div class="panel-head"><h3>Cennik dostawcy</h3><button class="btn btn-sm" onclick="openPriceForm(null,'${id}')">+ Pozycja cennika</button></div>
+        <div class="panel-body pad0"><table><thead><tr>
+          <th>Produkt</th><th>Cena</th><th>Min. ilość</th><th>Ważny do</th><th></th>
+        </tr></thead><tbody>
+        ${prices.length? prices.map(pl=>{
+          const p = getProduct(pl.productId);
+          return `<tr>
+            <td onclick="openProductDetail('${p.id}')" style="cursor:pointer;">${p?p.name:'—'}</td>
+            <td class="num">${fmtMoney(pl.price,pl.currency)}</td>
+            <td class="num">${pl.minQty} ${p?p.unit:''}</td>
+            <td>${fmtDate(pl.validTo)}</td>
+            <td><button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openPriceForm('${pl.id}','${id}')">Edytuj</button></td>
+          </tr>`;
+        }).join('') : `<tr><td colspan="5" class="empty-state">Brak pozycji cennika.</td></tr>`}
+        </tbody></table></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Ocena jakości</h3><button class="btn btn-sm" onclick="openAssessmentForm('${id}')">+ Nowa ocena</button></div>
+        <div class="panel-body">
+        ${assessments.length ? assessments.map(a=>`
+          <div style="padding:9px 0;border-bottom:1px solid var(--border-soft);">
+            <div style="display:flex;justify-content:space-between;">
+              <span class="small-note">${fmtDate(a.date)}</span>
+              ${starsHtml((a.quality+a.timeliness+a.communication+a.docs)/4)}
+            </div>
+            <div style="font-size:11.5px;color:var(--text-dim);margin-top:4px;">
+              Jakość ${a.quality}/5 · Terminowość ${a.timeliness}/5 · Komunikacja ${a.communication}/5 · Dokumentacja ${a.docs}/5
+            </div>
+            ${a.comment?`<div style="font-size:12px;margin-top:5px;">${escapeHtml(a.comment)}</div>`:''}
+          </div>`).join('') : `<div class="empty-state">Brak ocen jakości dla tego dostawcy.</div>`}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div class="panel-head"><h3>Historia zamówień</h3></div>
+      <div class="panel-body pad0"><table><thead><tr>
+        <th>Nr</th><th>Data</th><th>Termin</th><th>Dostarczono</th><th>Status</th><th class="num">Wartość</th>
+      </tr></thead><tbody>
+      ${orders.length? orders.map(o=>`
+        <tr onclick="openOrderDetail('${o.id}')">
+          <td class="mono">${o.number}</td><td>${fmtDate(o.date)}</td><td>${fmtDate(o.expectedDate)}</td>
+          <td>${o.deliveredDate?fmtDate(o.deliveredDate):'—'}</td><td>${statusBadge(effectiveStatus(o))}</td>
+          <td class="num">${fmtMoney(orderNetValue(o))}</td>
+        </tr>`).join('') : `<tr><td colspan="6" class="empty-state">Brak zamówień.</td></tr>`}
+      </tbody></table></div>
+    </div>
+  `;
+}
+
+function openSupplierForm(id){
+  const s = id ? getSupplier(id) : null;
+  const body = `
+    <div class="field-row">
+      <div class="field"><label>Nazwa firmy</label><input id="f-name" value="${s?escapeHtml(s.name):''}"></div>
+      <div class="field"><label>NIP</label><input id="f-nip" value="${s?escapeHtml(s.nip||''):''}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Osoba kontaktowa</label><input id="f-contact" value="${s?escapeHtml(s.contact):''}"></div>
+      <div class="field"><label>Telefon</label><input id="f-phone" value="${s?escapeHtml(s.phone):''}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>E-mail</label><input id="f-email" value="${s?escapeHtml(s.email):''}"></div>
+      <div class="field"><label>Warunki płatności</label><input id="f-terms" placeholder="np. przelew 30 dni" value="${s?escapeHtml(s.paymentTerms):''}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Kategorie (po przecinku)</label><input id="f-cats" value="${s?escapeHtml(s.categories.join(', ')):''}"></div>
+      <div class="field"><label>Deklarowany czas dostawy (dni)</label><input id="f-lead" type="number" min="0" value="${s?s.leadTimeDays:''}"></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Notatki</label><textarea id="f-notes">${s?escapeHtml(s.notes||''):''}</textarea></div>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="f-active" ${(!s||s.active)?'checked':''}><label style="margin:0;text-transform:none;">Dostawca aktywny</label>
+    </div>
+  `;
+  openModal(s?'Edytuj dostawcę':'Nowy dostawca', body, ()=>{
+    const name = document.getElementById('f-name').value.trim();
+    if(!name){ toast('Podaj nazwę dostawcy.',true); return false; }
+    const data = {
+      name,
+      nip: document.getElementById('f-nip').value.trim(),
+      contact: document.getElementById('f-contact').value.trim(),
+      phone: document.getElementById('f-phone').value.trim(),
+      email: document.getElementById('f-email').value.trim(),
+      paymentTerms: document.getElementById('f-terms').value.trim(),
+      categories: document.getElementById('f-cats').value.split(',').map(x=>x.trim()).filter(Boolean),
+      leadTimeDays: Number(document.getElementById('f-lead').value)||0,
+      notes: document.getElementById('f-notes').value.trim(),
+      active: document.getElementById('f-active').checked,
+    };
+    if(s){ Object.assign(s,data); } else { state.suppliers.push({id:uid('sup'),...data}); }
+    save();
+    if(currentView==='suppliers') renderSuppliers();
+    toast('Zapisano dostawcę.');
+    return true;
+  }, ()=>{
+    if(s && confirm('Usunąć dostawcę '+s.name+'? Powiązane cenniki i oceny pozostaną, ale bez przypisania.')){
+      state.suppliers = state.suppliers.filter(x=>x.id!==s.id);
+      save(); navigate('suppliers');
+      return true;
+    }
+    return false;
+  }, !!s);
+}
+document.getElementById('btn-add-supplier').addEventListener('click', ()=>openSupplierForm(null));
+
+function openPriceForm(id, defaultSupplierId, defaultProductId){
+  const pl = id ? state.priceLists.find(x=>x.id===id) : null;
+  const supOptions = state.suppliers.map(s=>`<option value="${s.id}" ${((pl?pl.supplierId:defaultSupplierId)===s.id)?'selected':''}>${escapeHtml(s.name)}</option>`).join('');
+  const prodOptions = state.products.map(p=>`<option value="${p.id}" ${((pl?pl.productId:defaultProductId)===p.id)?'selected':''}>${escapeHtml(p.name)}</option>`).join('');
+  const body = `
+    <div class="field-row">
+      <div class="field"><label>Dostawca</label><select id="f-sup">${supOptions}</select></div>
+      <div class="field"><label>Produkt</label><select id="f-prod">${prodOptions}</select></div>
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>Cena (netto)</label><input id="f-price" type="number" step="0.01" value="${pl?pl.price:''}"></div>
+      <div class="field"><label>Waluta</label><input id="f-cur" value="${pl?pl.currency:'PLN'}"></div>
+      <div class="field"><label>Ilość minimalna</label><input id="f-minqty" type="number" step="1" value="${pl?pl.minQty:1}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Ważny od</label><input id="f-from" type="date" value="${pl?pl.validFrom:todayStr()}"></div>
+      <div class="field"><label>Ważny do</label><input id="f-to" type="date" value="${pl?pl.validTo:''}"></div>
+    </div>
+  `;
+  openModal(pl?'Edytuj pozycję cennika':'Nowa pozycja cennika', body, ()=>{
+    const data = {
+      supplierId: document.getElementById('f-sup').value,
+      productId: document.getElementById('f-prod').value,
+      price: Number(document.getElementById('f-price').value)||0,
+      currency: document.getElementById('f-cur').value.trim()||'PLN',
+      minQty: Number(document.getElementById('f-minqty').value)||1,
+      validFrom: document.getElementById('f-from').value,
+      validTo: document.getElementById('f-to').value,
+    };
+    if(pl){ Object.assign(pl,data); } else { state.priceLists.push({id:uid('pl'),...data}); }
+    save();
+    refreshOpenDetail();
+    toast('Zapisano cennik.');
+    return true;
+  }, ()=>{
+    if(pl && confirm('Usunąć pozycję cennika?')){
+      state.priceLists = state.priceLists.filter(x=>x.id!==pl.id);
+      save();
+      refreshOpenDetail();
+      return true;
+    }
+    return false;
+  }, !!pl);
+}
+function refreshOpenDetail(){
+  if(!currentDetailId) return;
+  if(document.getElementById('view-supplier-detail').classList.contains('active')) renderSupplierDetail(currentDetailId);
+  else if(document.getElementById('view-product-detail').classList.contains('active')) renderProductDetail(currentDetailId);
+}
+
+function openAssessmentForm(supplierId){
+  const body = `
+    <div class="field-row"><div class="field"><label>Data oceny</label><input id="f-date" type="date" value="${todayStr()}"></div></div>
+    <div class="field-row triple">
+      <div class="field"><label>Jakość (1-5)</label><input id="f-q" type="number" min="1" max="5" value="4"></div>
+      <div class="field"><label>Terminowość (1-5)</label><input id="f-t" type="number" min="1" max="5" value="4"></div>
+      <div class="field"><label>Komunikacja (1-5)</label><input id="f-c" type="number" min="1" max="5" value="4"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Dokumentacja (1-5)</label><input id="f-d" type="number" min="1" max="5" value="4"></div>
+    </div>
+    <div class="field-row single"><div class="field"><label>Komentarz</label><textarea id="f-comment"></textarea></div></div>
+  `;
+  openModal('Nowa ocena jakości dostawcy', body, ()=>{
+    const clamp = v => Math.min(5,Math.max(1,Number(v)||1));
+    state.assessments.push({
+      id: uid('qa'), supplierId,
+      date: document.getElementById('f-date').value || todayStr(),
+      quality: clamp(document.getElementById('f-q').value),
+      timeliness: clamp(document.getElementById('f-t').value),
+      communication: clamp(document.getElementById('f-c').value),
+      docs: clamp(document.getElementById('f-d').value),
+      comment: document.getElementById('f-comment').value.trim(),
+    });
+    save();
+    renderSupplierDetail(supplierId);
+    toast('Dodano ocenę.');
+    return true;
+  });
+}
+
+/* ============================= PRODUCTS ============================= */
+function renderProducts(){
+  const tbody = document.querySelector('#tbl-products tbody');
+  tbody.innerHTML = state.products.map(p=>{
+    const offers = state.priceLists.filter(pl=>pl.productId===p.id);
+    const supplierCount = new Set(offers.map(o=>o.supplierId)).size;
+    const best = bestPriceForProduct(p.id);
+    return `<tr onclick="openProductDetail('${p.id}')">
+      <td class="mono">${p.code}</td>
+      <td>${p.name}</td>
+      <td><span class="tag">${p.category}</span></td>
+      <td>${p.unit}</td>
+      <td class="num">${supplierCount} ${supplierCount===1?'<span class="risk-flag" title="Jedno źródło dostaw"></span>':''}</td>
+      <td class="num">${best?fmtMoney(best.price,best.currency):'—'}</td>
+      <td class="num">${p.substitutes.length}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openProductDetail(id){
+  currentDetailId = id;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-product-detail').classList.add('active');
+  document.getElementById('page-title').textContent = 'Produkt';
+  document.getElementById('page-crumb').textContent = 'Cennik, dostawcy i zamienniki';
+  renderProductDetail(id);
+}
+
+function renderProductDetail(id){
+  const p = getProduct(id);
+  const offers = state.priceLists.filter(pl=>pl.productId===id).sort((a,b)=>a.price-b.price);
+  const best = offers[0];
+  const el = document.getElementById('view-product-detail');
+  el.innerHTML = `
+    <div class="back-link" onclick="navigate('products')">← Powrót do katalogu</div>
+    <div class="detail-header">
+      <div>
+        <div class="detail-title">${p.name}</div>
+        <div class="detail-meta">Kod: ${p.code} · Kategoria: ${p.category} · Jednostka: ${p.unit}</div>
+      </div>
+      <div><button class="btn" onclick="openProductForm('${id}')">Edytuj</button></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h3>Oferty dostawców</h3><button class="btn btn-sm" onclick="openPriceForm(null,null,'${id}')">+ Dodaj ofertę</button></div>
+      <div class="panel-body pad0"><table><thead><tr>
+        <th>Dostawca</th><th>Cena</th><th>Min. ilość</th><th>Czas dostawy</th><th>Ważny do</th><th></th>
+      </tr></thead><tbody>
+      ${offers.length? offers.map(o=>{
+        const sup = getSupplier(o.supplierId);
+        return `<tr class="${o===best?'comparison-best':''}" onclick="openSupplierDetail('${o.supplierId}')">
+          <td>${sup?sup.name:'—'} ${o===best?'<span class="badge badge-success" style="margin-left:6px;">najlepsza cena</span>':''}</td>
+          <td class="num">${fmtMoney(o.price,o.currency)}</td>
+          <td class="num">${o.minQty} ${p.unit}</td>
+          <td class="num">${sup?sup.leadTimeDays:'—'} dni</td>
+          <td>${fmtDate(o.validTo)}</td>
+          <td><button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openPriceForm('${o.id}')">Edytuj</button></td>
+        </tr>`;
+      }).join('') : `<tr><td colspan="6" class="empty-state">Brak ofert. Dodaj pierwszą pozycję cennika.</td></tr>`}
+      </tbody></table></div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div class="panel-head"><h3>Zamienniki</h3></div>
+      <div class="panel-body" id="product-subst-area"></div>
+    </div>
+  `;
+  renderProductSubstitutesArea(p);
+}
+
+function renderProductSubstitutesArea(p){
+  const area = document.getElementById('product-subst-area');
+  const chips = p.substitutes.map(sid=>{
+    const sp = getProduct(sid);
+    return `<span class="subst-chip">${sp?sp.name:'—'}<span class="x" onclick="removeSubstitute('${p.id}','${sid}')">✕</span></span>`;
+  }).join('');
+  const options = state.products.filter(x=>x.id!==p.id && !p.substitutes.includes(x.id))
+    .map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
+  area.innerHTML = `
+    <div style="margin-bottom:12px;">${chips || '<span class="small-note">Brak przypisanych zamienników.</span>'}</div>
+    <div style="display:flex;gap:8px;">
+      <select id="new-subst-select" style="flex:1;background:var(--bg-raised);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:var(--radius);">
+        <option value="">— wybierz produkt równoważny —</option>${options}
+      </select>
+      <button class="btn btn-sm" onclick="addSubstituteFromDetail('${p.id}')">Dodaj</button>
+    </div>
+  `;
+}
+function addSubstituteFromDetail(pid){
+  const sel = document.getElementById('new-subst-select');
+  if(!sel.value) return;
+  linkSubstitute(pid, sel.value);
+  save();
+  renderProductDetail(pid);
+  toast('Powiązano zamiennik.');
+}
+function removeSubstitute(a,b){
+  unlinkSubstitute(a,b);
+  save();
+  if(document.getElementById('view-product-detail').classList.contains('active')) renderProductDetail(a);
+  else renderSubstitutesView();
+  toast('Usunięto powiązanie zamiennika.');
+}
+
+function openProductForm(id){
+  const p = id ? getProduct(id) : null;
+  const body = `
+    <div class="field-row">
+      <div class="field"><label>Kod produktu</label><input id="f-code" value="${p?escapeHtml(p.code):''}"></div>
+      <div class="field"><label>Nazwa</label><input id="f-pname" value="${p?escapeHtml(p.name):''}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Kategoria</label><input id="f-cat" value="${p?escapeHtml(p.category):''}"></div>
+      <div class="field"><label>Jednostka</label><input id="f-unit" placeholder="szt / kg / mb / arkusz" value="${p?escapeHtml(p.unit):'szt'}"></div>
+    </div>
+  `;
+  openModal(p?'Edytuj produkt':'Nowy produkt', body, ()=>{
+    const name = document.getElementById('f-pname').value.trim();
+    if(!name){ toast('Podaj nazwę produktu.',true); return false; }
+    const data = {
+      code: document.getElementById('f-code').value.trim() || 'BRAK',
+      name,
+      category: document.getElementById('f-cat').value.trim() || 'inne',
+      unit: document.getElementById('f-unit').value.trim() || 'szt',
+    };
+    if(p){ Object.assign(p,data); } else { state.products.push({id:uid('prod'),...data,substitutes:[]}); }
+    save();
+    if(currentView==='products') renderProducts();
+    toast('Zapisano produkt.');
+    return true;
+  }, ()=>{
+    if(p && confirm('Usunąć produkt '+p.name+'? Powiązane cenniki i pozycje zamówień pozostaną z historycznym odniesieniem.')){
+      state.products = state.products.filter(x=>x.id!==p.id);
+      state.products.forEach(x=>{ x.substitutes = x.substitutes.filter(s=>s!==p.id); });
+      save(); navigate('products');
+      return true;
+    }
+    return false;
+  }, !!p);
+}
+document.getElementById('btn-add-product').addEventListener('click', ()=>openProductForm(null));
+
+/* ============================= SUBSTITUTES VIEW ============================= */
+function renderSubstitutesView(){
+  const groups = [];
+  const seen = new Set();
+  state.products.forEach(p=>{
+    if(!p.substitutes.length || seen.has(p.id)) return;
+    const groupIds = new Set([p.id, ...p.substitutes]);
+    groupIds.forEach(id=>seen.add(id));
+    groups.push([...groupIds]);
+  });
+  const body = document.getElementById('substitutes-body');
+  if(!groups.length){
+    body.innerHTML = `<div class="empty-state"><div class="big">⇄</div>Brak zdefiniowanych grup zamienników.<br>Dodaj powiązania z poziomu szczegółów produktu.</div>`;
+    return;
+  }
+  body.innerHTML = groups.map(ids=>{
+    const rows = ids.map(id=>{
+      const pr = getProduct(id);
+      const best = bestPriceForProduct(id);
+      return `<tr onclick="openProductDetail('${id}')">
+        <td>${pr?pr.name:'—'}</td><td class="mono">${pr?pr.code:''}</td>
+        <td class="num">${best?fmtMoney(best.price,best.currency):'brak oferty'}</td>
+      </tr>`;
+    }).join('');
+    return `<div style="margin-bottom:18px;">
+      <table><thead><tr><th>Produkt równoważny</th><th>Kod</th><th>Najlepsza cena</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  }).join('');
+}
+
+/* ============================= COMPARE ============================= */
+function renderCompare(){
+  const sel = document.getElementById('compare-product');
+  const prevVal = sel.value;
+  sel.innerHTML = state.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+  if(prevVal && state.products.some(p=>p.id===prevVal)) sel.value = prevVal;
+  runCompare();
+}
+document.getElementById('compare-product').addEventListener('change', runCompare);
+document.getElementById('compare-include-subst').addEventListener('change', runCompare);
+
+function runCompare(){
+  const prodId = document.getElementById('compare-product').value;
+  if(!prodId) return;
+  const includeSubst = document.getElementById('compare-include-subst').checked;
+  const p = getProduct(prodId);
+  let idsToShow = [prodId];
+  if(includeSubst && p) idsToShow = idsToShow.concat(p.substitutes);
+
+  let rows = [];
+  idsToShow.forEach(pid=>{
+    const pr = getProduct(pid);
+    state.priceLists.filter(pl=>pl.productId===pid).forEach(pl=>{
+      const sup = getSupplier(pl.supplierId);
+      rows.push({pl,pr,sup, isSubst: pid!==prodId});
+    });
+  });
+  rows.sort((a,b)=>a.pl.price-b.pl.price);
+  const bestPrice = rows.length ? rows[0] : null;
+
+  const tbody = document.querySelector('#tbl-compare tbody');
+  tbody.innerHTML = rows.length ? rows.map(r=>{
+    const q = supplierQualityAvg(r.sup.id);
+    const stale = r.pl.validTo && r.pl.validTo < todayStr();
+    return `<tr class="${r===bestPrice?'comparison-best':''}">
+      <td>${r.sup.name}</td>
+      <td>${r.pr.name} ${r.isSubst?'<span class="badge badge-info" style="margin-left:5px;">zamiennik</span>':''}</td>
+      <td class="num">${fmtMoney(r.pl.price,r.pl.currency)}</td>
+      <td class="num">${r.pl.minQty} ${r.pr.unit}</td>
+      <td class="num">${r.sup.leadTimeDays} dni</td>
+      <td>${starsHtml(q)}</td>
+      <td>${stale?'<span class="badge badge-warn">przeterminowany</span>':fmtDate(r.pl.validTo)}</td>
+      <td><button class="btn btn-sm" onclick="prefillOrder('${r.sup.id}','${r.pr.id}','${r.pl.price}')">Zamów</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" class="empty-state">Brak ofert dla wybranego produktu${includeSubst?' i jego zamienników':''}.</td></tr>`;
+}
+
+/* ============================= ORDERS ============================= */
+const ORDER_STATUSES = ['szkic','wysłane','potwierdzone','częściowo dostarczone','dostarczone','opóźnione','anulowane'];
+const BOARD_STATUSES = ['szkic','wysłane','potwierdzone','częściowo dostarczone','opóźnione','dostarczone','anulowane'];
+
+document.querySelectorAll('.tab[data-ordertab]').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab[data-ordertab]').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const tab = t.dataset.ordertab;
+    document.getElementById('orders-board').style.display = tab==='board'?'block':'none';
+    document.getElementById('orders-list').style.display = tab==='list'?'block':'none';
+  });
+});
+
+function renderOrders(){
+  const board = document.getElementById('kanban');
+  board.innerHTML = BOARD_STATUSES.map(status=>{
+    const orders = state.orders.filter(o=> effectiveStatus(o)===status);
+    return `<div class="kanban-col">
+      <div class="kanban-col-head"><span>${status}</span><span>${orders.length}</span></div>
+      <div>${orders.map(o=>{
+        const sup = getSupplier(o.supplierId);
+        const late = isOrderLate(o);
+        return `<div class="kanban-card" onclick="openOrderDetail('${o.id}')">
+          <div class="kc-num">${o.number}</div>
+          <div class="kc-sup">${sup?sup.name:'—'}</div>
+          <div class="kc-date ${late?'late':''}">${late?'Opóźnione: ':'Termin: '}${fmtDate(o.expectedDate)}</div>
+        </div>`;
+      }).join('') || '<div class="empty-state" style="padding:16px;">brak</div>'}</div>
+    </div>`;
+  }).join('');
+
+  const tbody = document.querySelector('#tbl-orders tbody');
+  const sorted = [...state.orders].sort((a,b)=>b.date.localeCompare(a.date));
+  tbody.innerHTML = sorted.map(o=>{
+    const sup = getSupplier(o.supplierId);
+    return `<tr onclick="openOrderDetail('${o.id}')">
+      <td class="mono">${o.number}</td><td>${sup?sup.name:'—'}</td><td>${fmtDate(o.date)}</td>
+      <td>${fmtDate(o.expectedDate)}</td><td>${statusBadge(effectiveStatus(o))}</td>
+      <td class="num">${fmtMoney(orderNetValue(o))}</td>
+      <td><button class="btn btn-sm btn-ghost">Otwórz →</button></td>
+    </tr>`;
+  }).join('');
+}
+
+let orderFormItems = [];
+function prefillOrder(supplierId, productId, price){
+  orderFormItems = [{ productId, qty:1, price:Number(price), unit: getProduct(productId)?.unit||'szt' }];
+  openOrderForm(null, supplierId);
+}
+document.getElementById('btn-new-order').addEventListener('click', ()=>{ orderFormItems=[]; openOrderForm(null); });
+
+function openOrderForm(orderId, presetSupplierId){
+  const o = orderId ? state.orders.find(x=>x.id===orderId) : null;
+  orderFormItems = o ? o.items.map(i=>({...i})) : (orderFormItems.length?orderFormItems:[]);
+  const supplierId = o ? o.supplierId : (presetSupplierId||'');
+
+  const supOptions = state.suppliers.filter(s=>s.active||s.id===supplierId)
+    .map(s=>`<option value="${s.id}" ${s.id===supplierId?'selected':''}>${escapeHtml(s.name)}</option>`).join('');
+
+  const body = `
+    <div class="field-row">
+      <div class="field"><label>Dostawca</label><select id="f-osup">${supOptions||'<option value="">Brak dostawców</option>'}</select></div>
+      <div class="field"><label>Numer zamówienia</label><input id="f-onum" value="${o?escapeHtml(o.number):'ZAM/'+new Date().getFullYear()+'/'+String(state.orders.length+100).slice(-4)}"></div>
+    </div>
+    <div class="field-row triple">
+      <div class="field"><label>Data zamówienia</label><input id="f-odate" type="date" value="${o?o.date:todayStr()}"></div>
+      <div class="field"><label>Oczekiwany termin dostawy</label><input id="f-oexp" type="date" value="${o?o.expectedDate:''}"></div>
+      <div class="field"><label>Status</label><select id="f-ostatus">${ORDER_STATUSES.filter(s=>s!=='opóźnione').map(s=>`<option ${o&&o.status===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="section-title" style="margin-top:6px;">Pozycje zamówienia</div>
+    <table class="li-table" style="margin-bottom:8px;"><thead><tr><th>Produkt</th><th>Ilość</th><th>Cena netto</th><th>Wartość</th><th></th></tr></thead>
+    <tbody id="li-body"></tbody></table>
+    <button class="btn btn-sm" type="button" onclick="addLineItem()">+ Dodaj pozycję</button>
+    <div style="text-align:right;margin-top:10px;font-size:13px;" id="li-total"></div>
+    <div class="field-row single" style="margin-top:12px;">
+      <div class="field"><label>Uwagi</label><textarea id="f-onotes">${o?escapeHtml(o.notes||''):''}</textarea></div>
+    </div>
+    ${o && !['dostarczone','anulowane'].includes(o.status) ? `
+    <div class="field-row single">
+      <div class="field"><label>Data faktycznej dostawy (uzupełnij po odbiorze)</label><input id="f-odelivered" type="date" value="${o.deliveredDate||''}"></div>
+    </div>` : ''}
+  `;
+  openModal(o?'Edytuj zamówienie':'Nowe zamówienie', body, ()=>{
+    const supplierIdVal = document.getElementById('f-osup').value;
+    if(!supplierIdVal){ toast('Wybierz dostawcę.',true); return false; }
+    if(!orderFormItems.length){ toast('Dodaj co najmniej jedną pozycję.',true); return false; }
+    const expDate = document.getElementById('f-oexp').value;
+    let status = document.getElementById('f-ostatus').value;
+    const deliveredEl = document.getElementById('f-odelivered');
+    const delivered = deliveredEl ? deliveredEl.value : (o?o.deliveredDate:null);
+    if(delivered) status = 'dostarczone';
+    const data = {
+      supplierId: supplierIdVal,
+      number: document.getElementById('f-onum').value.trim(),
+      date: document.getElementById('f-odate').value,
+      expectedDate: expDate,
+      status,
+      deliveredDate: delivered || null,
+      notes: document.getElementById('f-onotes').value.trim(),
+      items: orderFormItems.map(i=>({...i})),
+    };
+    if(o){ Object.assign(o,data); } else { state.orders.push({id:uid('ord'),...data}); }
+    save();
+    renderView(currentView);
+    if(currentDetailId && document.getElementById('view-order-detail').classList.contains('active')) renderOrderDetail(currentDetailId);
+    toast('Zapisano zamówienie.');
+    return true;
+  }, ()=>{
+    if(o && confirm('Usunąć zamówienie '+o.number+'?')){
+      state.orders = state.orders.filter(x=>x.id!==o.id);
+      save(); navigate('orders');
+      return true;
+    }
+    return false;
+  }, !!o);
+
+  renderLineItems();
+}
+function addLineItem(){
+  if(!state.products.length){ toast('Najpierw dodaj produkty do katalogu.',true); return; }
+  orderFormItems.push({productId:state.products[0].id, qty:1, price:0, unit:state.products[0].unit});
+  renderLineItems();
+}
+function removeLineItem(idx){ orderFormItems.splice(idx,1); renderLineItems(); }
+function updateLineItem(idx, field, val){
+  if(field==='productId'){ orderFormItems[idx].productId = val; const p=getProduct(val); orderFormItems[idx].unit = p?p.unit:''; 
+    const sup = document.getElementById('f-osup')?.value;
+    const pl = state.priceLists.find(x=>x.productId===val && x.supplierId===sup);
+    if(pl) orderFormItems[idx].price = pl.price;
+  }
+  else if(field==='qty') orderFormItems[idx].qty = Number(val)||0;
+  else if(field==='price') orderFormItems[idx].price = Number(val)||0;
+  renderLineItems();
+}
+function renderLineItems(){
+  const tb = document.getElementById('li-body');
+  if(!tb) return;
+  tb.innerHTML = orderFormItems.map((it,idx)=>{
+    const options = state.products.map(p=>`<option value="${p.id}" ${p.id===it.productId?'selected':''}>${escapeHtml(p.name)}</option>`).join('');
+    return `<tr>
+      <td><select onchange="updateLineItem(${idx},'productId',this.value)">${options}</select></td>
+      <td><input type="number" min="0" step="1" value="${it.qty}" onchange="updateLineItem(${idx},'qty',this.value)" style="width:70px;"></td>
+      <td><input type="number" min="0" step="0.01" value="${it.price}" onchange="updateLineItem(${idx},'price',this.value)" style="width:90px;"></td>
+      <td class="num">${fmtMoney(it.qty*it.price)}</td>
+      <td><button class="li-remove" onclick="removeLineItem(${idx})">✕</button></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" class="empty-state">Brak pozycji.</td></tr>`;
+  const total = orderFormItems.reduce((s,i)=>s+i.qty*i.price,0);
+  const totalEl = document.getElementById('li-total');
+  if(totalEl) totalEl.innerHTML = `Wartość netto: <strong class="mono">${fmtMoney(total)}</strong>`;
+}
+
+function openOrderDetail(id){
+  currentDetailId = id;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-order-detail').classList.add('active');
+  document.getElementById('page-title').textContent = 'Zamówienie';
+  document.getElementById('page-crumb').textContent = 'Szczegóły i monitoring realizacji';
+  renderOrderDetail(id);
+}
+function renderOrderDetail(id){
+  const o = state.orders.find(x=>x.id===id);
+  const sup = getSupplier(o.supplierId);
+  const late = isOrderLate(o);
+  const el = document.getElementById('view-order-detail');
+  const daysLate = late ? daysBetween(o.expectedDate, todayStr()) : 0;
+  el.innerHTML = `
+    <div class="back-link" onclick="navigate('orders')">← Powrót do zamówień</div>
+    <div class="detail-header">
+      <div>
+        <div class="detail-title mono">${o.number} ${statusBadge(effectiveStatus(o))}</div>
+        <div class="detail-meta">Dostawca: <span style="cursor:pointer;color:var(--accent-2);" onclick="openSupplierDetail('${sup.id}')">${sup.name}</span> · Złożono: ${fmtDate(o.date)}</div>
+      </div>
+      <div>
+        <button class="btn" onclick="printOrder('${o.id}')">🖶 Dokument PDF</button>
+        <button class="btn" onclick="openOrderForm('${o.id}')">Edytuj</button>
+      </div>
+    </div>
+    ${late ? `<div class="badge badge-danger" style="margin-bottom:14px;display:inline-block;">Opóźnienie: ${daysLate} dni względem terminu ${fmtDate(o.expectedDate)}</div>` : ''}
+    <div class="stat-mini">
+      <div><strong>${fmtDate(o.expectedDate)}</strong>termin dostawy</div>
+      <div><strong>${o.deliveredDate?fmtDate(o.deliveredDate):'—'}</strong>data dostarczenia</div>
+      <div><strong>${fmtMoney(orderNetValue(o))}</strong>wartość netto</div>
+      <div><strong>${sup.leadTimeDays} dni</strong>standardowy czas dostawcy</div>
+    </div>
+    <div class="panel" style="margin-top:14px;">
+      <div class="panel-head"><h3>Pozycje zamówienia</h3></div>
+      <div class="panel-body pad0"><table><thead><tr><th>Produkt</th><th>Ilość</th><th>Cena netto</th><th class="num">Wartość</th></tr></thead><tbody>
+      ${o.items.map(it=>{ const p = getProduct(it.productId); return `<tr>
+        <td>${p?p.name:'—'}</td><td class="num">${it.qty} ${it.unit}</td><td class="num">${fmtMoney(it.price)}</td><td class="num">${fmtMoney(it.qty*it.price)}</td>
+      </tr>`; }).join('')}
+      </tbody></table></div>
+    </div>
+    ${o.notes?`<div class="panel" style="margin-top:14px;"><div class="panel-head"><h3>Uwagi</h3></div><div class="panel-body">${escapeHtml(o.notes)}</div></div>`:''}
+  `;
+}
+
+function printOrder(id){
+  const o = state.orders.find(x=>x.id===id);
+  const sup = getSupplier(o.supplierId);
+  const b = state.buyer;
+  const vat = b.vatRate||23;
+  const net = orderNetValue(o);
+  const vatVal = net*vat/100;
+  const gross = net+vatVal;
+  const rows = o.items.map(it=>{
+    const p = getProduct(it.productId);
+    return `<tr><td>${escapeHtml(p?p.name:'—')}</td><td>${escapeHtml(p?p.code:'')}</td><td style="text-align:right;">${it.qty} ${escapeHtml(it.unit)}</td><td style="text-align:right;">${fmtMoney(it.price)}</td><td style="text-align:right;">${fmtMoney(it.qty*it.price)}</td></tr>`;
+  }).join('');
+  document.getElementById('print-area').innerHTML = `
+    <div class="po-doc">
+      <div class="po-head">
+        <div><h1>Zamówienie ${escapeHtml(o.number)}</h1><div>Data wystawienia: ${fmtDate(o.date)}</div></div>
+        <div style="text-align:right;">Termin dostawy: <strong>${fmtDate(o.expectedDate)}</strong></div>
+      </div>
+      <div class="po-parties">
+        <div><h4>Nabywca</h4><div><strong>${escapeHtml(b.name)}</strong></div><div>${escapeHtml(b.address)}</div><div>NIP: ${escapeHtml(b.nip)}</div></div>
+        <div><h4>Dostawca</h4><div><strong>${escapeHtml(sup.name)}</strong></div><div>${escapeHtml(sup.email)} · ${escapeHtml(sup.phone)}</div><div>NIP: ${escapeHtml(sup.nip||'—')}</div><div>Warunki płatności: ${escapeHtml(sup.paymentTerms)}</div></div>
+      </div>
+      <table><thead><tr><th>Produkt</th><th>Kod</th><th style="text-align:right;">Ilość</th><th style="text-align:right;">Cena netto</th><th style="text-align:right;">Wartość netto</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <div class="po-totals">
+        <div>Wartość netto: ${fmtMoney(net)}</div>
+        <div>VAT (${vat}%): ${fmtMoney(vatVal)}</div>
+        <div><strong>Wartość brutto: ${fmtMoney(gross)}</strong></div>
+      </div>
+      ${o.notes?`<div style="margin-top:14px;"><h4>Uwagi</h4><div>${escapeHtml(o.notes)}</div></div>`:''}
+      <div class="po-sign"><div>Zamawiający</div><div>Akceptacja dostawcy</div></div>
+    </div>
+  `;
+  window.print();
+}
+
+/* ============================= DELAYS ============================= */
+function renderDelays(){
+  const delayed = state.orders.filter(isOrderLate).sort((a,b)=>a.expectedDate.localeCompare(b.expectedDate));
+  const tbody = document.querySelector('#tbl-delayed tbody');
+  tbody.innerHTML = delayed.length ? delayed.map(o=>{
+    const sup = getSupplier(o.supplierId);
+    const days = daysBetween(o.expectedDate, todayStr());
+    return `<tr onclick="openOrderDetail('${o.id}')">
+      <td class="mono">${o.number}</td><td>${sup?sup.name:'—'}</td><td>${fmtDate(o.expectedDate)}</td>
+      <td><span class="badge badge-danger">${days} dni</span></td><td>${statusBadge(effectiveStatus(o))}</td>
+      <td><button class="btn btn-sm btn-ghost">Otwórz →</button></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" class="empty-state">Brak aktualnie opóźnionych zamówień.</td></tr>`;
+
+  const panel = document.getElementById('otd-panel');
+  const rows = state.suppliers.map(s=>({s, stats:supplierStats(s.id)})).filter(x=>x.stats.deliveredCount>0)
+    .sort((a,b)=>(a.stats.otdPct??100)-(b.stats.otdPct??100));
+  panel.innerHTML = rows.length ? `<table><thead><tr>
+    <th>Dostawca</th><th>Dostawy zrealizowane</th><th>Terminowość</th><th>Śr. opóźnienie</th><th></th>
+  </tr></thead><tbody>${rows.map(({s,stats})=>`
+    <tr onclick="openSupplierDetail('${s.id}')">
+      <td>${s.name}</td><td class="num">${stats.deliveredCount}</td>
+      <td class="num">${stats.otdPct}%</td>
+      <td class="num">${stats.avgDelay?stats.avgDelay.toFixed(1)+' dni':'—'}</td>
+      <td style="width:160px;"><div class="bar-track"><div class="bar-fill" style="width:${stats.otdPct}%;background:${stats.otdPct<70?'var(--danger)':stats.otdPct<90?'var(--accent)':'var(--success)'};"></div></div></td>
+    </tr>`).join('')}</tbody></table>` : `<div class="empty-state">Brak zrealizowanych dostaw do analizy.</div>`;
+}
+
+/* ============================= SETTINGS ============================= */
+function renderSettings(){
+  const b = state.buyer;
+  document.getElementById('buyer-form').innerHTML = `
+    <div class="field-row"><div class="field"><label>Nazwa firmy</label><input id="f-bname" value="${escapeHtml(b.name)}"></div></div>
+    <div class="field-row"><div class="field"><label>Adres</label><input id="f-baddr" value="${escapeHtml(b.address)}"></div></div>
+    <div class="field-row">
+      <div class="field"><label>NIP</label><input id="f-bnip" value="${escapeHtml(b.nip)}"></div>
+      <div class="field"><label>Stawka VAT (%)</label><input id="f-bvat" type="number" value="${b.vatRate}"></div>
+    </div>
+    <button class="btn btn-accent" onclick="saveBuyer()">Zapisz dane nabywcy</button>
+  `;
+}
+function saveBuyer(){
+  state.buyer = {
+    name: document.getElementById('f-bname').value.trim(),
+    address: document.getElementById('f-baddr').value.trim(),
+    nip: document.getElementById('f-bnip').value.trim(),
+    vatRate: Number(document.getElementById('f-bvat').value)||0,
+  };
+  save();
+  toast('Zapisano dane nabywcy.');
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'zaopatrzenie-backup-'+todayStr()+'.json';
+  a.click();
+  toast('Wyeksportowano kopię danych.');
+}
+document.getElementById('btn-export').addEventListener('click', exportData);
+document.getElementById('btn-export-sidebar').addEventListener('click', exportData);
+document.getElementById('btn-import-trigger').addEventListener('click', ()=>document.getElementById('file-import').click());
+document.getElementById('file-import').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data.suppliers || !data.products || !data.orders){ toast('Nieprawidłowy plik danych.',true); return; }
+      state = data;
+      save();
+      navigate(currentView);
+      toast('Zaimportowano dane.');
+    }catch(err){ toast('Błąd odczytu pliku: '+err.message,true); }
+  };
+  reader.readAsText(file);
+});
+document.getElementById('btn-reset').addEventListener('click', ()=>{
+  if(confirm('Na pewno wyczyścić wszystkie dane aplikacji? Tej operacji nie można cofnąć (zalecany wcześniejszy eksport).')){
+    localStorage.removeItem(STORAGE_KEY);
+    state = emptyState();
+    save();
+    navigate('dashboard');
+    toast('Dane zostały wyczyszczone.');
+  }
+});
+document.getElementById('btn-load-demo').addEventListener('click', confirmLoadDemoData);
+
+/* ============================= MODAL / TOAST ============================= */
+function openModal(title, bodyHtml, onSave, onDelete, showDelete){
+  const overlay = document.getElementById('modal-overlay');
+  const modal = document.getElementById('modal');
+  modal.innerHTML = `
+    <div class="modal-head"><h2>${title}</h2><button class="modal-close" id="modal-x">✕</button></div>
+    <div class="modal-body">${bodyHtml}</div>
+    <div class="modal-foot">
+      ${showDelete?'<button class="btn btn-danger" id="modal-delete">Usuń</button>':''}
+      <div style="flex:1;"></div>
+      <button class="btn" id="modal-cancel">Anuluj</button>
+      <button class="btn btn-accent" id="modal-save">Zapisz</button>
+    </div>
+  `;
+  overlay.classList.add('open');
+  document.getElementById('modal-x').onclick = closeModal;
+  document.getElementById('modal-cancel').onclick = closeModal;
+  document.getElementById('modal-save').onclick = ()=>{ if(onSave() !== false) closeModal(); };
+  if(showDelete){ document.getElementById('modal-delete').onclick = ()=>{ if(onDelete && onDelete()!==false) closeModal(); }; }
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); }
+document.getElementById('modal-overlay').addEventListener('click', (e)=>{ if(e.target.id==='modal-overlay') closeModal(); });
+
+function toast(msg, isErr){
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast'+(isErr?' err':'');
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(()=>t.remove(), 3200);
+}
+
+/* ============================= GLOBAL SEARCH ============================= */
+document.getElementById('global-search').addEventListener('keydown', (e)=>{
+  if(e.key!=='Enter') return;
+  const q = e.target.value.trim().toLowerCase();
+  if(!q) return;
+  const sup = state.suppliers.find(s=>s.name.toLowerCase().includes(q));
+  const prod = state.products.find(p=>p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
+  const ord = state.orders.find(o=>o.number.toLowerCase().includes(q));
+  if(ord){ openOrderDetail(ord.id); }
+  else if(sup){ openSupplierDetail(sup.id); }
+  else if(prod){ openProductDetail(prod.id); }
+  else toast('Nie znaleziono wyniku dla: '+q, true);
+});
+
+/* ============================= INIT ============================= */
+if(!load()) { state = emptyState(); save(); }
+navigate('dashboard');
+</script>
+
+<!-- LICZNIK WEJŚĆ — Zaopatrzenie -->
+<script>
+(function () {
+  var COUNTER_KEY = "sw78_app_zaopatrzenie_9f3k2";
+  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+  var THIRTY_MIN = 30 * 60 * 1000;
+
+  function sendHit() {
+    var now = Date.now();
+    var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+    if (now - last < THIRTY_MIN) return;
+
+    fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        localStorage.setItem(LAST_VISIT_KEY, String(now));
+      })
+      .catch(function () {});
+  }
+
+  if (document.visibilityState === "visible") {
+    sendHit();
+  } else {
+    document.addEventListener("visibilitychange", function once() {
+      if (document.visibilityState === "visible") {
+        document.removeEventListener("visibilitychange", once);
+        sendHit();
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
