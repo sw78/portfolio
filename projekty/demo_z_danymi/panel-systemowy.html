@@ -287,6 +287,43 @@
     </div>
 
     <div class="card">
+      <h2>Import zgłoszeń z plików lub e-maila</h2>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px;">
+        Wgraj pliki (.txt, .eml, .csv) lub wklej treść wiadomości od sklepu. Aplikacja spróbuje automatycznie
+        rozpoznać sklep, numer WZ, kategorię i priorytet — dane pojawią się poniżej do sprawdzenia przed dodaniem do rejestru.
+      </p>
+      <div class="form-grid">
+        <div>
+          <label>Pliki (można zaznaczyć kilka naraz)</label>
+          <input type="file" id="imp-files" multiple accept=".txt,.eml,.msg,.csv,text/plain">
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div><label>Lub wklej treść e-maila</label><textarea id="imp-paste" placeholder="Wklej tutaj treść wiadomości e-mail od sklepu..." style="min-height:80px;"></textarea></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary" onclick="processImports()">Wczytaj i przeanalizuj</button>
+        <button class="btn btn-ghost" onclick="clearImportInputs()">Wyczyść pola</button>
+      </div>
+
+      <div id="imp-preview-wrap" style="display:none;margin-top:18px;">
+        <h2 style="margin-top:6px;">Podgląd rozpoznanych zgłoszeń — sprawdź i popraw przed dodaniem</h2>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th style="width:26px;"></th><th>Źródło</th><th>Sklep</th><th>Nr WZ</th><th>Kategoria</th><th>Priorytet</th><th>Opis</th><th></th>
+            </tr></thead>
+            <tbody id="imp-tbody"></tbody>
+          </table>
+        </div>
+        <div class="row-actions" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="confirmImport()">Dodaj zaznaczone do rejestru</button>
+          <button class="btn btn-ghost" onclick="clearImportPreview()">Odrzuć podgląd</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Rejestr reklamacji</h2>
       <div class="toolbar">
         <div class="field"><label>Status</label>
@@ -343,6 +380,46 @@
     </div>
 
     <div class="card">
+      <h2>Import polecenia kontroli z pliku lub e-maila</h2>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px;">
+        Wgraj pliki (.txt, .eml, .csv) lub wklej treść polecenia/e-maila zlecającego kontrolę kompletacji i wydania.
+        Aplikacja spróbuje rozpoznać numer zlecenia, sklep, liczbę pozycji i osobę kontrolującą — sprawdź i uzupełnij przed dodaniem do rejestru.
+      </p>
+      <div class="form-grid">
+        <div>
+          <label>Pliki (można zaznaczyć kilka naraz)</label>
+          <input type="file" id="impk-files" multiple accept=".txt,.eml,.msg,.csv,text/plain">
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div><label>Lub wklej treść polecenia / e-maila</label><textarea id="impk-paste" placeholder="Wklej tutaj treść polecenia kontroli lub e-maila..." style="min-height:80px;"></textarea></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary" onclick="processKontrolaImports()">Wczytaj i przeanalizuj</button>
+        <button class="btn btn-ghost" onclick="clearKontrolaImportInputs()">Wyczyść pola</button>
+      </div>
+
+      <div id="impk-preview-wrap" style="display:none;margin-top:18px;">
+        <h2 style="margin-top:6px;">Podgląd rozpoznanych poleceń kontroli — sprawdź i popraw przed dodaniem</h2>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th style="width:26px;"></th><th>Źródło</th><th>Nr zlecenia</th><th>Sklep</th><th>Pozycje</th><th>Kontrolujący</th><th>Uwagi</th><th></th>
+            </tr></thead>
+            <tbody id="impk-tbody"></tbody>
+          </table>
+        </div>
+        <p style="font-size:11.5px;color:var(--ink-soft);margin:10px 0 0;">
+          Wpisy dodane w ten sposób trafiają do rejestru jako zgodne, bez niezgodności — po faktycznym wykonaniu kontroli popraw liczbę niezgodności i typ bezpośrednio przy dodawaniu nowego wpisu lub usuń i wprowadź ponownie z wynikiem.
+        </p>
+        <div class="row-actions" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="confirmKontrolaImport()">Dodaj zaznaczone do rejestru</button>
+          <button class="btn btn-ghost" onclick="clearKontrolaImportPreview()">Odrzuć podgląd</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Rejestr kontroli</h2>
       <div class="toolbar">
         <div class="field"><label>Wynik</label>
@@ -379,8 +456,11 @@
         <div><label>Nazwa</label><input id="a-nazwa" placeholder="Nazwa artykułu"></div>
         <div><label>EAN</label><input id="a-ean" placeholder="np. 5901234567890"></div>
         <div><label>Jednostka miary</label><input id="a-jm" placeholder="np. szt / kg / opak."></div>
+        <div><label>Magazyn</label><input id="a-magazyn" placeholder="np. Magazyn 1 - Kłobuck"></div>
+        <div><label>Miejsce magazynowe</label><input id="a-lokalizacja" placeholder="np. Regał B, poziom 2, gniazdo 14"></div>
         <div><label>Status</label>
           <select id="a-status">
+            <option>Do weryfikacji</option>
             <option>Zgodny</option>
             <option>Do poprawy</option>
             <option>Brak w systemie</option>
@@ -395,24 +475,65 @@
     </div>
 
     <div class="card">
+      <h2>Import polecenia weryfikacji z pliku lub e-maila</h2>
+      <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px;">
+        Wgraj pliki (.txt, .eml, .csv) lub wklej treść polecenia/e-maila zlecającego weryfikację artykułu, ze wskazaniem
+        magazynu i miejsca magazynowego. Aplikacja spróbuje rozpoznać kod, nazwę, EAN, magazyn i lokalizację — sprawdź i popraw przed dodaniem.
+      </p>
+      <div class="form-grid">
+        <div>
+          <label>Pliki (można zaznaczyć kilka naraz)</label>
+          <input type="file" id="impa-files" multiple accept=".txt,.eml,.msg,.csv,text/plain">
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div><label>Lub wklej treść polecenia / e-maila</label><textarea id="impa-paste" placeholder="Wklej tutaj treść polecenia weryfikacji lub e-maila..." style="min-height:80px;"></textarea></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn btn-primary" onclick="processArtykulImports()">Wczytaj i przeanalizuj</button>
+        <button class="btn btn-ghost" onclick="clearArtykulImportInputs()">Wyczyść pola</button>
+      </div>
+
+      <div id="impa-preview-wrap" style="display:none;margin-top:18px;">
+        <h2 style="margin-top:6px;">Podgląd rozpoznanych poleceń weryfikacji — sprawdź i popraw przed dodaniem</h2>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th style="width:26px;"></th><th>Źródło</th><th>Kod</th><th>Nazwa</th><th>EAN</th><th>Magazyn</th><th>Miejsce magazynowe</th><th>Uwagi</th><th></th>
+            </tr></thead>
+            <tbody id="impa-tbody"></tbody>
+          </table>
+        </div>
+        <p style="font-size:11.5px;color:var(--ink-soft);margin:10px 0 0;">
+          Wpisy trafiają do rejestru ze statusem „Do weryfikacji" — po sprawdzeniu towaru w wskazanym miejscu magazynowym zmień status w rejestrze poniżej.
+        </p>
+        <div class="row-actions" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="confirmArtykulImport()">Dodaj zaznaczone do rejestru</button>
+          <button class="btn btn-ghost" onclick="clearArtykulImportPreview()">Odrzuć podgląd</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Rejestr weryfikacji artykułów</h2>
       <div class="toolbar">
         <div class="field"><label>Status</label>
           <select id="a-filter-status" onchange="renderArtykuly()">
             <option value="">Wszystkie</option>
+            <option>Do weryfikacji</option>
             <option>Zgodny</option>
             <option>Do poprawy</option>
             <option>Brak w systemie</option>
             <option>Duplikat</option>
           </select>
         </div>
-        <div class="field"><label>Szukaj (kod / nazwa / EAN)</label><input id="a-filter-search" oninput="renderArtykuly()"></div>
+        <div class="field"><label>Szukaj (kod / nazwa / EAN / magazyn)</label><input id="a-filter-search" oninput="renderArtykuly()"></div>
       </div>
       <div class="stats" id="a-stats"></div>
       <div style="overflow-x:auto;">
         <table>
           <thead><tr>
-            <th>Kod</th><th>Nazwa</th><th>EAN</th><th>J.m.</th><th>Status</th><th>Uwagi</th><th>Data</th><th></th>
+            <th>Kod</th><th>Nazwa</th><th>EAN</th><th>J.m.</th><th>Magazyn</th><th>Miejsce magazynowe</th><th>Status</th><th>Uwagi</th><th>Data</th><th></th>
           </tr></thead>
           <tbody id="a-tbody"></tbody>
         </table>
@@ -605,12 +726,14 @@ function addArtykul(){
     nazwa:document.getElementById('a-nazwa').value.trim(),
     ean:document.getElementById('a-ean').value.trim(),
     jm:document.getElementById('a-jm').value.trim(),
+    magazyn:document.getElementById('a-magazyn').value.trim(),
+    lokalizacja:document.getElementById('a-lokalizacja').value.trim(),
     status:document.getElementById('a-status').value,
     uwagi:document.getElementById('a-uwagi').value.trim(),
     data:today()
   };
   const arr=load('artykuly'); arr.unshift(item); save('artykuly',arr);
-  ['a-kod','a-nazwa','a-ean','a-jm','a-uwagi'].forEach(id=>document.getElementById(id).value='');
+  ['a-kod','a-nazwa','a-ean','a-jm','a-magazyn','a-lokalizacja','a-uwagi'].forEach(id=>document.getElementById(id).value='');
   renderArtykuly();
 }
 function deleteArtykul(id){
@@ -619,7 +742,7 @@ function deleteArtykul(id){
   renderArtykuly();
 }
 function badgeArtStatus(status){
-  const map={'Zgodny':'badge-green','Do poprawy':'badge-amber','Brak w systemie':'badge-red','Duplikat':'badge-gray'};
+  const map={'Do weryfikacji':'badge-blue','Zgodny':'badge-green','Do poprawy':'badge-amber','Brak w systemie':'badge-red','Duplikat':'badge-gray'};
   return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
 }
 function renderArtykuly(){
@@ -627,26 +750,30 @@ function renderArtykuly(){
   const fStatus=document.getElementById('a-filter-status').value;
   const fSearch=document.getElementById('a-filter-search').value.toLowerCase();
   if(fStatus) arr=arr.filter(x=>x.status===fStatus);
-  if(fSearch) arr=arr.filter(x=>(x.kod+x.nazwa+x.ean).toLowerCase().includes(fSearch));
+  if(fSearch) arr=arr.filter(x=>(x.kod+x.nazwa+x.ean+(x.magazyn||'')).toLowerCase().includes(fSearch));
 
   const all=load('artykuly');
+  const doWeryfikacji=all.filter(x=>x.status==='Do weryfikacji').length;
   const doPoprawy=all.filter(x=>x.status==='Do poprawy').length;
   const brak=all.filter(x=>x.status==='Brak w systemie').length;
   document.getElementById('a-stats').innerHTML=`
     <div class="stat"><div class="num">${all.length}</div><div class="lbl">Łącznie</div></div>
+    <div class="stat"><div class="num">${doWeryfikacji}</div><div class="lbl">Do weryfikacji</div></div>
     <div class="stat"><div class="num">${doPoprawy}</div><div class="lbl">Do poprawy</div></div>
     <div class="stat"><div class="num">${brak}</div><div class="lbl">Brak w systemie</div></div>`;
-  document.getElementById('sub-artykuly').textContent = (doPoprawy+brak)+' do poprawy';
-  document.getElementById('led-artykuly').className = 'led '+((doPoprawy+brak)>0?'on-red':'on-green');
+  document.getElementById('sub-artykuly').textContent = (doWeryfikacji+doPoprawy+brak)+' do sprawdzenia/poprawy';
+  document.getElementById('led-artykuly').className = 'led '+((doWeryfikacji+doPoprawy+brak)>0?'on-red':'on-green');
 
   const tbody=document.getElementById('a-tbody');
-  if(!arr.length){ tbody.innerHTML=`<tr><td colspan="8" class="empty">Brak wpisów spełniających kryteria.</td></tr>`; return; }
+  if(!arr.length){ tbody.innerHTML=`<tr><td colspan="10" class="empty">Brak wpisów spełniających kryteria.</td></tr>`; return; }
   tbody.innerHTML=arr.map(x=>`
     <tr>
       <td class="mono">${esc(x.kod)}</td>
       <td>${esc(x.nazwa)||'—'}</td>
       <td class="mono">${esc(x.ean)||'—'}</td>
       <td>${esc(x.jm)||'—'}</td>
+      <td>${esc(x.magazyn)||'—'}</td>
+      <td>${esc(x.lokalizacja)||'—'}</td>
       <td>${badgeArtStatus(x.status)}</td>
       <td style="max-width:200px;">${esc(x.uwagi)||'—'}</td>
       <td class="mono">${esc(x.data)}</td>
@@ -668,6 +795,340 @@ function exportCSV(kind){
   URL.revokeObjectURL(url);
 }
 
+/* ================= IMPORT Z PLIKÓW / E-MAILA ================= */
+let importDrafts = [];
+
+function readFileAsText(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+function parseComplaintText(text, label){
+  const get = (re) => { const m = text.match(re); return m ? m[1].trim() : ''; };
+  const sklep = get(/(?:sklep|market|placówk\w*)\s*[:\-]?\s*([^\n\r,;]+)/i);
+  const nr = get(/(?:nr\s*(?:zam[oó]wienia|wz)|numer\s*(?:zam[oó]wienia|wz)|\bWZ\b)\s*[:\-\/]?\s*([A-Za-z0-9\/\-]+)/i);
+  const lower = text.toLowerCase();
+  let kategoria = 'Inne';
+  if(/uszkodz/.test(lower)) kategoria = 'Towar uszkodzony';
+  else if(/brak(uje|i|ów)?\b|niedob[oó]r/.test(lower)) kategoria = 'Braki ilościowe';
+  else if(/przeterminow|data wa[żz]no[śs]ci|termin wa[żz]no[śs]ci/.test(lower)) kategoria = 'Towar przeterminowany';
+  else if(/pomy[łl]k|b[łl][eę]dny artyku[łl]|niew[łl]a[śs]ciwy towar/.test(lower)) kategoria = 'Błędny artykuł';
+
+  let priorytet = 'Średni';
+  if(/pilne|natychmiast|asap|bardzo wa[żz]ne|tryb pilny/.test(lower)) priorytet = 'Wysoki';
+  else if(/niski priorytet|nie jest pilne|mo[żz]na poczeka[ćc]/.test(lower)) priorytet = 'Niski';
+
+  const opis = text
+    .replace(/^(od|from|do|to|dw|cc|temat|subject|data|date|wys[łl]ano)\s*[:\-].*$/gim,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .slice(0,400);
+
+  return { label, sklep, nr, kategoria, priorytet, opis, include:true };
+}
+
+async function processImports(){
+  const fileList = Array.from(document.getElementById('imp-files').files || []);
+  const pasteText = document.getElementById('imp-paste').value.trim();
+  const sources = [];
+
+  for(const file of fileList){
+    try{
+      const text = await readFileAsText(file);
+      sources.push({ label: file.name, text });
+    }catch(e){
+      console.error('Nie udało się odczytać pliku', file.name, e);
+    }
+  }
+  if(pasteText) sources.push({ label:'Wklejona treść', text: pasteText });
+
+  if(!sources.length){ alert('Wybierz plik(i) lub wklej treść e-maila.'); return; }
+
+  importDrafts = sources.map(s => parseComplaintText(s.text, s.label));
+  renderImportPreview();
+}
+
+function renderImportPreview(){
+  const wrap = document.getElementById('imp-preview-wrap');
+  const tbody = document.getElementById('imp-tbody');
+  if(!importDrafts.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+
+  tbody.innerHTML = importDrafts.map((d,i)=>`
+    <tr>
+      <td><input type="checkbox" ${d.include?'checked':''} onchange="importDrafts[${i}].include=this.checked"></td>
+      <td style="max-width:120px;"><span class="mono" style="font-size:11px;">${esc(d.label)}</span></td>
+      <td><input value="${esc(d.sklep)}" oninput="importDrafts[${i}].sklep=this.value" placeholder="uzupełnij sklep"></td>
+      <td><input class="mono" value="${esc(d.nr)}" oninput="importDrafts[${i}].nr=this.value" placeholder="nr WZ"></td>
+      <td>
+        <select onchange="importDrafts[${i}].kategoria=this.value">
+          ${['Braki ilościowe','Towar uszkodzony','Błędny artykuł','Towar przeterminowany','Inne'].map(k=>`<option ${k===d.kategoria?'selected':''}>${k}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select onchange="importDrafts[${i}].priorytet=this.value">
+          ${['Niski','Średni','Wysoki'].map(p=>`<option ${p===d.priorytet?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </td>
+      <td style="min-width:220px;"><textarea style="min-height:34px;" oninput="importDrafts[${i}].opis=this.value">${esc(d.opis)}</textarea></td>
+      <td><button class="btn btn-danger" onclick="removeImportDraft(${i})">Usuń</button></td>
+    </tr>`).join('');
+}
+
+function removeImportDraft(i){
+  importDrafts.splice(i,1);
+  renderImportPreview();
+}
+
+function clearImportInputs(){
+  document.getElementById('imp-files').value = '';
+  document.getElementById('imp-paste').value = '';
+}
+
+function clearImportPreview(){
+  importDrafts = [];
+  renderImportPreview();
+}
+
+function confirmImport(){
+  const selected = importDrafts.filter(d=>d.include);
+  if(!selected.length){ alert('Zaznacz przynajmniej jedno zgłoszenie do dodania.'); return; }
+  if(selected.some(d=>!d.sklep.trim())){
+    if(!confirm('Niektóre zgłoszenia mają puste pole "Sklep" — dodać mimo to?')) return;
+  }
+  const arr = load('reklamacje');
+  selected.forEach(d=>{
+    arr.unshift({
+      id: uid(),
+      sklep: d.sklep.trim() || '(nieznany sklep - do uzupełnienia)',
+      nr: d.nr.trim(),
+      kategoria: d.kategoria,
+      priorytet: d.priorytet,
+      opis: d.opis.trim(),
+      status: 'Nowa',
+      data: today()
+    });
+  });
+  save('reklamacje', arr);
+  importDrafts = [];
+  renderImportPreview();
+  clearImportInputs();
+  renderReklamacje();
+  alert(`Dodano ${selected.length} zgłoszenie(a) do rejestru.`);
+}
+
+/* ================= IMPORT POLECEŃ KONTROLI Z PLIKÓW / E-MAILA ================= */
+let importKontrolaDrafts = [];
+
+function parseKontrolaText(text, label){
+  const get = (re) => { const m = text.match(re); return m ? m[1].trim() : ''; };
+  const nr = get(/(?:zlecenie|nr\s*zlecenia|numer\s*zlecenia|\bZL\b)\s*[:\-\/]?\s*([A-Za-z0-9\/\-]+)/i);
+  const sklep = get(/(?:sklep|market|placówk\w*)\s*[:\-]?\s*([^\n\r,;]+)/i);
+  const pozycjeRaw = get(/(?:liczba\s*pozycji|pozycji|poz\.)\s*[:\-]?\s*(\d+)/i);
+  const kontrolujacy = get(/(?:kontroluj[aą]cy|wykonawca|przydzielono do|do wykonania przez)\s*[:\-]?\s*([^\n\r,;]+)/i);
+
+  const uwagi = text
+    .replace(/^(od|from|do|to|dw|cc|temat|subject|data|date|wys[łl]ano)\s*[:\-].*$/gim,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .slice(0,400);
+
+  return { label, nr, sklep, pozycje: pozycjeRaw || '', kontrolujacy, uwagi, include:true };
+}
+
+async function processKontrolaImports(){
+  const fileList = Array.from(document.getElementById('impk-files').files || []);
+  const pasteText = document.getElementById('impk-paste').value.trim();
+  const sources = [];
+
+  for(const file of fileList){
+    try{
+      const text = await readFileAsText(file);
+      sources.push({ label: file.name, text });
+    }catch(e){
+      console.error('Nie udało się odczytać pliku', file.name, e);
+    }
+  }
+  if(pasteText) sources.push({ label:'Wklejona treść', text: pasteText });
+
+  if(!sources.length){ alert('Wybierz plik(i) lub wklej treść polecenia/e-maila.'); return; }
+
+  importKontrolaDrafts = sources.map(s => parseKontrolaText(s.text, s.label));
+  renderKontrolaImportPreview();
+}
+
+function renderKontrolaImportPreview(){
+  const wrap = document.getElementById('impk-preview-wrap');
+  const tbody = document.getElementById('impk-tbody');
+  if(!importKontrolaDrafts.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+
+  tbody.innerHTML = importKontrolaDrafts.map((d,i)=>`
+    <tr>
+      <td><input type="checkbox" ${d.include?'checked':''} onchange="importKontrolaDrafts[${i}].include=this.checked"></td>
+      <td style="max-width:120px;"><span class="mono" style="font-size:11px;">${esc(d.label)}</span></td>
+      <td><input class="mono" value="${esc(d.nr)}" oninput="importKontrolaDrafts[${i}].nr=this.value" placeholder="nr zlecenia"></td>
+      <td><input value="${esc(d.sklep)}" oninput="importKontrolaDrafts[${i}].sklep=this.value" placeholder="uzupełnij sklep"></td>
+      <td><input class="mono" type="number" min="0" value="${esc(d.pozycje)}" oninput="importKontrolaDrafts[${i}].pozycje=this.value" style="width:80px;"></td>
+      <td><input value="${esc(d.kontrolujacy)}" oninput="importKontrolaDrafts[${i}].kontrolujacy=this.value" placeholder="uzupełnij"></td>
+      <td style="min-width:220px;"><textarea style="min-height:34px;" oninput="importKontrolaDrafts[${i}].uwagi=this.value">${esc(d.uwagi)}</textarea></td>
+      <td><button class="btn btn-danger" onclick="removeKontrolaImportDraft(${i})">Usuń</button></td>
+    </tr>`).join('');
+}
+
+function removeKontrolaImportDraft(i){
+  importKontrolaDrafts.splice(i,1);
+  renderKontrolaImportPreview();
+}
+
+function clearKontrolaImportInputs(){
+  document.getElementById('impk-files').value = '';
+  document.getElementById('impk-paste').value = '';
+}
+
+function clearKontrolaImportPreview(){
+  importKontrolaDrafts = [];
+  renderKontrolaImportPreview();
+}
+
+function confirmKontrolaImport(){
+  const selected = importKontrolaDrafts.filter(d=>d.include);
+  if(!selected.length){ alert('Zaznacz przynajmniej jedno polecenie do dodania.'); return; }
+  if(selected.some(d=>!d.nr.trim())){
+    if(!confirm('Niektóre polecenia mają puste pole "Nr zlecenia" — dodać mimo to?')) return;
+  }
+  const arr = load('kontrola');
+  selected.forEach(d=>{
+    arr.unshift({
+      id: uid(),
+      nr: d.nr.trim() || '(brak nr - do uzupełnienia)',
+      sklep: d.sklep.trim(),
+      pozycje: parseInt(d.pozycje || '0', 10),
+      niezgodnosci: 0,
+      typ: '—',
+      wynik: 'Zgodne',
+      kontrolujacy: d.kontrolujacy.trim(),
+      uwagi: d.uwagi.trim(),
+      data: today()
+    });
+  });
+  save('kontrola', arr);
+  importKontrolaDrafts = [];
+  renderKontrolaImportPreview();
+  clearKontrolaImportInputs();
+  renderKontrola();
+  alert(`Dodano ${selected.length} polecenie(a) kontroli do rejestru.`);
+}
+
+/* ================= IMPORT POLECEŃ WERYFIKACJI ARTYKUŁÓW Z PLIKÓW / E-MAILA ================= */
+let importArtykulDrafts = [];
+
+function parseArtykulText(text, label){
+  const get = (re) => { const m = text.match(re); return m ? m[1].trim() : ''; };
+  const kod = get(/(?:kod\s*artyku[łl]u|kod)\s*[:\-]?\s*([A-Za-z0-9\-\/]+)/i);
+  const nazwa = get(/(?:nazwa\s*artyku[łl]u|nazwa)\s*[:\-]?\s*([^\n\r,;]+)/i);
+  const ean = get(/\bEAN\b\s*[:\-]?\s*(\d{6,14})/i);
+  const magazyn = get(/(?:magazyn|hala)\s*[:\-]?\s*([^\n\r,;]+)/i);
+  const lokalizacja = get(/(?:miejsce\s*magazynowe|lokalizacja|regał|adres\s*magazynowy)\s*[:\-]?\s*([^\n\r,;]+)/i);
+
+  const uwagi = text
+    .replace(/^(od|from|do|to|dw|cc|temat|subject|data|date|wys[łl]ano)\s*[:\-].*$/gim,'')
+    .replace(/\s+/g,' ')
+    .trim()
+    .slice(0,400);
+
+  return { label, kod, nazwa, ean, magazyn, lokalizacja, uwagi, include:true };
+}
+
+async function processArtykulImports(){
+  const fileList = Array.from(document.getElementById('impa-files').files || []);
+  const pasteText = document.getElementById('impa-paste').value.trim();
+  const sources = [];
+
+  for(const file of fileList){
+    try{
+      const text = await readFileAsText(file);
+      sources.push({ label: file.name, text });
+    }catch(e){
+      console.error('Nie udało się odczytać pliku', file.name, e);
+    }
+  }
+  if(pasteText) sources.push({ label:'Wklejona treść', text: pasteText });
+
+  if(!sources.length){ alert('Wybierz plik(i) lub wklej treść polecenia/e-maila.'); return; }
+
+  importArtykulDrafts = sources.map(s => parseArtykulText(s.text, s.label));
+  renderArtykulImportPreview();
+}
+
+function renderArtykulImportPreview(){
+  const wrap = document.getElementById('impa-preview-wrap');
+  const tbody = document.getElementById('impa-tbody');
+  if(!importArtykulDrafts.length){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+
+  tbody.innerHTML = importArtykulDrafts.map((d,i)=>`
+    <tr>
+      <td><input type="checkbox" ${d.include?'checked':''} onchange="importArtykulDrafts[${i}].include=this.checked"></td>
+      <td style="max-width:120px;"><span class="mono" style="font-size:11px;">${esc(d.label)}</span></td>
+      <td><input class="mono" value="${esc(d.kod)}" oninput="importArtykulDrafts[${i}].kod=this.value" placeholder="kod artykułu"></td>
+      <td><input value="${esc(d.nazwa)}" oninput="importArtykulDrafts[${i}].nazwa=this.value" placeholder="nazwa"></td>
+      <td><input class="mono" value="${esc(d.ean)}" oninput="importArtykulDrafts[${i}].ean=this.value" placeholder="EAN"></td>
+      <td><input value="${esc(d.magazyn)}" oninput="importArtykulDrafts[${i}].magazyn=this.value" placeholder="magazyn"></td>
+      <td><input value="${esc(d.lokalizacja)}" oninput="importArtykulDrafts[${i}].lokalizacja=this.value" placeholder="miejsce magazynowe"></td>
+      <td style="min-width:200px;"><textarea style="min-height:34px;" oninput="importArtykulDrafts[${i}].uwagi=this.value">${esc(d.uwagi)}</textarea></td>
+      <td><button class="btn btn-danger" onclick="removeArtykulImportDraft(${i})">Usuń</button></td>
+    </tr>`).join('');
+}
+
+function removeArtykulImportDraft(i){
+  importArtykulDrafts.splice(i,1);
+  renderArtykulImportPreview();
+}
+
+function clearArtykulImportInputs(){
+  document.getElementById('impa-files').value = '';
+  document.getElementById('impa-paste').value = '';
+}
+
+function clearArtykulImportPreview(){
+  importArtykulDrafts = [];
+  renderArtykulImportPreview();
+}
+
+function confirmArtykulImport(){
+  const selected = importArtykulDrafts.filter(d=>d.include);
+  if(!selected.length){ alert('Zaznacz przynajmniej jedno polecenie do dodania.'); return; }
+  if(selected.some(d=>!d.kod.trim())){
+    if(!confirm('Niektóre polecenia mają puste pole "Kod artykułu" — dodać mimo to?')) return;
+  }
+  const arr = load('artykuly');
+  selected.forEach(d=>{
+    arr.unshift({
+      id: uid(),
+      kod: d.kod.trim() || '(brak kodu - do uzupełnienia)',
+      nazwa: d.nazwa.trim(),
+      ean: d.ean.trim(),
+      jm: '',
+      magazyn: d.magazyn.trim(),
+      lokalizacja: d.lokalizacja.trim(),
+      status: 'Do weryfikacji',
+      uwagi: d.uwagi.trim(),
+      data: today()
+    });
+  });
+  save('artykuly', arr);
+  importArtykulDrafts = [];
+  renderArtykulImportPreview();
+  clearArtykulImportInputs();
+  renderArtykuly();
+  alert(`Dodano ${selected.length} polecenie(a) weryfikacji do rejestru.`);
+}
+
 /* ================= DANE DEMO ================= */
 function loadDemoData(){
   const istniejace = load('reklamacje').length + load('kontrola').length + load('artykuly').length;
@@ -680,19 +1141,24 @@ function loadDemoData(){
     {sklep:'Sklep 118 - Częstochowa', nr:'WZ/2026/00461', kategoria:'Towar uszkodzony', priorytet:'Średni', opis:'Uszkodzone opakowania płatków śniadaniowych, 6 szt. do zwrotu.', status:'W trakcie'},
     {sklep:'Sklep 302 - Blachownia', nr:'WZ/2026/00470', kategoria:'Błędny artykuł', priorytet:'Niski', opis:'Zamiast jogurtu naturalnego dostarczono jogurt owocowy.', status:'Rozwiązana'},
     {sklep:'Sklep 214 - Kłobuck', nr:'WZ/2026/00478', kategoria:'Towar przeterminowany', priorytet:'Wysoki', opis:'Data ważności pieczywa upłynęła dzień przed dostawą.', status:'Nowa'},
-    {sklep:'Sklep 087 - Wręczyca Wielka', nr:'WZ/2026/00483', kategoria:'Inne', priorytet:'Niski', opis:'Reklamacja etykiety cenowej niezgodnej z systemem.', status:'Odrzucona'}
+    {sklep:'Sklep 087 - Wręczyca Wielka', nr:'WZ/2026/00483', kategoria:'Inne', priorytet:'Niski', opis:'Reklamacja etykiety cenowej niezgodnej z systemem.', status:'Odrzucona'},
+    {sklep:'Sklep 118 - Częstochowa', nr:'WZ/2026/00491', kategoria:'Braki ilościowe', priorytet:'Średni', opis:'Brak 4 opakowań kawy mielonej 250g wg awizacji.', status:'W trakcie'}
   ];
   const demoKontrola = [
     {nr:'ZL/2026/1032', sklep:'Sklep 118', pozycje:64, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Kontrola bez zastrzeżeń.'},
     {nr:'ZL/2026/1033', sklep:'Sklep 214', pozycje:48, niezgodnosci:3, typ:'Brak towaru', wynik:'Niezgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Brak 3 pozycji - zgłoszono do korekty stanu.'},
     {nr:'ZL/2026/1034', sklep:'Sklep 302', pozycje:57, niezgodnosci:1, typ:'Pomyłka artykułu', wynik:'Niezgodne', kontrolujacy:'A. Nowak', uwagi:'Pomylono kod artykułu przy skanowaniu.'},
-    {nr:'ZL/2026/1035', sklep:'Sklep 087', pozycje:39, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'A. Nowak', uwagi:''}
+    {nr:'ZL/2026/1035', sklep:'Sklep 087', pozycje:39, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'A. Nowak', uwagi:''},
+    {nr:'ZL/2026/1036', sklep:'Sklep 118', pozycje:52, niezgodnosci:2, typ:'Nadwyżka', wynik:'Niezgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Nadwyżka 2 szt. jogurtu - do zwrotu na stan magazynowy.'},
+    {nr:'ZL/2026/1037', sklep:'Sklep 214', pozycje:41, niezgodnosci:1, typ:'Uszkodzenie', wynik:'Niezgodne', kontrolujacy:'A. Nowak', uwagi:'Uszkodzone opakowanie zbiorcze wody mineralnej.'}
   ];
   const demoArtykuly = [
-    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L', ean:'5901234567890', jm:'szt', status:'Zgodny', uwagi:''},
-    {kod:'ART-01120', nazwa:'Chleb żytni 500g', ean:'5901234567906', jm:'szt', status:'Do poprawy', uwagi:'Błędna jednostka miary w systemie (kg zamiast szt).'},
-    {kod:'ART-01345', nazwa:'Woda mineralna 1,5L', ean:'5901234567913', jm:'szt', status:'Brak w systemie', uwagi:'Artykuł dostarczany, ale nieoprowadzony w WMS.'},
-    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L (duplikat)', ean:'5901234567890', jm:'szt', status:'Duplikat', uwagi:'Zdublowany indeks - do scalenia.'}
+    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L', ean:'5901234567890', jm:'szt', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał A, poziom 1, gniazdo 03', status:'Zgodny', uwagi:''},
+    {kod:'ART-01120', nazwa:'Chleb żytni 500g', ean:'5901234567906', jm:'szt', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał C, poziom 2, gniazdo 11', status:'Do poprawy', uwagi:'Błędna jednostka miary w systemie (kg zamiast szt).'},
+    {kod:'ART-01345', nazwa:'Woda mineralna 1,5L', ean:'5901234567913', jm:'szt', magazyn:'Magazyn 2 - Częstochowa', lokalizacja:'Regał B, poziom 1, gniazdo 07', status:'Brak w systemie', uwagi:'Artykuł dostarczany, ale nieoprowadzony w WMS.'},
+    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L (duplikat)', ean:'5901234567890', jm:'szt', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał A, poziom 1, gniazdo 03', status:'Duplikat', uwagi:'Zdublowany indeks - do scalenia.'},
+    {kod:'ART-01502', nazwa:'Jogurt naturalny 400g', ean:'5901234567920', jm:'szt', magazyn:'Magazyn 2 - Częstochowa', lokalizacja:'Regał D, poziom 3, gniazdo 02', status:'Do weryfikacji', uwagi:'Zgłoszenie od kierownika magazynu - sprawdzić zgodność stanu.'},
+    {kod:'ART-01610', nazwa:'Kawa mielona 250g', ean:'5901234567937', jm:'opak.', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał E, poziom 1, gniazdo 05', status:'Do weryfikacji', uwagi:'Polecenie weryfikacji po zgłoszonej reklamacji braków ilościowych.'}
   ];
 
   const r = load('reklamacje');
