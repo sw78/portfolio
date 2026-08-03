@@ -232,6 +232,23 @@
     </div>
   </div>
 
+  <div class="card" style="margin-top:18px;">
+    <h2>Kopia zapasowa danych (zapis na dysku)</h2>
+    <p style="font-size:12.5px;color:var(--ink-soft);margin:-6px 0 14px;">
+      Wszystkie wpisy zapisują się automatycznie w tej przeglądarce i wczytują się same przy każdym otwarciu aplikacji —
+      nic nie ginie po zamknięciu okna. Dla bezpieczeństwa (np. przed czyszczeniem historii przeglądarki lub przy zmianie komputera)
+      warto od czasu do czasu zapisać kopię zapasową do pliku, którą można potem wczytać ręcznie.
+    </p>
+    <div class="row-actions" style="flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-primary" onclick="backupToFile()">Zapisz kopię zapasową (plik)</button>
+      <label class="btn btn-ghost" style="margin:0;cursor:pointer;">
+        Wczytaj kopię zapasową z pliku
+        <input type="file" accept=".json,application/json" onchange="restoreFromFile(event)" style="display:none;">
+      </label>
+      <span class="mono" id="backup-status" style="font-size:11.5px;color:var(--ink-soft);"></span>
+    </div>
+  </div>
+
   <div class="tabs">
     <button class="tab-btn active" data-tab="reklamacje">
       <span class="led on-amber" id="led-reklamacje"></span>
@@ -261,7 +278,7 @@
     <div class="card">
       <h2>Nowe zgłoszenie reklamacji</h2>
       <div class="form-grid">
-        <div><label>Sklep</label><input id="r-sklep" placeholder="np. Sklep 214 - Kłobuck"></div>
+        <div><label>Sklep</label><input id="r-sklep" placeholder="np. Sklep 214"></div>
         <div><label>Nr zamówienia / WZ</label><input id="r-nr" placeholder="np. WZ/2026/00456"></div>
         <div><label>Kategoria</label>
           <select id="r-kategoria">
@@ -454,9 +471,9 @@
       <div class="form-grid">
         <div><label>Kod artykułu</label><input id="a-kod" placeholder="np. ART-00981"></div>
         <div><label>Nazwa</label><input id="a-nazwa" placeholder="Nazwa artykułu"></div>
-        <div><label>EAN</label><input id="a-ean" placeholder="np. 5901234567890"></div>
+        <div><label>EAN</label><input id="a-ean" placeholder="np. 5900000000017"></div>
         <div><label>Jednostka miary</label><input id="a-jm" placeholder="np. szt / kg / opak."></div>
-        <div><label>Magazyn</label><input id="a-magazyn" placeholder="np. Magazyn 1 - Kłobuck"></div>
+        <div><label>Magazyn</label><input id="a-magazyn" placeholder="np. Magazyn A"></div>
         <div><label>Miejsce magazynowe</label><input id="a-lokalizacja" placeholder="np. Regał B, poziom 2, gniazdo 14"></div>
         <div><label>Status</label>
           <select id="a-status">
@@ -793,6 +810,84 @@ function exportCSV(kind){
   a.href = url; a.download = kind+'_'+new Date().toISOString().slice(0,10)+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/* ================= KOPIA ZAPASOWA (ZAPIS / WCZYTANIE Z PLIKU) ================= */
+const BACKUP_META_KEY = 'psds_backup_meta';
+
+function backupToFile(){
+  const payload = {
+    format: 'panel-systemowy-magazyn-backup',
+    exportedAt: new Date().toISOString(),
+    reklamacje: load('reklamacje'),
+    kontrola: load('kontrola'),
+    artykuly: load('artykuly')
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'panel-systemowy-kopia_' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  localStorage.setItem(BACKUP_META_KEY, JSON.stringify({ lastBackup: payload.exportedAt }));
+  updateBackupStatus();
+}
+
+function restoreFromFile(event){
+  const file = event.target.files[0];
+  if(!file){ return; }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try{
+      data = JSON.parse(reader.result);
+    }catch(e){
+      alert('Nie udało się odczytać pliku — sprawdź, czy to poprawny plik kopii zapasowej (.json).');
+      event.target.value = '';
+      return;
+    }
+    const maRozpoznawalneDane = data && (Array.isArray(data.reklamacje) || Array.isArray(data.kontrola) || Array.isArray(data.artykuly));
+    if(!maRozpoznawalneDane){
+      alert('Ten plik nie zawiera rozpoznawalnych danych panelu.');
+      event.target.value = '';
+      return;
+    }
+    if(!confirm('Wczytanie kopii zapasowej zastąpi obecne dane w tej przeglądarce danymi z pliku. Kontynuować?')){
+      event.target.value = '';
+      return;
+    }
+    if(Array.isArray(data.reklamacje)) save('reklamacje', data.reklamacje);
+    if(Array.isArray(data.kontrola)) save('kontrola', data.kontrola);
+    if(Array.isArray(data.artykuly)) save('artykuly', data.artykuly);
+
+    renderReklamacje();
+    renderKontrola();
+    renderArtykuly();
+
+    const meta = JSON.parse(localStorage.getItem(BACKUP_META_KEY) || '{}');
+    meta.lastRestore = new Date().toISOString();
+    localStorage.setItem(BACKUP_META_KEY, JSON.stringify(meta));
+    updateBackupStatus();
+
+    event.target.value = '';
+    alert('Dane zostały wczytane z pliku kopii zapasowej.');
+  };
+  reader.onerror = () => alert('Nie udało się odczytać pliku.');
+  reader.readAsText(file);
+}
+
+function updateBackupStatus(){
+  const el = document.getElementById('backup-status');
+  if(!el) return;
+  let meta = {};
+  try{ meta = JSON.parse(localStorage.getItem(BACKUP_META_KEY) || '{}'); }catch(e){ meta = {}; }
+  const parts = [];
+  if(meta.lastBackup) parts.push('Ostatni zapis: ' + new Date(meta.lastBackup).toLocaleString('pl-PL'));
+  if(meta.lastRestore) parts.push('Ostatnie wczytanie: ' + new Date(meta.lastRestore).toLocaleString('pl-PL'));
+  el.textContent = parts.length ? parts.join(' · ') : 'Jeszcze nie zapisano kopii na dysku.';
 }
 
 /* ================= IMPORT Z PLIKÓW / E-MAILA ================= */
@@ -1137,28 +1232,28 @@ function loadDemoData(){
   }
 
   const demoReklamacje = [
-    {sklep:'Sklep 214 - Kłobuck', nr:'WZ/2026/00456', kategoria:'Braki ilościowe', priorytet:'Wysoki', opis:'Brak 12 szt. wody mineralnej 1,5L na palecie nr 3.', status:'Nowa'},
-    {sklep:'Sklep 118 - Częstochowa', nr:'WZ/2026/00461', kategoria:'Towar uszkodzony', priorytet:'Średni', opis:'Uszkodzone opakowania płatków śniadaniowych, 6 szt. do zwrotu.', status:'W trakcie'},
-    {sklep:'Sklep 302 - Blachownia', nr:'WZ/2026/00470', kategoria:'Błędny artykuł', priorytet:'Niski', opis:'Zamiast jogurtu naturalnego dostarczono jogurt owocowy.', status:'Rozwiązana'},
-    {sklep:'Sklep 214 - Kłobuck', nr:'WZ/2026/00478', kategoria:'Towar przeterminowany', priorytet:'Wysoki', opis:'Data ważności pieczywa upłynęła dzień przed dostawą.', status:'Nowa'},
-    {sklep:'Sklep 087 - Wręczyca Wielka', nr:'WZ/2026/00483', kategoria:'Inne', priorytet:'Niski', opis:'Reklamacja etykiety cenowej niezgodnej z systemem.', status:'Odrzucona'},
-    {sklep:'Sklep 118 - Częstochowa', nr:'WZ/2026/00491', kategoria:'Braki ilościowe', priorytet:'Średni', opis:'Brak 4 opakowań kawy mielonej 250g wg awizacji.', status:'W trakcie'}
+    {sklep:'Sklep 214', nr:'WZ/2026/00456', kategoria:'Braki ilościowe', priorytet:'Wysoki', opis:'Brak 12 szt. wody mineralnej 1,5L na palecie nr 3.', status:'Nowa'},
+    {sklep:'Sklep 118', nr:'WZ/2026/00461', kategoria:'Towar uszkodzony', priorytet:'Średni', opis:'Uszkodzone opakowania płatków śniadaniowych, 6 szt. do zwrotu.', status:'W trakcie'},
+    {sklep:'Sklep 302', nr:'WZ/2026/00470', kategoria:'Błędny artykuł', priorytet:'Niski', opis:'Zamiast jogurtu naturalnego dostarczono jogurt owocowy.', status:'Rozwiązana'},
+    {sklep:'Sklep 214', nr:'WZ/2026/00478', kategoria:'Towar przeterminowany', priorytet:'Wysoki', opis:'Data ważności pieczywa upłynęła dzień przed dostawą.', status:'Nowa'},
+    {sklep:'Sklep 087', nr:'WZ/2026/00483', kategoria:'Inne', priorytet:'Niski', opis:'Reklamacja etykiety cenowej niezgodnej z systemem.', status:'Odrzucona'},
+    {sklep:'Sklep 118', nr:'WZ/2026/00491', kategoria:'Braki ilościowe', priorytet:'Średni', opis:'Brak 4 opakowań kawy mielonej 250g wg awizacji.', status:'W trakcie'}
   ];
   const demoKontrola = [
-    {nr:'ZL/2026/1032', sklep:'Sklep 118', pozycje:64, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Kontrola bez zastrzeżeń.'},
-    {nr:'ZL/2026/1033', sklep:'Sklep 214', pozycje:48, niezgodnosci:3, typ:'Brak towaru', wynik:'Niezgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Brak 3 pozycji - zgłoszono do korekty stanu.'},
-    {nr:'ZL/2026/1034', sklep:'Sklep 302', pozycje:57, niezgodnosci:1, typ:'Pomyłka artykułu', wynik:'Niezgodne', kontrolujacy:'A. Nowak', uwagi:'Pomylono kod artykułu przy skanowaniu.'},
-    {nr:'ZL/2026/1035', sklep:'Sklep 087', pozycje:39, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'A. Nowak', uwagi:''},
-    {nr:'ZL/2026/1036', sklep:'Sklep 118', pozycje:52, niezgodnosci:2, typ:'Nadwyżka', wynik:'Niezgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Nadwyżka 2 szt. jogurtu - do zwrotu na stan magazynowy.'},
-    {nr:'ZL/2026/1037', sklep:'Sklep 214', pozycje:41, niezgodnosci:1, typ:'Uszkodzenie', wynik:'Niezgodne', kontrolujacy:'A. Nowak', uwagi:'Uszkodzone opakowanie zbiorcze wody mineralnej.'}
+    {nr:'ZL/2026/1032', sklep:'Sklep 118', pozycje:64, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'Kontroler 1', uwagi:'Kontrola bez zastrzeżeń.'},
+    {nr:'ZL/2026/1033', sklep:'Sklep 214', pozycje:48, niezgodnosci:3, typ:'Brak towaru', wynik:'Niezgodne', kontrolujacy:'Kontroler 1', uwagi:'Brak 3 pozycji - zgłoszono do korekty stanu.'},
+    {nr:'ZL/2026/1034', sklep:'Sklep 302', pozycje:57, niezgodnosci:1, typ:'Pomyłka artykułu', wynik:'Niezgodne', kontrolujacy:'Kontroler 2', uwagi:'Pomylono kod artykułu przy skanowaniu.'},
+    {nr:'ZL/2026/1035', sklep:'Sklep 087', pozycje:39, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'Kontroler 2', uwagi:''},
+    {nr:'ZL/2026/1036', sklep:'Sklep 118', pozycje:52, niezgodnosci:2, typ:'Nadwyżka', wynik:'Niezgodne', kontrolujacy:'Kontroler 1', uwagi:'Nadwyżka 2 szt. jogurtu - do zwrotu na stan magazynowy.'},
+    {nr:'ZL/2026/1037', sklep:'Sklep 214', pozycje:41, niezgodnosci:1, typ:'Uszkodzenie', wynik:'Niezgodne', kontrolujacy:'Kontroler 2', uwagi:'Uszkodzone opakowanie zbiorcze wody mineralnej.'}
   ];
   const demoArtykuly = [
-    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L', ean:'5901234567890', jm:'szt', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał A, poziom 1, gniazdo 03', status:'Zgodny', uwagi:''},
-    {kod:'ART-01120', nazwa:'Chleb żytni 500g', ean:'5901234567906', jm:'szt', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał C, poziom 2, gniazdo 11', status:'Do poprawy', uwagi:'Błędna jednostka miary w systemie (kg zamiast szt).'},
-    {kod:'ART-01345', nazwa:'Woda mineralna 1,5L', ean:'5901234567913', jm:'szt', magazyn:'Magazyn 2 - Częstochowa', lokalizacja:'Regał B, poziom 1, gniazdo 07', status:'Brak w systemie', uwagi:'Artykuł dostarczany, ale nieoprowadzony w WMS.'},
-    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L (duplikat)', ean:'5901234567890', jm:'szt', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał A, poziom 1, gniazdo 03', status:'Duplikat', uwagi:'Zdublowany indeks - do scalenia.'},
-    {kod:'ART-01502', nazwa:'Jogurt naturalny 400g', ean:'5901234567920', jm:'szt', magazyn:'Magazyn 2 - Częstochowa', lokalizacja:'Regał D, poziom 3, gniazdo 02', status:'Do weryfikacji', uwagi:'Zgłoszenie od kierownika magazynu - sprawdzić zgodność stanu.'},
-    {kod:'ART-01610', nazwa:'Kawa mielona 250g', ean:'5901234567937', jm:'opak.', magazyn:'Magazyn 1 - Kłobuck', lokalizacja:'Regał E, poziom 1, gniazdo 05', status:'Do weryfikacji', uwagi:'Polecenie weryfikacji po zgłoszonej reklamacji braków ilościowych.'}
+    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L', ean:'5900000000017', jm:'szt', magazyn:'Magazyn A', lokalizacja:'Regał A, poziom 1, gniazdo 03', status:'Zgodny', uwagi:''},
+    {kod:'ART-01120', nazwa:'Chleb żytni 500g', ean:'5900000000024', jm:'szt', magazyn:'Magazyn A', lokalizacja:'Regał C, poziom 2, gniazdo 11', status:'Do poprawy', uwagi:'Błędna jednostka miary w systemie (kg zamiast szt).'},
+    {kod:'ART-01345', nazwa:'Woda mineralna 1,5L', ean:'5900000000031', jm:'szt', magazyn:'Magazyn B', lokalizacja:'Regał B, poziom 1, gniazdo 07', status:'Brak w systemie', uwagi:'Artykuł dostarczany, ale nieoprowadzony w WMS.'},
+    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L (duplikat)', ean:'5900000000017', jm:'szt', magazyn:'Magazyn A', lokalizacja:'Regał A, poziom 1, gniazdo 03', status:'Duplikat', uwagi:'Zdublowany indeks - do scalenia.'},
+    {kod:'ART-01502', nazwa:'Jogurt naturalny 400g', ean:'5900000000048', jm:'szt', magazyn:'Magazyn B', lokalizacja:'Regał D, poziom 3, gniazdo 02', status:'Do weryfikacji', uwagi:'Zgłoszenie od kierownika magazynu - sprawdzić zgodność stanu.'},
+    {kod:'ART-01610', nazwa:'Kawa mielona 250g', ean:'5900000000055', jm:'opak.', magazyn:'Magazyn A', lokalizacja:'Regał E, poziom 1, gniazdo 05', status:'Do weryfikacji', uwagi:'Polecenie weryfikacji po zgłoszonej reklamacji braków ilościowych.'}
   ];
 
   const r = load('reklamacje');
@@ -1182,6 +1277,7 @@ function loadDemoData(){
 renderReklamacje();
 renderKontrola();
 renderArtykuly();
+updateBackupStatus();
 </script>
 
 <!-- LICZNIK WEJŚĆ — Panel Specjalisty ds. Systemowych -->
