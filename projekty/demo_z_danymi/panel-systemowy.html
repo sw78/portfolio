@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Specjalisty ds. Systemowych</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF2F0;
+    --surface:#FFFFFF;
+    --surface-alt:#E3E9E5;
+    --ink:#1B2420;
+    --ink-soft:#5B6B63;
+    --line:#CFD8D2;
+    --primary:#143C3A;
+    --primary-light:#1F5652;
+    --primary-soft:#DCE7E4;
+    --amber:#C97A2B;
+    --amber-soft:#F5E4CF;
+    --red:#B84A3C;
+    --red-soft:#F3DEDA;
+    --green:#3F7D58;
+    --green-soft:#DCEBE1;
+    --blue:#2E5C8A;
+    --blue-soft:#DCE6EF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{max-width:1180px;margin:0 auto;padding:28px 24px 60px;}
+
+  /* Header / control panel signature */
+  .panel-head{
+    background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);
+    border-radius:10px;
+    color:#EFF5F3;
+    padding:22px 26px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+    box-shadow:0 6px 18px rgba(20,60,58,0.18);
+  }
+  .panel-head h1{
+    font-family:'Oswald',sans-serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    margin:0 0 4px;
+  }
+  .panel-head p{margin:0;font-size:13px;color:#BFD6D0;}
+  .clock{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:#BFD6D0;
+    text-align:right;
+    line-height:1.5;
+  }
+
+  /* Tabs styled like control-panel switches with LED indicators */
+  .tabs{
+    display:flex;
+    gap:10px;
+    margin:22px 0 20px;
+    flex-wrap:wrap;
+  }
+  .tab-btn{
+    flex:1 1 220px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 16px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    transition:border-color .15s ease, box-shadow .15s ease;
+    text-align:left;
+  }
+  .tab-btn:hover{border-color:var(--primary-light);}
+  .tab-btn.active{
+    border-color:var(--primary);
+    box-shadow:0 0 0 1px var(--primary);
+    background:var(--primary-soft);
+  }
+  .led{
+    width:11px;height:11px;border-radius:50%;
+    flex:none;
+    background:var(--line);
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,0.05);
+  }
+  .led.on-amber{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+  .led.on-red{background:var(--red);box-shadow:0 0 6px var(--red);}
+  .led.on-green{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .tab-label{display:flex;flex-direction:column;gap:2px;}
+  .tab-title{font-weight:600;font-size:13.5px;}
+  .tab-sub{font-size:11.5px;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;}
+
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-family:'Oswald',sans-serif;
+    font-size:16px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    margin:0 0 14px;
+    color:var(--primary);
+  }
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:12px;
+    margin-bottom:14px;
+  }
+  label{font-size:11.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:0.02em;display:block;margin-bottom:4px;}
+  input,select,textarea{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    background:#FBFDFC;
+    color:var(--ink);
+  }
+  textarea{resize:vertical;min-height:38px;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--primary-light);outline-offset:1px;}
+
+  .btn{
+    border:none;
+    border-radius:6px;
+    padding:9px 16px;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-light);}
+  .btn-ghost{background:var(--surface-alt);color:var(--ink);}
+  .btn-ghost:hover{background:var(--line);}
+  .btn-danger{background:var(--red-soft);color:var(--red);}
+  .btn-danger:hover{background:#e8c3bc;}
+  .btn-header{background:rgba(255,255,255,0.12);color:#EFF5F3;border:1px solid rgba(255,255,255,0.25);}
+  .btn-header:hover{background:rgba(255,255,255,0.2);}
+  .row-actions{display:flex;gap:6px;}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px;}
+  .toolbar .field{min-width:150px;flex:1;}
+
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .stat{
+    background:var(--surface-alt);
+    border-radius:8px;
+    padding:10px 14px;
+    min-width:110px;
+  }
+  .stat .num{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--primary);}
+  .stat .lbl{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.02em;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+    border-bottom:1px solid var(--line);
+    padding:8px 8px;
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:9px 8px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  tbody tr:hover{background:var(--surface-alt);}
+  .mono{font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+  .badge{
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:99px;
+    font-size:11.5px;
+    font-weight:600;
+  }
+  .badge-amber{background:var(--amber-soft);color:var(--amber);}
+  .badge-blue{background:var(--blue-soft);color:var(--blue);}
+  .badge-green{background:var(--green-soft);color:var(--green);}
+  .badge-red{background:var(--red-soft);color:var(--red);}
+  .badge-gray{background:var(--surface-alt);color:var(--ink-soft);}
+
+  .empty{padding:30px 10px;text-align:center;color:var(--ink-soft);font-size:13px;}
+
+  .foot-bar{display:flex;justify-content:space-between;align-items:center;margin-top:6px;flex-wrap:wrap;gap:10px;}
+
+  @media (max-width:640px){
+    .panel-head{flex-direction:column;align-items:flex-start;}
+    .clock{text-align:left;}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="panel-head">
+    <div>
+      <h1>Panel Specjalisty ds. Systemowych</h1>
+      <p>Kontrola kompletacji · Reklamacje ze sklepów · Weryfikacja artykułów</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button class="btn btn-header" id="demo-btn" onclick="loadDemoData()" style="white-space:nowrap;">Wgraj dane DEMO</button>
+      <div class="clock" id="clock"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="reklamacje">
+      <span class="led on-amber" id="led-reklamacje"></span>
+      <span class="tab-label">
+        <span class="tab-title">Reklamacje ze sklepów</span>
+        <span class="tab-sub" id="sub-reklamacje">0 nowych</span>
+      </span>
+    </button>
+    <button class="tab-btn" data-tab="kontrola">
+      <span class="led on-red" id="led-kontrola"></span>
+      <span class="tab-label">
+        <span class="tab-title">Kontrola kompletacji i wydania</span>
+        <span class="tab-sub" id="sub-kontrola">0 niezgodności dziś</span>
+      </span>
+    </button>
+    <button class="tab-btn" data-tab="artykuly">
+      <span class="led on-red" id="led-artykuly"></span>
+      <span class="tab-label">
+        <span class="tab-title">Weryfikacja artykułów</span>
+        <span class="tab-sub" id="sub-artykuly">0 do poprawy</span>
+      </span>
+    </button>
+  </div>
+
+  <!-- TAB 1: REKLAMACJE -->
+  <section class="view active" id="view-reklamacje">
+    <div class="card">
+      <h2>Nowe zgłoszenie reklamacji</h2>
+      <div class="form-grid">
+        <div><label>Sklep</label><input id="r-sklep" placeholder="np. Sklep 214 - Kłobuck"></div>
+        <div><label>Nr zamówienia / WZ</label><input id="r-nr" placeholder="np. WZ/2026/00456"></div>
+        <div><label>Kategoria</label>
+          <select id="r-kategoria">
+            <option>Braki ilościowe</option>
+            <option>Towar uszkodzony</option>
+            <option>Błędny artykuł</option>
+            <option>Towar przeterminowany</option>
+            <option>Inne</option>
+          </select>
+        </div>
+        <div><label>Priorytet</label>
+          <select id="r-priorytet">
+            <option>Niski</option>
+            <option selected>Średni</option>
+            <option>Wysoki</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div><label>Opis zgłoszenia</label><textarea id="r-opis" placeholder="Krótki opis sytuacji zgłoszonej przez sklep..."></textarea></div>
+      </div>
+      <button class="btn btn-primary" onclick="addReklamacja()">Dodaj zgłoszenie</button>
+    </div>
+
+    <div class="card">
+      <h2>Rejestr reklamacji</h2>
+      <div class="toolbar">
+        <div class="field"><label>Status</label>
+          <select id="r-filter-status" onchange="renderReklamacje()">
+            <option value="">Wszystkie</option>
+            <option>Nowa</option>
+            <option>W trakcie</option>
+            <option>Rozwiązana</option>
+            <option>Odrzucona</option>
+          </select>
+        </div>
+        <div class="field"><label>Szukaj (sklep / nr)</label><input id="r-filter-search" oninput="renderReklamacje()" placeholder="wpisz fragment..."></div>
+      </div>
+      <div class="stats" id="r-stats"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>Sklep</th><th>Nr WZ</th><th>Kategoria</th><th>Priorytet</th><th>Opis</th><th>Data</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="r-tbody"></tbody>
+        </table>
+      </div>
+      <div class="foot-bar">
+        <span></span>
+        <button class="btn btn-ghost" onclick="exportCSV('reklamacje')">Eksportuj CSV</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2: KONTROLA KOMPLETACJI -->
+  <section class="view" id="view-kontrola">
+    <div class="card">
+      <h2>Nowa kontrola kompletacji / wydania</h2>
+      <div class="form-grid">
+        <div><label>Nr zlecenia</label><input id="k-nr" placeholder="np. ZL/2026/1032"></div>
+        <div><label>Sklep</label><input id="k-sklep" placeholder="np. Sklep 118"></div>
+        <div><label>Liczba pozycji</label><input id="k-pozycje" type="number" min="0" value="0"></div>
+        <div><label>Liczba niezgodności</label><input id="k-niezgodnosci" type="number" min="0" value="0"></div>
+        <div><label>Typ niezgodności</label>
+          <select id="k-typ">
+            <option>—</option>
+            <option>Brak towaru</option>
+            <option>Nadwyżka</option>
+            <option>Pomyłka artykułu</option>
+            <option>Uszkodzenie</option>
+          </select>
+        </div>
+        <div><label>Kontrolujący</label><input id="k-kontrolujacy" placeholder="Imię i nazwisko"></div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div><label>Uwagi</label><textarea id="k-uwagi" placeholder="Dodatkowe uwagi z kontroli..."></textarea></div>
+      </div>
+      <button class="btn btn-primary" onclick="addKontrola()">Zapisz kontrolę</button>
+    </div>
+
+    <div class="card">
+      <h2>Rejestr kontroli</h2>
+      <div class="toolbar">
+        <div class="field"><label>Wynik</label>
+          <select id="k-filter-wynik" onchange="renderKontrola()">
+            <option value="">Wszystkie</option>
+            <option>Zgodne</option>
+            <option>Niezgodne</option>
+          </select>
+        </div>
+        <div class="field"><label>Szukaj (nr zlecenia / sklep)</label><input id="k-filter-search" oninput="renderKontrola()"></div>
+      </div>
+      <div class="stats" id="k-stats"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>Nr zlecenia</th><th>Sklep</th><th>Pozycje</th><th>Niezg.</th><th>Typ</th><th>Wynik</th><th>Kontrolujący</th><th>Data</th><th></th>
+          </tr></thead>
+          <tbody id="k-tbody"></tbody>
+        </table>
+      </div>
+      <div class="foot-bar">
+        <span></span>
+        <button class="btn btn-ghost" onclick="exportCSV('kontrola')">Eksportuj CSV</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: WERYFIKACJA ARTYKUŁÓW -->
+  <section class="view" id="view-artykuly">
+    <div class="card">
+      <h2>Nowa weryfikacja artykułu</h2>
+      <div class="form-grid">
+        <div><label>Kod artykułu</label><input id="a-kod" placeholder="np. ART-00981"></div>
+        <div><label>Nazwa</label><input id="a-nazwa" placeholder="Nazwa artykułu"></div>
+        <div><label>EAN</label><input id="a-ean" placeholder="np. 5901234567890"></div>
+        <div><label>Jednostka miary</label><input id="a-jm" placeholder="np. szt / kg / opak."></div>
+        <div><label>Status</label>
+          <select id="a-status">
+            <option>Zgodny</option>
+            <option>Do poprawy</option>
+            <option>Brak w systemie</option>
+            <option>Duplikat</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div><label>Uwagi</label><textarea id="a-uwagi" placeholder="Co dokładnie wymaga poprawy..."></textarea></div>
+      </div>
+      <button class="btn btn-primary" onclick="addArtykul()">Zapisz weryfikację</button>
+    </div>
+
+    <div class="card">
+      <h2>Rejestr weryfikacji artykułów</h2>
+      <div class="toolbar">
+        <div class="field"><label>Status</label>
+          <select id="a-filter-status" onchange="renderArtykuly()">
+            <option value="">Wszystkie</option>
+            <option>Zgodny</option>
+            <option>Do poprawy</option>
+            <option>Brak w systemie</option>
+            <option>Duplikat</option>
+          </select>
+        </div>
+        <div class="field"><label>Szukaj (kod / nazwa / EAN)</label><input id="a-filter-search" oninput="renderArtykuly()"></div>
+      </div>
+      <div class="stats" id="a-stats"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr>
+            <th>Kod</th><th>Nazwa</th><th>EAN</th><th>J.m.</th><th>Status</th><th>Uwagi</th><th>Data</th><th></th>
+          </tr></thead>
+          <tbody id="a-tbody"></tbody>
+        </table>
+      </div>
+      <div class="foot-bar">
+        <span></span>
+        <button class="btn btn-ghost" onclick="exportCSV('artykuly')">Eksportuj CSV</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------- storage ---------- */
+const STORE_KEYS = {
+  reklamacje:'psds_reklamacje',
+  kontrola:'psds_kontrola',
+  artykuly:'psds_artykuly'
+};
+function load(key){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEYS[key])||'[]'); }
+  catch(e){ return []; }
+}
+function save(key,arr){
+  try{ localStorage.setItem(STORE_KEYS[key], JSON.stringify(arr)); }
+  catch(e){ console.error('Zapis nieudany', e); }
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function today(){
+  const d=new Date();
+  return d.toLocaleDateString('pl-PL')+' '+d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+}
+function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------- clock ---------- */
+function tickClock(){
+  document.getElementById('clock').textContent = new Date().toLocaleString('pl-PL');
+}
+tickClock(); setInterval(tickClock,1000);
+
+/* ================= REKLAMACJE ================= */
+function addReklamacja(){
+  const sklep=document.getElementById('r-sklep').value.trim();
+  const nr=document.getElementById('r-nr').value.trim();
+  if(!sklep){ alert('Podaj sklep zgłaszający.'); return; }
+  const item={
+    id:uid(),
+    sklep, nr,
+    kategoria:document.getElementById('r-kategoria').value,
+    priorytet:document.getElementById('r-priorytet').value,
+    opis:document.getElementById('r-opis').value.trim(),
+    status:'Nowa',
+    data:today()
+  };
+  const arr=load('reklamacje'); arr.unshift(item); save('reklamacje',arr);
+  ['r-sklep','r-nr','r-opis'].forEach(id=>document.getElementById(id).value='');
+  renderReklamacje();
+}
+function setReklamacjaStatus(id,status){
+  const arr=load('reklamacje');
+  const it=arr.find(x=>x.id===id); if(it){ it.status=status; save('reklamacje',arr); renderReklamacje(); }
+}
+function deleteReklamacja(id){
+  if(!confirm('Usunąć to zgłoszenie?')) return;
+  save('reklamacje', load('reklamacje').filter(x=>x.id!==id));
+  renderReklamacje();
+}
+function badgeStatus(status){
+  const map={'Nowa':'badge-amber','W trakcie':'badge-blue','Rozwiązana':'badge-green','Odrzucona':'badge-gray'};
+  return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
+}
+function renderReklamacje(){
+  let arr=load('reklamacje');
+  const fStatus=document.getElementById('r-filter-status').value;
+  const fSearch=document.getElementById('r-filter-search').value.toLowerCase();
+  if(fStatus) arr=arr.filter(x=>x.status===fStatus);
+  if(fSearch) arr=arr.filter(x=>(x.sklep+x.nr).toLowerCase().includes(fSearch));
+
+  const all=load('reklamacje');
+  const nowe=all.filter(x=>x.status==='Nowa').length;
+  const wTrakcie=all.filter(x=>x.status==='W trakcie').length;
+  const rozwiazane=all.filter(x=>x.status==='Rozwiązana').length;
+  document.getElementById('r-stats').innerHTML=`
+    <div class="stat"><div class="num">${all.length}</div><div class="lbl">Łącznie</div></div>
+    <div class="stat"><div class="num">${nowe}</div><div class="lbl">Nowe</div></div>
+    <div class="stat"><div class="num">${wTrakcie}</div><div class="lbl">W trakcie</div></div>
+    <div class="stat"><div class="num">${rozwiazane}</div><div class="lbl">Rozwiązane</div></div>`;
+  document.getElementById('sub-reklamacje').textContent = nowe+' nowych';
+  document.getElementById('led-reklamacje').className = 'led '+(nowe>0?'on-amber':'');
+
+  const tbody=document.getElementById('r-tbody');
+  if(!arr.length){ tbody.innerHTML=`<tr><td colspan="8" class="empty">Brak zgłoszeń spełniających kryteria.</td></tr>`; return; }
+  tbody.innerHTML=arr.map(x=>`
+    <tr>
+      <td>${esc(x.sklep)}</td>
+      <td class="mono">${esc(x.nr)||'—'}</td>
+      <td>${esc(x.kategoria)}</td>
+      <td>${esc(x.priorytet)}</td>
+      <td style="max-width:220px;">${esc(x.opis)||'—'}</td>
+      <td class="mono">${esc(x.data)}</td>
+      <td>
+        <select onchange="setReklamacjaStatus('${x.id}',this.value)">
+          ${['Nowa','W trakcie','Rozwiązana','Odrzucona'].map(s=>`<option ${s===x.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="btn btn-danger" onclick="deleteReklamacja('${x.id}')">Usuń</button></td>
+    </tr>`).join('');
+}
+
+/* ================= KONTROLA ================= */
+function addKontrola(){
+  const nr=document.getElementById('k-nr').value.trim();
+  const sklep=document.getElementById('k-sklep').value.trim();
+  if(!nr){ alert('Podaj numer zlecenia.'); return; }
+  const niez=parseInt(document.getElementById('k-niezgodnosci').value||'0',10);
+  const item={
+    id:uid(), nr, sklep,
+    pozycje:parseInt(document.getElementById('k-pozycje').value||'0',10),
+    niezgodnosci:niez,
+    typ:document.getElementById('k-typ').value,
+    wynik: niez>0 ? 'Niezgodne' : 'Zgodne',
+    kontrolujacy:document.getElementById('k-kontrolujacy').value.trim(),
+    uwagi:document.getElementById('k-uwagi').value.trim(),
+    data:today()
+  };
+  const arr=load('kontrola'); arr.unshift(item); save('kontrola',arr);
+  ['k-nr','k-sklep','k-kontrolujacy','k-uwagi'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('k-pozycje').value=0;
+  document.getElementById('k-niezgodnosci').value=0;
+  renderKontrola();
+}
+function deleteKontrola(id){
+  if(!confirm('Usunąć ten wpis?')) return;
+  save('kontrola', load('kontrola').filter(x=>x.id!==id));
+  renderKontrola();
+}
+function renderKontrola(){
+  let arr=load('kontrola');
+  const fWynik=document.getElementById('k-filter-wynik').value;
+  const fSearch=document.getElementById('k-filter-search').value.toLowerCase();
+  if(fWynik) arr=arr.filter(x=>x.wynik===fWynik);
+  if(fSearch) arr=arr.filter(x=>(x.nr+x.sklep).toLowerCase().includes(fSearch));
+
+  const all=load('kontrola');
+  const isToday = d => d.startsWith(new Date().toLocaleDateString('pl-PL'));
+  const dzisiaj = all.filter(x=>isToday(x.data));
+  const niezgDzisiaj = dzisiaj.filter(x=>x.wynik==='Niezgodne').length;
+  const zgodnoscPct = all.length ? Math.round(100*all.filter(x=>x.wynik==='Zgodne').length/all.length) : 100;
+  document.getElementById('k-stats').innerHTML=`
+    <div class="stat"><div class="num">${all.length}</div><div class="lbl">Łącznie kontroli</div></div>
+    <div class="stat"><div class="num">${dzisiaj.length}</div><div class="lbl">Dziś</div></div>
+    <div class="stat"><div class="num">${niezgDzisiaj}</div><div class="lbl">Niezgodności dziś</div></div>
+    <div class="stat"><div class="num">${zgodnoscPct}%</div><div class="lbl">Zgodność ogółem</div></div>`;
+  document.getElementById('sub-kontrola').textContent = niezgDzisiaj+' niezgodności dziś';
+  document.getElementById('led-kontrola').className = 'led '+(niezgDzisiaj>0?'on-red':'on-green');
+
+  const tbody=document.getElementById('k-tbody');
+  if(!arr.length){ tbody.innerHTML=`<tr><td colspan="9" class="empty">Brak wpisów spełniających kryteria.</td></tr>`; return; }
+  tbody.innerHTML=arr.map(x=>`
+    <tr>
+      <td class="mono">${esc(x.nr)}</td>
+      <td>${esc(x.sklep)||'—'}</td>
+      <td class="mono">${x.pozycje}</td>
+      <td class="mono">${x.niezgodnosci}</td>
+      <td>${esc(x.typ)}</td>
+      <td>${x.wynik==='Zgodne'?'<span class="badge badge-green">Zgodne</span>':'<span class="badge badge-red">Niezgodne</span>'}</td>
+      <td>${esc(x.kontrolujacy)||'—'}</td>
+      <td class="mono">${esc(x.data)}</td>
+      <td><button class="btn btn-danger" onclick="deleteKontrola('${x.id}')">Usuń</button></td>
+    </tr>`).join('');
+}
+
+/* ================= ARTYKUŁY ================= */
+function addArtykul(){
+  const kod=document.getElementById('a-kod').value.trim();
+  if(!kod){ alert('Podaj kod artykułu.'); return; }
+  const item={
+    id:uid(), kod,
+    nazwa:document.getElementById('a-nazwa').value.trim(),
+    ean:document.getElementById('a-ean').value.trim(),
+    jm:document.getElementById('a-jm').value.trim(),
+    status:document.getElementById('a-status').value,
+    uwagi:document.getElementById('a-uwagi').value.trim(),
+    data:today()
+  };
+  const arr=load('artykuly'); arr.unshift(item); save('artykuly',arr);
+  ['a-kod','a-nazwa','a-ean','a-jm','a-uwagi'].forEach(id=>document.getElementById(id).value='');
+  renderArtykuly();
+}
+function deleteArtykul(id){
+  if(!confirm('Usunąć ten wpis?')) return;
+  save('artykuly', load('artykuly').filter(x=>x.id!==id));
+  renderArtykuly();
+}
+function badgeArtStatus(status){
+  const map={'Zgodny':'badge-green','Do poprawy':'badge-amber','Brak w systemie':'badge-red','Duplikat':'badge-gray'};
+  return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
+}
+function renderArtykuly(){
+  let arr=load('artykuly');
+  const fStatus=document.getElementById('a-filter-status').value;
+  const fSearch=document.getElementById('a-filter-search').value.toLowerCase();
+  if(fStatus) arr=arr.filter(x=>x.status===fStatus);
+  if(fSearch) arr=arr.filter(x=>(x.kod+x.nazwa+x.ean).toLowerCase().includes(fSearch));
+
+  const all=load('artykuly');
+  const doPoprawy=all.filter(x=>x.status==='Do poprawy').length;
+  const brak=all.filter(x=>x.status==='Brak w systemie').length;
+  document.getElementById('a-stats').innerHTML=`
+    <div class="stat"><div class="num">${all.length}</div><div class="lbl">Łącznie</div></div>
+    <div class="stat"><div class="num">${doPoprawy}</div><div class="lbl">Do poprawy</div></div>
+    <div class="stat"><div class="num">${brak}</div><div class="lbl">Brak w systemie</div></div>`;
+  document.getElementById('sub-artykuly').textContent = (doPoprawy+brak)+' do poprawy';
+  document.getElementById('led-artykuly').className = 'led '+((doPoprawy+brak)>0?'on-red':'on-green');
+
+  const tbody=document.getElementById('a-tbody');
+  if(!arr.length){ tbody.innerHTML=`<tr><td colspan="8" class="empty">Brak wpisów spełniających kryteria.</td></tr>`; return; }
+  tbody.innerHTML=arr.map(x=>`
+    <tr>
+      <td class="mono">${esc(x.kod)}</td>
+      <td>${esc(x.nazwa)||'—'}</td>
+      <td class="mono">${esc(x.ean)||'—'}</td>
+      <td>${esc(x.jm)||'—'}</td>
+      <td>${badgeArtStatus(x.status)}</td>
+      <td style="max-width:200px;">${esc(x.uwagi)||'—'}</td>
+      <td class="mono">${esc(x.data)}</td>
+      <td><button class="btn btn-danger" onclick="deleteArtykul('${x.id}')">Usuń</button></td>
+    </tr>`).join('');
+}
+
+/* ================= CSV EXPORT ================= */
+function exportCSV(kind){
+  const data = load(kind);
+  if(!data.length){ alert('Brak danych do eksportu.'); return; }
+  const keys = Object.keys(data[0]).filter(k=>k!=='id');
+  const rows = [keys.join(';'), ...data.map(row=>keys.map(k=>`"${(row[k]??'').toString().replace(/"/g,'""')}"`).join(';'))];
+  const blob = new Blob(['\uFEFF'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = kind+'_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ================= DANE DEMO ================= */
+function loadDemoData(){
+  const istniejace = load('reklamacje').length + load('kontrola').length + load('artykuly').length;
+  if(istniejace > 0){
+    if(!confirm('W rejestrach są już dane. Wgranie danych DEMO doda przykładowe wpisy obok istniejących. Kontynuować?')) return;
+  }
+
+  const demoReklamacje = [
+    {sklep:'Sklep 214 - Kłobuck', nr:'WZ/2026/00456', kategoria:'Braki ilościowe', priorytet:'Wysoki', opis:'Brak 12 szt. wody mineralnej 1,5L na palecie nr 3.', status:'Nowa'},
+    {sklep:'Sklep 118 - Częstochowa', nr:'WZ/2026/00461', kategoria:'Towar uszkodzony', priorytet:'Średni', opis:'Uszkodzone opakowania płatków śniadaniowych, 6 szt. do zwrotu.', status:'W trakcie'},
+    {sklep:'Sklep 302 - Blachownia', nr:'WZ/2026/00470', kategoria:'Błędny artykuł', priorytet:'Niski', opis:'Zamiast jogurtu naturalnego dostarczono jogurt owocowy.', status:'Rozwiązana'},
+    {sklep:'Sklep 214 - Kłobuck', nr:'WZ/2026/00478', kategoria:'Towar przeterminowany', priorytet:'Wysoki', opis:'Data ważności pieczywa upłynęła dzień przed dostawą.', status:'Nowa'},
+    {sklep:'Sklep 087 - Wręczyca Wielka', nr:'WZ/2026/00483', kategoria:'Inne', priorytet:'Niski', opis:'Reklamacja etykiety cenowej niezgodnej z systemem.', status:'Odrzucona'}
+  ];
+  const demoKontrola = [
+    {nr:'ZL/2026/1032', sklep:'Sklep 118', pozycje:64, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Kontrola bez zastrzeżeń.'},
+    {nr:'ZL/2026/1033', sklep:'Sklep 214', pozycje:48, niezgodnosci:3, typ:'Brak towaru', wynik:'Niezgodne', kontrolujacy:'Szymon Wolniewicz', uwagi:'Brak 3 pozycji - zgłoszono do korekty stanu.'},
+    {nr:'ZL/2026/1034', sklep:'Sklep 302', pozycje:57, niezgodnosci:1, typ:'Pomyłka artykułu', wynik:'Niezgodne', kontrolujacy:'A. Nowak', uwagi:'Pomylono kod artykułu przy skanowaniu.'},
+    {nr:'ZL/2026/1035', sklep:'Sklep 087', pozycje:39, niezgodnosci:0, typ:'—', wynik:'Zgodne', kontrolujacy:'A. Nowak', uwagi:''}
+  ];
+  const demoArtykuly = [
+    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L', ean:'5901234567890', jm:'szt', status:'Zgodny', uwagi:''},
+    {kod:'ART-01120', nazwa:'Chleb żytni 500g', ean:'5901234567906', jm:'szt', status:'Do poprawy', uwagi:'Błędna jednostka miary w systemie (kg zamiast szt).'},
+    {kod:'ART-01345', nazwa:'Woda mineralna 1,5L', ean:'5901234567913', jm:'szt', status:'Brak w systemie', uwagi:'Artykuł dostarczany, ale nieoprowadzony w WMS.'},
+    {kod:'ART-00981', nazwa:'Mleko UHT 3,2% 1L (duplikat)', ean:'5901234567890', jm:'szt', status:'Duplikat', uwagi:'Zdublowany indeks - do scalenia.'}
+  ];
+
+  const r = load('reklamacje');
+  demoReklamacje.forEach(d => r.unshift(Object.assign({id:uid(), data:today()}, d)));
+  save('reklamacje', r);
+
+  const k = load('kontrola');
+  demoKontrola.forEach(d => k.unshift(Object.assign({id:uid(), data:today()}, d)));
+  save('kontrola', k);
+
+  const a = load('artykuly');
+  demoArtykuly.forEach(d => a.unshift(Object.assign({id:uid(), data:today()}, d)));
+  save('artykuly', a);
+
+  renderReklamacje();
+  renderKontrola();
+  renderArtykuly();
+}
+
+/* ---------- init ---------- */
+renderReklamacje();
+renderKontrola();
+renderArtykuly();
+</script>
+
+<!-- LICZNIK WEJŚĆ — Panel Specjalisty ds. Systemowych -->
+<script>
+(function () {
+  var COUNTER_KEY = "sw78_app_panelsystemowy_9f3k2";
+  var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+  var THIRTY_MIN = 30 * 60 * 1000;
+
+  function sendHit() {
+    var now = Date.now();
+    var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+    if (now - last < THIRTY_MIN) return;
+
+    fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        localStorage.setItem(LAST_VISIT_KEY, String(now));
+      })
+      .catch(function () {});
+  }
+
+  if (document.visibilityState === "visible") {
+    sendHit();
+  } else {
+    document.addEventListener("visibilitychange", function once() {
+      if (document.visibilityState === "visible") {
+        document.removeEventListener("visibilitychange", once);
+        sendHit();
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
