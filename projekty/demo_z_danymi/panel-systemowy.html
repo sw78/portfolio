@@ -245,6 +245,7 @@
         Wczytaj kopię zapasową z pliku
         <input type="file" accept=".json,application/json" onchange="restoreFromFile(event)" style="display:none;">
       </label>
+      <button class="btn btn-danger" onclick="clearAllData()">Wyczyść całą bazę danych</button>
       <span class="mono" id="backup-status" style="font-size:11.5px;color:var(--ink-soft);"></span>
     </div>
   </div>
@@ -586,6 +587,23 @@ function today(){
 }
 function esc(s){ return (s||'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+/* ---------- ochrona przed duplikacją ---------- */
+function norm(s){ return (s||'').toString().trim().toLowerCase().replace(/\s+/g,' '); }
+
+function reklamacjaSig(x){
+  return norm(x.nr) ? 'NR:'+norm(x.nr) : 'SKLEP:'+norm(x.sklep)+'|OPIS:'+norm(x.opis)+'|KAT:'+norm(x.kategoria);
+}
+function kontrolaSig(x){
+  return norm(x.nr) ? 'NR:'+norm(x.nr) : 'SKLEP:'+norm(x.sklep)+'|POZ:'+norm(x.pozycje)+'|NIEZ:'+norm(x.niezgodnosci);
+}
+function artykulSig(x){
+  return norm(x.kod) ? 'KOD:'+norm(x.kod)+'|MAG:'+norm(x.magazyn)+'|LOK:'+norm(x.lokalizacja) : 'NAZWA:'+norm(x.nazwa)+'|EAN:'+norm(x.ean);
+}
+function isDuplicate(existingArr, candidate, sigFn){
+  const target = sigFn(candidate);
+  return existingArr.some(x => sigFn(x) === target);
+}
+
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
@@ -616,7 +634,11 @@ function addReklamacja(){
     status:'Nowa',
     data:today()
   };
-  const arr=load('reklamacje'); arr.unshift(item); save('reklamacje',arr);
+  const arr=load('reklamacje');
+  if(isDuplicate(arr, item, reklamacjaSig)){
+    if(!confirm('Bardzo podobne zgłoszenie (ten sam sklep i numer WZ / opis) już jest w rejestrze. Czy na pewno chcesz dodać kolejne?')) return;
+  }
+  arr.unshift(item); save('reklamacje',arr);
   ['r-sklep','r-nr','r-opis'].forEach(id=>document.getElementById(id).value='');
   renderReklamacje();
 }
@@ -687,7 +709,11 @@ function addKontrola(){
     uwagi:document.getElementById('k-uwagi').value.trim(),
     data:today()
   };
-  const arr=load('kontrola'); arr.unshift(item); save('kontrola',arr);
+  const arr=load('kontrola');
+  if(isDuplicate(arr, item, kontrolaSig)){
+    if(!confirm('Bardzo podobny wpis kontroli (ten sam numer zlecenia) już jest w rejestrze. Czy na pewno chcesz dodać kolejny?')) return;
+  }
+  arr.unshift(item); save('kontrola',arr);
   ['k-nr','k-sklep','k-kontrolujacy','k-uwagi'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('k-pozycje').value=0;
   document.getElementById('k-niezgodnosci').value=0;
@@ -749,7 +775,11 @@ function addArtykul(){
     uwagi:document.getElementById('a-uwagi').value.trim(),
     data:today()
   };
-  const arr=load('artykuly'); arr.unshift(item); save('artykuly',arr);
+  const arr=load('artykuly');
+  if(isDuplicate(arr, item, artykulSig)){
+    if(!confirm('Bardzo podobny wpis (ten sam kod artykułu, magazyn i lokalizacja) już jest w rejestrze. Czy na pewno chcesz dodać kolejny?')) return;
+  }
+  arr.unshift(item); save('artykuly',arr);
   ['a-kod','a-nazwa','a-ean','a-jm','a-magazyn','a-lokalizacja','a-uwagi'].forEach(id=>document.getElementById(id).value='');
   renderArtykuly();
 }
@@ -890,6 +920,21 @@ function updateBackupStatus(){
   el.textContent = parts.length ? parts.join(' · ') : 'Jeszcze nie zapisano kopii na dysku.';
 }
 
+function clearAllData(){
+  const lacznie = load('reklamacje').length + load('kontrola').length + load('artykuly').length;
+  if(!lacznie){ alert('Baza jest już pusta — nie ma czego czyścić.'); return; }
+  if(!confirm(`Ta operacja usunie WSZYSTKIE dane ze wszystkich rejestrów (łącznie ${lacznie} wpisów: reklamacje, kontrola, artykuły) i nie można jej cofnąć. Kontynuować?`)) return;
+  if(!confirm('Ostatnie potwierdzenie — czy na pewno chcesz trwale wyczyścić całą bazę?')) return;
+
+  save('reklamacje', []);
+  save('kontrola', []);
+  save('artykuly', []);
+  renderReklamacje();
+  renderKontrola();
+  renderArtykuly();
+  alert('Baza danych została wyczyszczona.');
+}
+
 /* ================= IMPORT Z PLIKÓW / E-MAILA ================= */
 let importDrafts = [];
 
@@ -996,8 +1041,9 @@ function confirmImport(){
     if(!confirm('Niektóre zgłoszenia mają puste pole "Sklep" — dodać mimo to?')) return;
   }
   const arr = load('reklamacje');
+  let dodano = 0, pominieto = 0;
   selected.forEach(d=>{
-    arr.unshift({
+    const candidate = {
       id: uid(),
       sklep: d.sklep.trim() || '(nieznany sklep - do uzupełnienia)',
       nr: d.nr.trim(),
@@ -1006,14 +1052,17 @@ function confirmImport(){
       opis: d.opis.trim(),
       status: 'Nowa',
       data: today()
-    });
+    };
+    if(isDuplicate(arr, candidate, reklamacjaSig)){ pominieto++; return; }
+    arr.unshift(candidate);
+    dodano++;
   });
   save('reklamacje', arr);
   importDrafts = [];
   renderImportPreview();
   clearImportInputs();
   renderReklamacje();
-  alert(`Dodano ${selected.length} zgłoszenie(a) do rejestru.`);
+  alert(`Dodano ${dodano} zgłoszenie(a) do rejestru.` + (pominieto ? ` Pominięto ${pominieto} jako duplikat(y) już istniejące w rejestrze.` : ''));
 }
 
 /* ================= IMPORT POLECEŃ KONTROLI Z PLIKÓW / E-MAILA ================= */
@@ -1097,8 +1146,9 @@ function confirmKontrolaImport(){
     if(!confirm('Niektóre polecenia mają puste pole "Nr zlecenia" — dodać mimo to?')) return;
   }
   const arr = load('kontrola');
+  let dodano = 0, pominieto = 0;
   selected.forEach(d=>{
-    arr.unshift({
+    const candidate = {
       id: uid(),
       nr: d.nr.trim() || '(brak nr - do uzupełnienia)',
       sklep: d.sklep.trim(),
@@ -1109,14 +1159,17 @@ function confirmKontrolaImport(){
       kontrolujacy: d.kontrolujacy.trim(),
       uwagi: d.uwagi.trim(),
       data: today()
-    });
+    };
+    if(isDuplicate(arr, candidate, kontrolaSig)){ pominieto++; return; }
+    arr.unshift(candidate);
+    dodano++;
   });
   save('kontrola', arr);
   importKontrolaDrafts = [];
   renderKontrolaImportPreview();
   clearKontrolaImportInputs();
   renderKontrola();
-  alert(`Dodano ${selected.length} polecenie(a) kontroli do rejestru.`);
+  alert(`Dodano ${dodano} polecenie(a) kontroli do rejestru.` + (pominieto ? ` Pominięto ${pominieto} jako duplikat(y) już istniejące w rejestrze.` : ''));
 }
 
 /* ================= IMPORT POLECEŃ WERYFIKACJI ARTYKUŁÓW Z PLIKÓW / E-MAILA ================= */
@@ -1202,8 +1255,9 @@ function confirmArtykulImport(){
     if(!confirm('Niektóre polecenia mają puste pole "Kod artykułu" — dodać mimo to?')) return;
   }
   const arr = load('artykuly');
+  let dodano = 0, pominieto = 0;
   selected.forEach(d=>{
-    arr.unshift({
+    const candidate = {
       id: uid(),
       kod: d.kod.trim() || '(brak kodu - do uzupełnienia)',
       nazwa: d.nazwa.trim(),
@@ -1214,14 +1268,17 @@ function confirmArtykulImport(){
       status: 'Do weryfikacji',
       uwagi: d.uwagi.trim(),
       data: today()
-    });
+    };
+    if(isDuplicate(arr, candidate, artykulSig)){ pominieto++; return; }
+    arr.unshift(candidate);
+    dodano++;
   });
   save('artykuly', arr);
   importArtykulDrafts = [];
   renderArtykulImportPreview();
   clearArtykulImportInputs();
   renderArtykuly();
-  alert(`Dodano ${selected.length} polecenie(a) weryfikacji do rejestru.`);
+  alert(`Dodano ${dodano} polecenie(a) weryfikacji do rejestru.` + (pominieto ? ` Pominięto ${pominieto} jako duplikat(y) już istniejące w rejestrze.` : ''));
 }
 
 /* ================= DANE DEMO ================= */
@@ -1256,21 +1313,41 @@ function loadDemoData(){
     {kod:'ART-01610', nazwa:'Kawa mielona 250g', ean:'5900000000055', jm:'opak.', magazyn:'Magazyn A', lokalizacja:'Regał E, poziom 1, gniazdo 05', status:'Do weryfikacji', uwagi:'Polecenie weryfikacji po zgłoszonej reklamacji braków ilościowych.'}
   ];
 
-  const r = load('reklamacje');
-  demoReklamacje.forEach(d => r.unshift(Object.assign({id:uid(), data:today()}, d)));
-  save('reklamacje', r);
+  const rExisting = load('reklamacje');
+  let rDodano=0, rPominieto=0;
+  demoReklamacje.forEach(d=>{
+    const candidate = Object.assign({id:uid(), data:today()}, d);
+    if(isDuplicate(rExisting, candidate, reklamacjaSig)){ rPominieto++; return; }
+    rExisting.unshift(candidate); rDodano++;
+  });
+  save('reklamacje', rExisting);
 
-  const k = load('kontrola');
-  demoKontrola.forEach(d => k.unshift(Object.assign({id:uid(), data:today()}, d)));
-  save('kontrola', k);
+  const kExisting = load('kontrola');
+  let kDodano=0, kPominieto=0;
+  demoKontrola.forEach(d=>{
+    const candidate = Object.assign({id:uid(), data:today()}, d);
+    if(isDuplicate(kExisting, candidate, kontrolaSig)){ kPominieto++; return; }
+    kExisting.unshift(candidate); kDodano++;
+  });
+  save('kontrola', kExisting);
 
-  const a = load('artykuly');
-  demoArtykuly.forEach(d => a.unshift(Object.assign({id:uid(), data:today()}, d)));
-  save('artykuly', a);
+  const aExisting = load('artykuly');
+  let aDodano=0, aPominieto=0;
+  demoArtykuly.forEach(d=>{
+    const candidate = Object.assign({id:uid(), data:today()}, d);
+    if(isDuplicate(aExisting, candidate, artykulSig) && candidate.status!=='Duplikat'){ aPominieto++; return; }
+    aExisting.unshift(candidate); aDodano++;
+  });
+  save('artykuly', aExisting);
 
   renderReklamacje();
   renderKontrola();
   renderArtykuly();
+
+  const pominietoLacznie = rPominieto + kPominieto + aPominieto;
+  if(pominietoLacznie){
+    alert(`Wgrano dane DEMO. Pominięto ${pominietoLacznie} pozycję/e jako duplikaty już obecne w rejestrach.`);
+  }
 }
 
 /* ---------- init ---------- */
