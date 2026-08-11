@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Kontrolny Produkcji - Korporacyjny Dashboard V11 (Zaawansowane Filtry)</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha512-n/G+dROKbKL3GVngGWmWfwK0yPctjZQM752diVYnXZtD/48agpUKLIn0xDQL9ydZ91x6BiOmTIFwWjjFi2kEFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         :root {
             /* NOWOCZESNA CIEMNA PALETA (Slate & Neon) */
@@ -155,6 +156,12 @@
             </div>
         </div>
     </header>
+
+    <section class="insights-card" style="margin-bottom:14px;">
+        <h3>ℹ️ O aplikacji</h3>
+        <p style="margin:0 0 8px; font-size:13px; color:var(--text-muted);">Panel Zarządzania Produkcją powstał we współpracy Szymona Wolniewicza z AI.</p>
+        <p style="margin:0; font-size:13px; color:var(--text-muted);"><strong>Wykorzystane biblioteki:</strong> Chart.js — wykresy kosztów, WIP, realizacji planu i przestojów. Import plików CSV, parsowanie danych oraz cała logika analityczna (OEE, alerty, rekomendacje) działają natywnym JavaScript, bez dodatkowych bibliotek.</p>
+    </section>
 
     <section class="import-section" id="config-section">
         <h2>🔗 Konfiguracja Mapowania Folderów Raportowych (Pliki .CSV)</h2>
@@ -381,6 +388,7 @@
     const DB_NAME = 'ProdDashboardDB';
     const DB_STORE = 'folderHandles';
 
+    function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function openDB() {
         return new Promise((resolve, reject) => {
             const req = indexedDB.open(DB_NAME, 1);
@@ -638,7 +646,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
         container.innerHTML = '';
         uniqueValues.forEach(val => {
             const isChecked = checkedValues.includes(val) ? 'checked' : '';
-            container.innerHTML += `<div class="dropdown-item"><label><input type="checkbox" value="${val}" ${isChecked} onchange="applyFilters()"> ${val}</label></div>`;
+            container.innerHTML += `<div class="dropdown-item"><label><input type="checkbox" value="${escapeHtml(val)}" ${isChecked} onchange="applyFilters()"> ${escapeHtml(val)}</label></div>`;
         });
     }
 
@@ -745,9 +753,9 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
 
         for (let machine in machineBreakdownCounts) {
             if (machineBreakdownCounts[machine] >= 3) {
-                insights.push({ level: 'danger', text: `⚠️ <strong>UWAGA:</strong> Maszyna <strong>${machine}</strong> psuje się zbyt często! Odnotowano <strong>${machineBreakdownCounts[machine]}</strong> przestojów.` });
+                insights.push({ level: 'danger', text: `⚠️ <strong>UWAGA:</strong> Maszyna <strong>${escapeHtml(machine)}</strong> psuje się zbyt często! Odnotowano <strong>${machineBreakdownCounts[machine]}</strong> przestojów.` });
             } else if (machineTotalLossTime[machine] > 120) {
-                insights.push({ level: 'warning', text: `⏳ Maszyna <strong>${machine}</strong> wygenerowała łącznie <strong>${machineTotalLossTime[machine]} min</strong> przestoju.` });
+                insights.push({ level: 'warning', text: `⏳ Maszyna <strong>${escapeHtml(machine)}</strong> wygenerowała łącznie <strong>${machineTotalLossTime[machine]} min</strong> przestoju.` });
             }
         }
 
@@ -757,7 +765,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
             let j = parseFloat(row.Jakosc?.replace('%','') || 0);
             let calculatedOEE = ((d * w * j) / 10000);
             if (calculatedOEE > 0 && calculatedOEE < 65) {
-                insights.push({ level: 'warning', text: `📉 Niski wskaźnik OEE (<strong>${calculatedOEE.toFixed(1)}%</strong>) na maszynie <strong>${row.Maszyna}</strong>.` });
+                insights.push({ level: 'warning', text: `📉 Niski wskaźnik OEE (<strong>${calculatedOEE.toFixed(1)}%</strong>) na maszynie <strong>${escapeHtml(row.Maszyna)}</strong>.` });
             }
         });
 
@@ -766,7 +774,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
             let w = parseInt(row.Wykonanie || 0);
             let ratio = p > 0 ? (w / p) : 1;
             if (p > 0 && ratio < 0.75) {
-                insights.push({ level: 'danger', text: `🎯 <strong>Zagrożenie planu:</strong> Produkt <strong>${row.Produkt}</strong> ma realizację tylko <strong>${(ratio*100).toFixed(0)}%</strong>.` });
+                insights.push({ level: 'danger', text: `🎯 <strong>Zagrożenie planu:</strong> Produkt <strong>${escapeHtml(row.Produkt)}</strong> ma realizację tylko <strong>${(ratio*100).toFixed(0)}%</strong>.` });
             }
         });
 
@@ -777,14 +785,14 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
             }
         });
         for (let prod in rejectedProducts) {
-            insights.push({ level: 'danger', text: `🛑 <strong>Problem Jakościowy:</strong> Wykryto <strong>${rejectedProducts[prod]}</strong> partii ODRZUT dla <strong>${prod}</strong>.` });
+            insights.push({ level: 'danger', text: `🛑 <strong>Problem Jakościowy:</strong> Wykryto <strong>${rejectedProducts[prod]}</strong> partii ODRZUT dla <strong>${escapeHtml(prod)}</strong>.` });
         }
 
         let stationWIPValues = {};
         wip.forEach(row => { stationWIPValues[row.Gniazdo] = (stationWIPValues[row.Gniazdo] || 0) + parseInt(row.Wartosc_WIP || 0); });
         for (let station in stationWIPValues) {
             if (stationWIPValues[station] > 100000) {
-                insights.push({ level: 'info', text: `📦 <strong>Duży bufor WIP:</strong> Skumulowanie zapasów (<strong>${stationWIPValues[station].toLocaleString()} PLN</strong>) na <strong>${station}</strong>.` });
+                insights.push({ level: 'info', text: `📦 <strong>Duży bufor WIP:</strong> Skumulowanie zapasów (<strong>${stationWIPValues[station].toLocaleString()} PLN</strong>) na <strong>${escapeHtml(station)}</strong>.` });
             }
         }
 
@@ -802,7 +810,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
     function renderOEETable(data) {
         let tbody = document.querySelector('#table-oee tbody'); tbody.innerHTML = '';
         if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Brak danych OEE...</td></tr>'; return; }
-        data.forEach(row => { tbody.innerHTML += `<tr><td><strong>${row.Maszyna}</strong></td><td>${row.Dostepnosc}</td><td>${row.Wydajnosc}</td><td>${row.Jakosc}</td></tr>`; });
+        data.forEach(row => { tbody.innerHTML += `<tr><td><strong>${escapeHtml(row.Maszyna)}</strong></td><td>${escapeHtml(row.Dostepnosc)}</td><td>${escapeHtml(row.Wydajnosc)}</td><td>${escapeHtml(row.Jakosc)}</td></tr>`; });
     }
 
     function renderPlan(data) {
@@ -814,7 +822,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
             let proc = p > 0 ? ((w/p)*100).toFixed(0) + '%' : '0%';
             let badgeClass = (w >= p) ? 'badge-success' : 'badge-danger';
             let badgeText = (w >= p) ? 'OK' : 'OPÓŹNIENIE';
-            tbody.innerHTML += `<tr><td>${row.Produkt}</td><td>${p.toLocaleString()}</td><td>${w.toLocaleString()}</td><td><span class="badge ${badgeClass}">${badgeText} (${proc})</span></td></tr>`;
+            tbody.innerHTML += `<tr><td>${escapeHtml(row.Produkt)}</td><td>${p.toLocaleString()}</td><td>${w.toLocaleString()}</td><td><span class="badge ${badgeClass}">${badgeText} (${proc})</span></td></tr>`;
             if(idx < 10) { labels.push(row.Produkt); planVals.push(p); execVals.push(w); }
         });
         chartPln.data.labels = labels; chartPln.data.datasets[0].data = planVals; chartPln.data.datasets[1].data = execVals; chartPln.update();
@@ -833,7 +841,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
             let val = parseFloat(row.Czas_Min || row.Czas || row.Czas_Trwania || 0);
             let powod = row.Powod || row.Typ_Straty || 'Inny/Awaria';
             lossMap[m] = (lossMap[m] || 0) + val;
-            tbody.innerHTML += `<tr><td><strong>${m}</strong></td><td>${powod}</td><td>${val} min</td></tr>`;
+            tbody.innerHTML += `<tr><td><strong>${escapeHtml(m)}</strong></td><td>${escapeHtml(powod)}</td><td>${val} min</td></tr>`;
         });
         chartLos.data.labels = Object.keys(lossMap); chartLos.data.datasets[0].data = Object.values(lossMap); chartLos.update();
     }
@@ -844,7 +852,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
         if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">Brak danych kosztów...</td></tr>'; return; }
         data.forEach((row, idx) => {
             if(idx < 15) { labels.push('Zl. ' + row.Zlecenie); values.push(parseInt(row.Koszt_Calkowity || 0)); }
-            tbody.innerHTML += `<tr><td>${row.Zlecenie}</td><td>${row.Produkt}</td><td>${parseInt(row.Koszt_Materialu || 0).toLocaleString()}</td><td>${parseInt(row.Koszt_Robocizny || 0).toLocaleString()}</td><td>${parseInt(row.Koszt_Ogolny || 0).toLocaleString()}</td><td><strong>${parseInt(row.Koszt_Calkowity || 0).toLocaleString()}</strong></td></tr>`;
+            tbody.innerHTML += `<tr><td>${escapeHtml(row.Zlecenie)}</td><td>${escapeHtml(row.Produkt)}</td><td>${parseInt(row.Koszt_Materialu || 0).toLocaleString()}</td><td>${parseInt(row.Koszt_Robocizny || 0).toLocaleString()}</td><td>${parseInt(row.Koszt_Ogolny || 0).toLocaleString()}</td><td><strong>${parseInt(row.Koszt_Calkowity || 0).toLocaleString()}</strong></td></tr>`;
         });
         chartCst.data.labels = labels; chartCst.data.datasets[0].data = values; chartCst.update();
     }
@@ -860,7 +868,7 @@ PW-00128;ZL-2003;WYR-1003;SUR-5588;Operator C;NOT_OK`
         if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">Brak danych traceability...</td></tr>'; return; }
         data.forEach(row => {
             let badge = row.Kontrola_Jakosci === 'OK' ? '<span class="badge badge-success">OK</span>' : '<span class="badge badge-danger">ODRZUT</span>';
-            tbody.innerHTML += `<tr><td><strong>${row.Partia_Wyrobu}</strong></td><td>${row.Zlecenie}</td><td>${row.Produkt}</td><td>${row.Partia_Surowca}</td><td>${row.Operator}</td><td>${badge}</td></tr>`;
+            tbody.innerHTML += `<tr><td><strong>${escapeHtml(row.Partia_Wyrobu)}</strong></td><td>${escapeHtml(row.Zlecenie)}</td><td>${escapeHtml(row.Produkt)}</td><td>${escapeHtml(row.Partia_Surowca)}</td><td>${escapeHtml(row.Operator)}</td><td>${badge}</td></tr>`;
         });
     }
 
