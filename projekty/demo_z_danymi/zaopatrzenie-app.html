@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zaopatrzenie — Panel Zakupowca</title>
@@ -925,7 +924,7 @@ function renderDashboard(){
   tbody.innerHTML = attention.length ? attention.map(o=>{
     const sup = getSupplier(o.supplierId);
     return `<tr onclick="openOrderDetail('${o.id}')">
-      <td class="mono">${escapeHtml(o.number)}</td><td>${sup?escapeHtml(sup.name):'—'}</td>
+      <td class="mono">${o.number}</td><td>${sup?sup.name:'—'}</td>
       <td>${statusBadge(effectiveStatus(o))}</td>
       <td>${fmtDate(o.expectedDate)}</td>
       <td><button class="btn btn-sm btn-ghost">Otwórz →</button></td>
@@ -935,7 +934,7 @@ function renderDashboard(){
   const ranked = state.suppliers.map(s=>({s, q:supplierQualityAvg(s.id)})).filter(x=>x.q!=null).sort((a,b)=>b.q-a.q).slice(0,5);
   document.getElementById('quality-ranking').innerHTML = ranked.length ? ranked.map(({s,q},i)=>`
     <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;${i? 'border-top:1px solid var(--border-soft);':''}">
-      <div><strong style="font-size:12.5px;">${i+1}. ${escapeHtml(s.name)}</strong></div>
+      <div><strong style="font-size:12.5px;">${i+1}. ${s.name}</strong></div>
       <div>${starsHtml(q)}</div>
     </div>`).join('') : `<div class="empty-state">Brak ocen jakości.</div>`;
 
@@ -945,8 +944,8 @@ function renderDashboard(){
     const best = bestPriceForProduct(p.id);
     const sup = best?getSupplier(best.supplierId):null;
     return `<tr onclick="openProductDetail('${p.id}')">
-      <td>${escapeHtml(p.name)}</td><td><span class="tag">${escapeHtml(p.category)}</span></td>
-      <td>${sup?escapeHtml(sup.name):'—'}</td><td class="num">${best?fmtMoney(best.price,best.currency):'—'}</td>
+      <td>${p.name}</td><td><span class="tag">${p.category}</span></td>
+      <td>${sup?sup.name:'—'}</td><td class="num">${best?fmtMoney(best.price,best.currency):'—'}</td>
     </tr>`;
   }).join('') : `<tr><td colspan="4" class="empty-state">Każdy produkt ma co najmniej dwóch dostawców.</td></tr>`;
 
@@ -961,7 +960,7 @@ function renderDashboard(){
     const pct = Math.max(4, Math.round(val/max*100));
     return `<div style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-        <span>${sup?escapeHtml(sup.name):'—'}</span><span class="mono">${fmtMoney(val)}</span>
+        <span>${sup?sup.name:'—'}</span><span class="mono">${fmtMoney(val)}</span>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--accent-2);"></div></div>
     </div>`;
@@ -975,12 +974,12 @@ function renderSuppliers(){
     const stats = supplierStats(s.id);
     const q = supplierQualityAvg(s.id);
     return `<tr onclick="openSupplierDetail('${s.id}')">
-      <td><strong>${escapeHtml(s.name)}</strong></td>
-      <td>${s.categories.map(c=>`<span class="tag">${escapeHtml(c)}</span>`).join('')}</td>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.categories.map(c=>`<span class="tag">${c}</span>`).join('')}</td>
       <td class="num">${s.leadTimeDays} dni</td>
       <td>${starsHtml(q)}</td>
       <td>${stats.otdPct==null?'<span class="small-note">brak danych</span>':stats.otdPct+'%'}</td>
-      <td>${escapeHtml(s.paymentTerms)}</td>
+      <td>${s.paymentTerms}</td>
       <td>${s.active? '<span class="badge badge-success">aktywny</span>' : '<span class="badge badge-neutral">zawieszony</span>'}</td>
     </tr>`;
   }).join('');
@@ -1008,8 +1007,8 @@ function renderSupplierDetail(id){
     <div class="back-link" onclick="navigate('suppliers')">← Powrót do listy dostawców</div>
     <div class="detail-header">
       <div>
-        <div class="detail-title">${escapeHtml(s.name)} ${s.active?'':'<span class="badge badge-neutral">zawieszony</span>'}</div>
-        <div class="detail-meta">${escapeHtml(s.contact)} · ${escapeHtml(s.email)} · ${escapeHtml(s.phone)}</div>
+        <div class="detail-title">${s.name} ${s.active?'':'<span class="badge badge-neutral">zawieszony</span>'}</div>
+        <div class="detail-meta">${s.contact} · ${s.email} · ${s.phone}</div>
       </div>
       <div>
         <button class="btn" onclick="openSupplierForm('${id}')">Edytuj</button>
@@ -1032,7 +1031,7 @@ function renderSupplierDetail(id){
         ${prices.length? prices.map(pl=>{
           const p = getProduct(pl.productId);
           return `<tr>
-            <td onclick="openProductDetail('${p.id}')" style="cursor:pointer;">${p?escapeHtml(p.name):'—'}</td>
+            <td onclick="openProductDetail('${p.id}')" style="cursor:pointer;">${p?p.name:'—'}</td>
             <td class="num">${fmtMoney(pl.price,pl.currency)}</td>
             <td class="num">${pl.minQty} ${p?p.unit:''}</td>
             <td>${fmtDate(pl.validTo)}</td>
@@ -1067,7 +1066,7 @@ function renderSupplierDetail(id){
       </tr></thead><tbody>
       ${orders.length? orders.map(o=>`
         <tr onclick="openOrderDetail('${o.id}')">
-          <td class="mono">${escapeHtml(o.number)}</td><td>${fmtDate(o.date)}</td><td>${fmtDate(o.expectedDate)}</td>
+          <td class="mono">${o.number}</td><td>${fmtDate(o.date)}</td><td>${fmtDate(o.expectedDate)}</td>
           <td>${o.deliveredDate?fmtDate(o.deliveredDate):'—'}</td><td>${statusBadge(effectiveStatus(o))}</td>
           <td class="num">${fmtMoney(orderNetValue(o))}</td>
         </tr>`).join('') : `<tr><td colspan="6" class="empty-state">Brak zamówień.</td></tr>`}
@@ -1222,10 +1221,10 @@ function renderProducts(){
     const supplierCount = new Set(offers.map(o=>o.supplierId)).size;
     const best = bestPriceForProduct(p.id);
     return `<tr onclick="openProductDetail('${p.id}')">
-      <td class="mono">${escapeHtml(p.code)}</td>
-      <td>${escapeHtml(p.name)}</td>
-      <td><span class="tag">${escapeHtml(p.category)}</span></td>
-      <td>${escapeHtml(p.unit)}</td>
+      <td class="mono">${p.code}</td>
+      <td>${p.name}</td>
+      <td><span class="tag">${p.category}</span></td>
+      <td>${p.unit}</td>
       <td class="num">${supplierCount} ${supplierCount===1?'<span class="risk-flag" title="Jedno źródło dostaw"></span>':''}</td>
       <td class="num">${best?fmtMoney(best.price,best.currency):'—'}</td>
       <td class="num">${p.substitutes.length}</td>
@@ -1251,8 +1250,8 @@ function renderProductDetail(id){
     <div class="back-link" onclick="navigate('products')">← Powrót do katalogu</div>
     <div class="detail-header">
       <div>
-        <div class="detail-title">${escapeHtml(p.name)}</div>
-        <div class="detail-meta">Kod: ${escapeHtml(p.code)} · Kategoria: ${escapeHtml(p.category)} · Jednostka: ${escapeHtml(p.unit)}</div>
+        <div class="detail-title">${p.name}</div>
+        <div class="detail-meta">Kod: ${p.code} · Kategoria: ${p.category} · Jednostka: ${p.unit}</div>
       </div>
       <div><button class="btn" onclick="openProductForm('${id}')">Edytuj</button></div>
     </div>
@@ -1265,9 +1264,9 @@ function renderProductDetail(id){
       ${offers.length? offers.map(o=>{
         const sup = getSupplier(o.supplierId);
         return `<tr class="${o===best?'comparison-best':''}" onclick="openSupplierDetail('${o.supplierId}')">
-          <td>${sup?escapeHtml(sup.name):'—'} ${o===best?'<span class="badge badge-success" style="margin-left:6px;">najlepsza cena</span>':''}</td>
+          <td>${sup?sup.name:'—'} ${o===best?'<span class="badge badge-success" style="margin-left:6px;">najlepsza cena</span>':''}</td>
           <td class="num">${fmtMoney(o.price,o.currency)}</td>
-          <td class="num">${o.minQty} ${escapeHtml(p.unit)}</td>
+          <td class="num">${o.minQty} ${p.unit}</td>
           <td class="num">${sup?sup.leadTimeDays:'—'} dni</td>
           <td>${fmtDate(o.validTo)}</td>
           <td><button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openPriceForm('${o.id}')">Edytuj</button></td>
@@ -1288,7 +1287,7 @@ function renderProductSubstitutesArea(p){
   const area = document.getElementById('product-subst-area');
   const chips = p.substitutes.map(sid=>{
     const sp = getProduct(sid);
-    return `<span class="subst-chip">${sp?escapeHtml(sp.name):'—'}<span class="x" onclick="removeSubstitute('${p.id}','${sid}')">✕</span></span>`;
+    return `<span class="subst-chip">${sp?sp.name:'—'}<span class="x" onclick="removeSubstitute('${p.id}','${sid}')">✕</span></span>`;
   }).join('');
   const options = state.products.filter(x=>x.id!==p.id && !p.substitutes.includes(x.id))
     .map(x=>`<option value="${x.id}">${escapeHtml(x.name)}</option>`).join('');
@@ -1376,7 +1375,7 @@ function renderSubstitutesView(){
       const pr = getProduct(id);
       const best = bestPriceForProduct(id);
       return `<tr onclick="openProductDetail('${id}')">
-        <td>${pr?escapeHtml(pr.name):'—'}</td><td class="mono">${pr?escapeHtml(pr.code):''}</td>
+        <td>${pr?pr.name:'—'}</td><td class="mono">${pr?pr.code:''}</td>
         <td class="num">${best?fmtMoney(best.price,best.currency):'brak oferty'}</td>
       </tr>`;
     }).join('');
@@ -1421,8 +1420,8 @@ function runCompare(){
     const q = supplierQualityAvg(r.sup.id);
     const stale = r.pl.validTo && r.pl.validTo < todayStr();
     return `<tr class="${r===bestPrice?'comparison-best':''}">
-      <td>${escapeHtml(r.sup.name)}</td>
-      <td>${escapeHtml(r.pr.name)} ${r.isSubst?'<span class="badge badge-info" style="margin-left:5px;">zamiennik</span>':''}</td>
+      <td>${r.sup.name}</td>
+      <td>${r.pr.name} ${r.isSubst?'<span class="badge badge-info" style="margin-left:5px;">zamiennik</span>':''}</td>
       <td class="num">${fmtMoney(r.pl.price,r.pl.currency)}</td>
       <td class="num">${r.pl.minQty} ${r.pr.unit}</td>
       <td class="num">${r.sup.leadTimeDays} dni</td>
@@ -1452,13 +1451,13 @@ function renderOrders(){
   board.innerHTML = BOARD_STATUSES.map(status=>{
     const orders = state.orders.filter(o=> effectiveStatus(o)===status);
     return `<div class="kanban-col">
-      <div class="kanban-col-head"><span>${escapeHtml(status)}</span><span>${orders.length}</span></div>
+      <div class="kanban-col-head"><span>${status}</span><span>${orders.length}</span></div>
       <div>${orders.map(o=>{
         const sup = getSupplier(o.supplierId);
         const late = isOrderLate(o);
         return `<div class="kanban-card" onclick="openOrderDetail('${o.id}')">
-          <div class="kc-num">${escapeHtml(o.number)}</div>
-          <div class="kc-sup">${sup?escapeHtml(sup.name):'—'}</div>
+          <div class="kc-num">${o.number}</div>
+          <div class="kc-sup">${sup?sup.name:'—'}</div>
           <div class="kc-date ${late?'late':''}">${late?'Opóźnione: ':'Termin: '}${fmtDate(o.expectedDate)}</div>
         </div>`;
       }).join('') || '<div class="empty-state" style="padding:16px;">brak</div>'}</div>
@@ -1470,7 +1469,7 @@ function renderOrders(){
   tbody.innerHTML = sorted.map(o=>{
     const sup = getSupplier(o.supplierId);
     return `<tr onclick="openOrderDetail('${o.id}')">
-      <td class="mono">${escapeHtml(o.number)}</td><td>${sup?escapeHtml(sup.name):'—'}</td><td>${fmtDate(o.date)}</td>
+      <td class="mono">${o.number}</td><td>${sup?sup.name:'—'}</td><td>${fmtDate(o.date)}</td>
       <td>${fmtDate(o.expectedDate)}</td><td>${statusBadge(effectiveStatus(o))}</td>
       <td class="num">${fmtMoney(orderNetValue(o))}</td>
       <td><button class="btn btn-sm btn-ghost">Otwórz →</button></td>
@@ -1604,8 +1603,8 @@ function renderOrderDetail(id){
     <div class="back-link" onclick="navigate('orders')">← Powrót do zamówień</div>
     <div class="detail-header">
       <div>
-        <div class="detail-title mono">${escapeHtml(o.number)} ${statusBadge(effectiveStatus(o))}</div>
-        <div class="detail-meta">Dostawca: <span style="cursor:pointer;color:var(--accent-2);" onclick="openSupplierDetail('${sup.id}')">${escapeHtml(sup.name)}</span> · Złożono: ${fmtDate(o.date)}</div>
+        <div class="detail-title mono">${o.number} ${statusBadge(effectiveStatus(o))}</div>
+        <div class="detail-meta">Dostawca: <span style="cursor:pointer;color:var(--accent-2);" onclick="openSupplierDetail('${sup.id}')">${sup.name}</span> · Złożono: ${fmtDate(o.date)}</div>
       </div>
       <div>
         <button class="btn" onclick="printOrder('${o.id}')">🖶 Dokument PDF</button>
@@ -1623,7 +1622,7 @@ function renderOrderDetail(id){
       <div class="panel-head"><h3>Pozycje zamówienia</h3></div>
       <div class="panel-body pad0"><table><thead><tr><th>Produkt</th><th>Ilość</th><th>Cena netto</th><th class="num">Wartość</th></tr></thead><tbody>
       ${o.items.map(it=>{ const p = getProduct(it.productId); return `<tr>
-        <td>${p?escapeHtml(p.name):'—'}</td><td class="num">${it.qty} ${escapeHtml(it.unit)}</td><td class="num">${fmtMoney(it.price)}</td><td class="num">${fmtMoney(it.qty*it.price)}</td>
+        <td>${p?p.name:'—'}</td><td class="num">${it.qty} ${it.unit}</td><td class="num">${fmtMoney(it.price)}</td><td class="num">${fmtMoney(it.qty*it.price)}</td>
       </tr>`; }).join('')}
       </tbody></table></div>
     </div>
@@ -1675,7 +1674,7 @@ function renderDelays(){
     const sup = getSupplier(o.supplierId);
     const days = daysBetween(o.expectedDate, todayStr());
     return `<tr onclick="openOrderDetail('${o.id}')">
-      <td class="mono">${escapeHtml(o.number)}</td><td>${sup?escapeHtml(sup.name):'—'}</td><td>${fmtDate(o.expectedDate)}</td>
+      <td class="mono">${o.number}</td><td>${sup?sup.name:'—'}</td><td>${fmtDate(o.expectedDate)}</td>
       <td><span class="badge badge-danger">${days} dni</span></td><td>${statusBadge(effectiveStatus(o))}</td>
       <td><button class="btn btn-sm btn-ghost">Otwórz →</button></td>
     </tr>`;
@@ -1688,7 +1687,7 @@ function renderDelays(){
     <th>Dostawca</th><th>Dostawy zrealizowane</th><th>Terminowość</th><th>Śr. opóźnienie</th><th></th>
   </tr></thead><tbody>${rows.map(({s,stats})=>`
     <tr onclick="openSupplierDetail('${s.id}')">
-      <td>${escapeHtml(s.name)}</td><td class="num">${stats.deliveredCount}</td>
+      <td>${s.name}</td><td class="num">${stats.deliveredCount}</td>
       <td class="num">${stats.otdPct}%</td>
       <td class="num">${stats.avgDelay?stats.avgDelay.toFixed(1)+' dni':'—'}</td>
       <td style="width:160px;"><div class="bar-track"><div class="bar-fill" style="width:${stats.otdPct}%;background:${stats.otdPct<70?'var(--danger)':stats.otdPct<90?'var(--accent)':'var(--success)'};"></div></div></td>
