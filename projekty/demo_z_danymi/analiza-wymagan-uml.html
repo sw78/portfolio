@@ -12,12 +12,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root{
-  --paper:#EEF2F4; --paper-white:#FBFCFD;
-  --line:#C3D0D8; --line-strong:#9FB2BC;
-  --ink:#16232E; --ink-soft:#5B6B78;
-  --biz:#B8763A; --biz-soft:#F4E6D3; --biz-line:#E0BE8E;
-  --tech:#2F6E73; --tech-soft:#DCEBEC; --tech-line:#A9CBCD;
-  --blueprint:#3E6FA8; --danger:#B04A3F;
+  --paper:#0F1419; --paper-white:#1A2028;
+  --line:#242C35; --line-strong:#3A4552;
+  --ink:#E6ECF1; --ink-soft:#8B9BA8;
+  --biz:#E3A868; --biz-soft:#2B2013; --biz-line:#6E4E28;
+  --tech:#6FD3D8; --tech-soft:#132A2D; --tech-line:#2B5459;
+  --blueprint:#7BAEE0; --danger:#E28779;
   --radius:2px;
 }
 *{box-sizing:border-box;}
@@ -30,7 +30,7 @@ body{
 .wrap{max-width:1180px;margin:0 auto;}
 
 /* Title block */
-.titleblock{ background:var(--paper-white); border:1.5px solid var(--ink); display:grid; grid-template-columns: 1fr auto; margin-bottom:28px; box-shadow: 4px 4px 0 rgba(22,35,46,0.08); }
+.titleblock{ background:var(--paper-white); border:1.5px solid var(--ink); display:grid; grid-template-columns: 1fr auto; margin-bottom:28px; box-shadow: 4px 4px 0 rgba(0,0,0,0.45); }
 .titleblock-main{padding:22px 26px;border-right:1.5px solid var(--ink);}
 .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); }
 h1{ font-family:'Space Grotesk', sans-serif; font-size:30px; font-weight:700; margin:4px 0 6px; letter-spacing:-0.01em; }
@@ -61,7 +61,7 @@ textarea:focus { outline:2px solid var(--blueprint); outline-offset:1px; }
 /* Mark.js highlight styles */
 mark.mark-actor { background-color: var(--biz-soft); color: var(--biz); border-bottom: 2px solid var(--biz-line); padding: 0 2px; font-weight: 600; }
 mark.mark-entity { background-color: var(--tech-soft); color: var(--tech); border-bottom: 2px solid var(--tech-line); padding: 0 2px; font-weight: 600; }
-mark.mark-trigger { background-color: #E2E8F0; color: #475569; border-radius: 2px; padding: 0 2px; }
+mark.mark-trigger { background-color: #232C35; color: #A3B4C0; border-radius: 2px; padding: 0 2px; }
 
 .btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
 button{ font-family:'IBM Plex Sans',sans-serif; font-size:13.5px;font-weight:600; border:1.5px solid var(--ink); background:var(--paper-white);color:var(--ink); padding:9px 16px;cursor:pointer; border-radius:var(--radius); transition:all .1s ease;}
@@ -97,14 +97,26 @@ button.small{padding:5px 10px;font-size:12px;}
 .enttable input{width:100%;border:1px solid var(--line);padding:5px 7px;font-size:13px;font-family:'IBM Plex Mono',monospace;}
 
 .diagram-box{ border:1px dashed var(--line-strong); background:var(--paper-white); padding:18px; overflow-x:auto; }
+.diagram-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.diagram-title{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-soft); }
 .empty-state{ padding:40px 20px;text-align:center;color:var(--ink-soft);font-size:13.5px; font-family:'IBM Plex Mono',monospace; }
+
+.sql-box{ border:1px dashed var(--line-strong); background:#101820; padding:18px; overflow-x:auto; max-height:520px; overflow-y:auto; }
+.sql-box pre{ margin:0; }
+.sql-box code{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.65; color:#D7E3EA; white-space:pre; }
+.sql-kw{ color:#7FB2E5; font-weight:600; }
+.sql-comment{ color:#6B8A99; font-style:italic; }
+.sql-table{ color:#E3B778; font-weight:600; }
+.sql-toolrow{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.sql-toolrow select{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:8px 10px; border:1.5px solid var(--ink); background:var(--paper-white); color:var(--ink); border-radius:var(--radius); }
+.sql-hint{ font-size:12px; color:var(--ink-soft); margin:0 0 14px; line-height:1.5; }
 
 .legend{display:flex;gap:18px;margin-top:10px;margin-bottom:10px;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);font-family:'IBM Plex Mono',monospace;}
 .swatch{width:12px;height:12px;display:inline-block;border:1px solid var(--ink);}
 .swatch.biz{background:var(--biz-soft);border-color:var(--biz-line);}
 .swatch.tech{background:var(--tech-soft);border-color:var(--tech-line);}
-.swatch.trig{background:#E2E8F0;border-color:#94A3B8;}
+.swatch.trig{background:#232C35;border-color:#4B5A66;}
 
 @media (max-width:760px){
   .reqrow{grid-template-columns: 1fr;} .reqrow .idcell{display:none;}
@@ -128,6 +140,39 @@ button.small{padding:5px 10px;font-size:12px;}
     </div>
   </div>
 
+  <!-- SECTION SAVE: persistence -->
+  <div class="section" id="restoreBanner" style="display:none;">
+    <div class="section-body" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:13px;line-height:1.5;">
+        <strong>Znaleziono niezapisaną pracę</strong> — automatyczny zapis z <span id="restoreDate"></span>. Wczytać ją?
+      </div>
+      <div class="btnrow" style="margin-top:0;">
+        <button class="primary small" id="btnRestoreYes">Wczytaj</button>
+        <button class="ghost small" id="btnRestoreNo">Odrzuć</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">S</span>Zapisane analizy</h2>
+      <span id="autosaveStatus" class="sql-hint" style="margin:0;">Brak automatycznego zapisu</span>
+    </div>
+    <div class="section-body">
+      <div class="btnrow" style="margin-top:0;margin-bottom:14px;">
+        <button class="primary small" id="btnSaveAs">Zapisz jako...</button>
+        <button class="ghost small" id="btnNewAnalysis">+ Nowa analiza</button>
+        <button class="ghost small" id="btnExportJSON">Eksportuj do pliku (.json)</button>
+        <button class="ghost small" id="btnImportJSON">Importuj z pliku</button>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+      </div>
+      <table class="enttable" id="savedListTable">
+        <thead><tr><th style="width:40%">Nazwa</th><th style="width:30%">Data zapisu</th><th style="width:30%"></th></tr></thead>
+        <tbody id="savedListBody"><tr><td colspan="3" class="sql-hint" style="padding:10px 0;">Brak zapisanych analiz w tej przeglądarce.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- SECTION 0: about -->
   <div class="section">
     <div class="section-head">
@@ -135,7 +180,8 @@ button.small{padding:5px 10px;font-size:12px;}
     </div>
     <div class="section-body">
       <p style="margin:0 0 10px; font-size:13.5px; line-height:1.6;">Aplikacja powstała we współpracy Szymona Wolniewicza z AI.</p>
-      <p style="margin:0; font-size:13.5px; line-height:1.6;"><strong>Wykorzystane biblioteki:</strong> Mermaid.js (generowanie diagramów UML), SheetJS / xlsx.js (eksport do Excela), mark.js (podświetlanie dopasowań w tekście). Dopasowywanie fuzzy (odległość Levenshteina) i pozostała logika analizy działają lokalnie w przeglądarce, bez użycia zewnętrznego API.</p>
+      <p style="margin:0 0 10px; font-size:13.5px; line-height:1.6;"><strong>Wykorzystane biblioteki:</strong> Mermaid.js (generowanie diagramów UML), SheetJS / xlsx.js (eksport do Excela), mark.js (podświetlanie dopasowań w tekście). Dopasowywanie fuzzy (odległość Levenshteina) i pozostała logika analizy działają lokalnie w przeglądarce, bez użycia zewnętrznego API.</p>
+      <p style="margin:0; font-size:13.5px; line-height:1.6;"><strong>Generator SQL:</strong> na podstawie Słownika Encji (sekcja 04) aplikacja proponuje instrukcje <code>CREATE TABLE</code> dla MySQL, PostgreSQL lub SQL Server — z kluczem głównym <code>id</code>, typami kolumn dobranymi na podstawie nazw atrybutów oraz kluczami obcymi dla wykrytych powiązań między encjami.</p>
     </div>
   </div>
 
@@ -160,6 +206,7 @@ button.small{padding:5px 10px;font-size:12px;}
       <div class="btnrow">
         <button class="primary" id="btnAnalyze">Analizuj i podświetl tekst</button>
         <button class="ghost" id="btnSampleBDD">Wczytaj rozbudowany przykład</button>
+        <button class="ghost" id="btnSampleProdukcja">Wczytaj DEMO: Produkcja maszyn (BDD)</button>
         <button class="ghost" id="btnClear">Wyczyść</button>
       </div>
     </div>
@@ -210,26 +257,242 @@ button.small{padding:5px 10px;font-size:12px;}
       <button class="primary small" id="btnGenerate">Aktualizuj diagramy</button>
     </div>
     <div class="section-body">
+      <div class="diagram-toolbar">
+        <span class="diagram-title">Diagram przypadków użycia</span>
+        <button class="ghost small" id="btnExpandUsecase">🔍 Otwórz w oknie (zoom / przesuwanie)</button>
+      </div>
       <div class="diagram-box" id="usecaseBox"><div class="empty-state">Kliknij "Aktualizuj diagramy"</div></div>
       <br>
+      <div class="diagram-toolbar">
+        <span class="diagram-title">Diagram klas (model danych)</span>
+        <button class="ghost small" id="btnExpandClass">🔍 Otwórz w oknie (zoom / przesuwanie)</button>
+      </div>
       <div class="diagram-box" id="classBox"><div class="empty-state">Kliknij "Aktualizuj diagramy"</div></div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: SQL DDL generation -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">06</span>Generowanie SQL (DDL)</h2>
+    </div>
+    <div class="section-body">
+      <p class="sql-hint">Na podstawie Słownika Encji (sekcja 04) silnik proponuje typy kolumn na podstawie nazw atrybutów (np. „Imię" → VARCHAR(100), „Cena" → DECIMAL(10,2), „Data..." → DATETIME), dodaje klucz główny <code>id</code> oraz klucze obce dla wykrytych powiązań między encjami. To sugestia robocza — zawsze zweryfikuj przed wdrożeniem.</p>
+      <div class="sql-toolrow">
+        <select id="sqlDialect">
+          <option value="mysql">MySQL / MariaDB</option>
+          <option value="postgres">PostgreSQL</option>
+          <option value="mssql">SQL Server (T-SQL)</option>
+        </select>
+        <button class="primary small" id="btnGenerateSQL">Generuj SQL</button>
+        <button class="ghost small" id="btnCopySQL">Kopiuj do schowka</button>
+        <button class="ghost small" id="btnDownloadSQL">Pobierz .sql</button>
+      </div>
+      <div class="sql-box"><pre><code id="sqlOutput">-- Kliknij "Generuj SQL", aby zbudować CREATE TABLE na podstawie Słownika Encji.</code></pre></div>
+    </div>
+  </div>
+
+  <!-- SECTION 7: report export -->
+  <div class="section">
+    <div class="section-head">
+      <h2><span class="section-num">07</span>Raport dla Zarządu</h2>
+    </div>
+    <div class="section-body">
+      <p class="sql-hint">Wygeneruj czytelny, sformatowany raport podsumowujący całą analizę — gotowy do przedstawienia zarządowi lub klientowi. Otworzy się w nowej karcie; stamtąd zapisz go jako PDF (Ctrl+P / Cmd+P → "Zapisz jako PDF"). Jeśli w sekcji 05 wygenerowano diagramy UML lub w sekcji 06 schemat SQL, zostaną dołączone automatycznie.</p>
+      <div class="btnrow" style="margin-top:0;margin-bottom:14px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);">Nazwa projektu</label>
+          <input type="text" id="reportProjectName" placeholder="np. System ERP — Dział Sprzedaży" style="border:1px solid var(--line-strong);padding:7px 9px;font-size:13px;background:var(--paper-white);color:var(--ink);min-width:240px;border-radius:var(--radius);">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <label style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);">Przygotował(a)</label>
+          <input type="text" id="reportAuthor" placeholder="np. Szymon Wolniewicz" style="border:1px solid var(--line-strong);padding:7px 9px;font-size:13px;background:var(--paper-white);color:var(--ink);min-width:240px;border-radius:var(--radius);">
+        </div>
+      </div>
+      <div class="btnrow" style="margin-top:0;">
+        <button class="primary" id="btnExportReport">Eksportuj raport (PDF)</button>
+      </div>
     </div>
   </div>
 
 </div>
 
 <script>
-mermaid.initialize({ startOnLoad:false, theme:'neutral', securityLevel:'loose', themeVariables:{ fontFamily:'IBM Plex Sans' } });
+mermaid.initialize({ startOnLoad:false, theme:'dark', securityLevel:'loose', themeVariables:{ fontFamily:'IBM Plex Sans', darkMode:true, background:'#1A2028', primaryColor:'#132A2D', primaryTextColor:'#E6ECF1', primaryBorderColor:'#2B5459', lineColor:'#8B9BA8', secondaryColor:'#2B2013', tertiaryColor:'#1A2028' } });
 
 /* ============ STATE ============ */
 let state = { actors: [], requirements: [], entities: {} };
 let uid = 1;
 const newId = () => 'r' + (uid++);
 
+/* ============ PERSISTENCE (localStorage) ============ */
+const LS_AUTOSAVE_KEY = 'wu_autosave_v1';
+const LS_SAVES_KEY = 'wu_saved_analyses_v1';
+let autosaveTimer = null;
+
+function serializeState() {
+  return {
+    notes: document.getElementById('notesInput').value,
+    actors: state.actors,
+    requirements: state.requirements,
+    entities: Object.fromEntries(Object.entries(state.entities).map(([k, v]) =>
+      [k, { attributes: v.attributes, relations: [...v.relations] }])),
+    uid,
+  };
+}
+
+function applySerializedState(data) {
+  state = {
+    actors: data.actors || [],
+    requirements: data.requirements || [],
+    entities: Object.fromEntries(Object.entries(data.entities || {}).map(([k, v]) =>
+      [k, { attributes: v.attributes || [], relations: new Set(v.relations || []) }])),
+  };
+  uid = data.uid || 1;
+  document.getElementById('notesInput').value = data.notes || '';
+  renderAll();
+  const hasText = (data.notes || '').trim().length > 0;
+  if (hasText) renderHighlights(data.notes);
+}
+
+function formatTimestamp(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('pl-PL') + ' ' + d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+}
+
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(doAutosave, 600);
+}
+
+function doAutosave() {
+  try {
+    const payload = { savedAt: Date.now(), data: serializeState() };
+    localStorage.setItem(LS_AUTOSAVE_KEY, JSON.stringify(payload));
+    const statusEl = document.getElementById('autosaveStatus');
+    if (statusEl) statusEl.textContent = 'Automatyczny zapis: ' + formatTimestamp(payload.savedAt);
+  } catch (err) { /* np. tryb prywatny przeglądarki bez dostępu do localStorage */ }
+}
+
+function getSavedAnalyses() {
+  try { return JSON.parse(localStorage.getItem(LS_SAVES_KEY) || '{}'); }
+  catch (err) { return {}; }
+}
+
+function setSavedAnalyses(obj) {
+  localStorage.setItem(LS_SAVES_KEY, JSON.stringify(obj));
+}
+
+function renderSavedList() {
+  const saves = getSavedAnalyses();
+  const ids = Object.keys(saves).sort((a, b) => saves[b].savedAt - saves[a].savedAt);
+  const body = document.getElementById('savedListBody');
+  if (!ids.length) {
+    body.innerHTML = '<tr><td colspan="3" class="sql-hint" style="padding:10px 0;">Brak zapisanych analiz w tej przeglądarce.</td></tr>';
+    return;
+  }
+  body.innerHTML = ids.map(id => `
+    <tr>
+      <td>${saves[id].name}</td>
+      <td>${formatTimestamp(saves[id].savedAt)}</td>
+      <td style="text-align:right;">
+        <button class="ghost small" data-load-save="${id}">Wczytaj</button>
+        <button class="ghost small" data-del-save="${id}">Usuń</button>
+      </td>
+    </tr>`).join('');
+  document.querySelectorAll('[data-load-save]').forEach(btn => btn.addEventListener('click', () => {
+    const s = getSavedAnalyses()[btn.dataset.loadSave];
+    if (s) applySerializedState(s.data);
+  }));
+  document.querySelectorAll('[data-del-save]').forEach(btn => btn.addEventListener('click', () => {
+    const saves2 = getSavedAnalyses();
+    delete saves2[btn.dataset.delSave];
+    setSavedAnalyses(saves2);
+    renderSavedList();
+  }));
+}
+
+function initPersistenceUI() {
+  renderSavedList();
+
+  document.getElementById('btnSaveAs').addEventListener('click', () => {
+    const name = prompt('Nazwa analizy (np. "Dział sprzedaży — v1"):');
+    if (!name || !name.trim()) return;
+    const saves = getSavedAnalyses();
+    const id = 's' + Date.now();
+    saves[id] = { name: name.trim(), savedAt: Date.now(), data: serializeState() };
+    setSavedAnalyses(saves);
+    renderSavedList();
+  });
+
+  document.getElementById('btnNewAnalysis').addEventListener('click', () => {
+    if (!confirm('Rozpocząć nową analizę? Niezapisane zmiany w bieżącej analizie zostaną utracone (autosave pozostanie dostępny).')) return;
+    document.getElementById('btnClear').click();
+  });
+
+  document.getElementById('btnExportJSON').addEventListener('click', () => {
+    const payload = { exportedAt: Date.now(), data: serializeState() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'analiza-wymagan-' + new Date().toISOString().slice(0, 10) + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  document.getElementById('btnImportJSON').addEventListener('click', () => {
+    document.getElementById('importFileInput').click();
+  });
+  document.getElementById('importFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        const data = parsed.data || parsed; // wspiera plik eksportu i surowy obiekt danych
+        applySerializedState(data);
+        scheduleAutosave();
+      } catch (err) {
+        alert('Nie udało się wczytać pliku — sprawdź, czy to poprawny eksport z tej aplikacji.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  document.getElementById('btnRestoreYes').addEventListener('click', () => {
+    try {
+      const payload = JSON.parse(localStorage.getItem(LS_AUTOSAVE_KEY));
+      if (payload && payload.data) applySerializedState(payload.data);
+    } catch (err) {}
+    document.getElementById('restoreBanner').style.display = 'none';
+  });
+  document.getElementById('btnRestoreNo').addEventListener('click', () => {
+    document.getElementById('restoreBanner').style.display = 'none';
+  });
+
+  try {
+    const raw = localStorage.getItem(LS_AUTOSAVE_KEY);
+    if (raw) {
+      const payload = JSON.parse(raw);
+      const d = payload.data;
+      const hasContent = d && ((d.notes || '').trim() || Object.keys(d.entities || {}).length || (d.requirements || []).length);
+      if (hasContent) {
+        document.getElementById('restoreDate').textContent = formatTimestamp(payload.savedAt);
+        document.getElementById('restoreBanner').style.display = 'block';
+      }
+      document.getElementById('autosaveStatus').textContent = 'Automatyczny zapis: ' + formatTimestamp(payload.savedAt);
+    }
+  } catch (err) {}
+}
+
+document.getElementById('notesInput').addEventListener('input', scheduleAutosave);
+
 /* ============ NLP & FUZZY MATCHING ============ */
 // Słowniki bazowe
-const BASE_ROLES = ['klient','pracownik','administrator','magazynier','handlowiec','kierownik', 'menadżer','księgowy','operator','dostawca','sprzedawca','dyrektor','specjalista','konsultant','analityk'];
-const BASE_ENTITIES = ['Zamówienie','Faktura','Produkt','Klient','Magazyn','Dostawca','Pracownik','Raport','Płatność','Umowa','Kontrahent','Dokument','Towar','Kontrakt','Zlecenie','Reklamacja','Dostawa','Budżet','Projekt','Harmonogram'];
+const BASE_ROLES = ['klient','pracownik','administrator','magazynier','handlowiec','kierownik', 'menadżer','księgowy','operator','dostawca','sprzedawca','dyrektor','specjalista','konsultant','analityk','mechanik','brygadzista','technolog','planista','inżynier','kontroler','zarząd','ustawiacz','logistyk'];
+const BASE_ENTITIES = ['Zamówienie','Faktura','Produkt','Klient','Magazyn','Dostawca','Pracownik','Raport','Płatność','Umowa','Kontrahent','Dokument','Towar','Kontrakt','Zlecenie','Reklamacja','Dostawa','Budżet','Projekt','Harmonogram','Maszyna','Awaria','Część','Partia','Certyfikat','Przegląd','Komponent','Narzędzie','Stanowisko'];
 const REQ_TRIGGERS = /(musi|powinien|chcę|wymaga|umożliwia|pozwala|potrzebuje|należy|ma być|zapewnia)/gi;
 const BDD_TRIGGERS = /(Mając|Gdy|Wtedy|Scenariusz|Given|When|Then)/gi;
 
@@ -306,6 +569,44 @@ function techFromSentence(sentence, entities, actor) {
   return `Funkcja procesująca dla [${ent}]; wykonawca: ${actor}.`;
 }
 
+// Domyślne atrybuty dopasowane do typu encji — żeby autodetekcja od razu dawała realistyczne
+// pola (np. Klient dostaje imię/nazwisko/email), a nie identyczny szkielet dla każdej encji.
+// Dla encji spoza słownika (lub wykrytych fuzzy-match pod inną nazwą) zostaje bezpieczny domyślny zestaw.
+const ENTITY_DEFAULT_ATTRS = {
+  'Klient': ['id', 'imie', 'nazwisko', 'email', 'telefon'],
+  'Pracownik': ['id', 'imie', 'nazwisko', 'email', 'stanowisko'],
+  'Zamówienie': ['id', 'numerZamowienia', 'dataZlozenia', 'status'],
+  'Faktura': ['id', 'numerFaktury', 'dataWystawienia', 'kwota', 'status'],
+  'Płatność': ['id', 'kwota', 'metodaPlatnosci', 'dataPlatnosci', 'status'],
+  'Produkt': ['id', 'nazwa', 'cena', 'iloscNaMagazynie'],
+  'Towar': ['id', 'nazwa', 'cena', 'ilosc'],
+  'Magazyn': ['id', 'lokalizacja', 'pojemnosc'],
+  'Dostawca': ['id', 'nazwa', 'nip', 'kontakt'],
+  'Dostawa': ['id', 'dataDostawy', 'status', 'adresDostawy'],
+  'Kontrahent': ['id', 'nazwa', 'nip', 'adres'],
+  'Umowa': ['id', 'numerUmowy', 'dataPodpisania', 'wartosc'],
+  'Kontrakt': ['id', 'numerKontraktu', 'wartosc', 'dataZawarcia'],
+  'Dokument': ['id', 'typ', 'dataUtworzenia', 'autor'],
+  'Raport': ['id', 'tytul', 'dataUtworzenia', 'autor'],
+  'Zlecenie': ['id', 'numerZlecenia', 'priorytet', 'status', 'dataUtworzenia'],
+  'Reklamacja': ['id', 'opis', 'status', 'dataZgloszenia'],
+  'Budżet': ['id', 'kwotaPlanowana', 'kwotaWykorzystana', 'okres'],
+  'Projekt': ['id', 'nazwa', 'budzet', 'status', 'terminZakonczenia'],
+  'Harmonogram': ['id', 'dataRozpoczecia', 'dataZakonczenia', 'opis'],
+  'Maszyna': ['id', 'numerSeryjny', 'typ', 'status'],
+  'Awaria': ['id', 'opis', 'priorytet', 'dataZgloszenia', 'status'],
+  'Część': ['id', 'nazwa', 'numerKatalogowy', 'iloscNaStanie'],
+  'Partia': ['id', 'numerPartii', 'dataProdukcji', 'status'],
+  'Certyfikat': ['id', 'numerCertyfikatu', 'dataWystawienia', 'waznyDo'],
+  'Przegląd': ['id', 'dataPrzegladu', 'wynik', 'wykonawca'],
+  'Komponent': ['id', 'nazwa', 'numerKatalogowy', 'iloscNaStanie'],
+  'Narzędzie': ['id', 'nazwa', 'numerInwentarzowy', 'status'],
+  'Stanowisko': ['id', 'nazwa', 'lokalizacja', 'status'],
+};
+function defaultAttrsFor(entityName) {
+  return (ENTITY_DEFAULT_ATTRS[entityName] || ['id', 'dataUtworzenia', 'status']).slice();
+}
+
 function analyzeNotes(text){
   const sentences = splitSentences(text).filter(s => REQ_TRIGGERS.test(s) || BDD_TRIGGERS.test(s));
   const actorsSet = new Set();
@@ -323,7 +624,7 @@ function analyzeNotes(text){
     });
     
     ents.forEach(e => {
-      if (!entities[e]) entities[e] = { attributes: ['id','dataUtworzenia','status'], relations: new Set() };
+      if (!entities[e]) entities[e] = { attributes: defaultAttrsFor(e), relations: new Set() };
       ents.forEach(other => { if (other !== e) entities[e].relations.add(other); });
     });
   });
@@ -388,12 +689,31 @@ function renderAll() {
     const e = state.entities[name];
     return `<tr>
       <td><input value="${name}" readonly style="background:transparent;border:none;font-weight:bold;"></td>
-      <td><input value="${e.attributes.join(', ')}"></td>
-      <td><input value="${[...e.relations].join(', ')}"></td>
-      <td></td>
+      <td><input value="${e.attributes.join(', ')}" data-entity="${name}" data-f="attributes"></td>
+      <td><input value="${[...e.relations].join(', ')}" data-entity="${name}" data-f="relations"></td>
+      <td><button class="ghost small" data-del-entity="${name}" title="Usuń encję">×</button></td>
     </tr>`;
   }).join('');
   document.getElementById('entityTableBody').innerHTML = entHtml;
+
+  document.querySelectorAll('#entityTableBody input[data-f]').forEach(el => {
+    el.addEventListener('input', () => {
+      const ent = state.entities[el.dataset.entity];
+      if (!ent) return;
+      const parts = el.value.split(',').map(s => s.trim()).filter(Boolean);
+      if (el.dataset.f === 'attributes') ent.attributes = parts;
+      if (el.dataset.f === 'relations') ent.relations = new Set(parts.filter(p => p !== el.dataset.entity));
+      scheduleAutosave();
+    });
+  });
+  document.querySelectorAll('#entityTableBody button[data-del-entity]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      delete state.entities[btn.dataset.delEntity];
+      Object.values(state.entities).forEach(e => e.relations.delete(btn.dataset.delEntity));
+      renderAll();
+    });
+  });
+  scheduleAutosave();
 }
 
 function renderList(id, arr, template, bindFn) {
@@ -401,7 +721,7 @@ function renderList(id, arr, template, bindFn) {
   el.innerHTML = arr.map(template).join('');
 }
 function updateActor(e) { /* Simplified for brevity */ }
-function updateReq(e) { state.requirements[e.target.dataset.idx][e.target.dataset.f] = e.target.value; }
+function updateReq(e) { state.requirements[e.target.dataset.idx][e.target.dataset.f] = e.target.value; scheduleAutosave(); }
 
 /* ============ UML GENERATION ============ */
 function buildMermaidUsecase() {
@@ -420,17 +740,470 @@ function buildMermaidClass() {
   const names = Object.keys(state.entities);
   if (!names.length) return null;
   let lines = ['classDiagram'];
+  const drawnPairs = new Set(); // każda relacja (nieskierowana) rysowana tylko raz — bez duplikatu A--B i B--A
   names.forEach(name => {
     const e = state.entities[name];
     lines.push(`  class ${name} {`);
     e.attributes.forEach(a => lines.push(`    +${a}`));
     lines.push(`  }`);
     e.relations.forEach(rel => {
-      if(state.entities[rel]) lines.push(`  ${name} -- ${rel} : powiązanie`);
+      if (!state.entities[rel]) return;
+      const pairKey = [name, rel].sort().join('|');
+      if (drawnPairs.has(pairKey)) return;
+      drawnPairs.add(pairKey);
+      lines.push(`  ${name} -- ${rel} : powiązanie`);
     });
   });
   return lines.join('\n');
 }
+
+/* ============ SQL DDL GENERATION ============ */
+// Słownik heurystyk: wzorzec w nazwie atrybutu -> kategoria semantyczna typu
+const SQL_TYPE_RULES = [
+  { re: /e[-_]?mail/i, cat: 'EMAIL' },
+  { re: /telefon|^tel$|nr[_ ]?tel/i, cat: 'PHONE' },
+  { re: /nip/i, cat: 'NIP' },
+  { re: /^numer|^nr[A-Z_]/i, cat: 'CODE' },
+  { re: /imi(e|ę)|nazwisko|tytul|tytuł|nazwa(?!.*firm)/i, cat: 'SHORT' },
+  { re: /^data|dataUtworzenia|dataModyfikacji|utworzon|zmodyfikowan|termin|deadline|wazn[ay]/i, cat: 'DATETIME' },
+  { re: /cena|kwota|wartos(c|ć)|koszt|budzet|budżet|saldo/i, cat: 'DECIMAL' },
+  { re: /ilos(c|ć)|liczba|licznik|stan_magazynow|pojemnosc|pojemność/i, cat: 'INT' },
+  { re: /opis|komentarz|uwag|notatk|tresc|treść/i, cat: 'TEXT' },
+  { re: /status|typ|rodzaj|kategoria|priorytet|wynik/i, cat: 'STATUS' },
+  { re: /adres|ulica|miasto|kod_?poczt|lokalizacj/i, cat: 'ADDRESS' },
+  { re: /^(czy_|is_|aktywn|zatwierdzon|zaakceptowan)/i, cat: 'BOOL' },
+];
+
+function sqlCategoryFor(attrName) {
+  for (const rule of SQL_TYPE_RULES) { if (rule.re.test(attrName)) return rule.cat; }
+  return 'DEFAULT';
+}
+
+function sqlTypeFor(category, dialect) {
+  const map = {
+    CODE:    'VARCHAR(50)',
+    NIP:     'VARCHAR(10)',
+    SHORT:   'VARCHAR(100)',
+    EMAIL:   'VARCHAR(255)',
+    PHONE:   'VARCHAR(20)',
+    DATETIME:{ mysql:'DATETIME', postgres:'TIMESTAMP', mssql:'DATETIME2' }[dialect],
+    DECIMAL: 'DECIMAL(10,2)',
+    INT:     'INT',
+    TEXT:    'TEXT',
+    STATUS:  'VARCHAR(50)',
+    ADDRESS: 'VARCHAR(255)',
+    BOOL:    { mysql:'BOOLEAN', postgres:'BOOLEAN', mssql:'BIT' }[dialect],
+    DEFAULT: 'VARCHAR(255)',
+  };
+  return map[category];
+}
+
+// Usuwa polskie znaki diakrytyczne i zamienia na snake_case (bezpieczne dla SQL)
+function toSnakeCase(str) {
+  return str
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, '_')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .toLowerCase();
+}
+
+function pkDefinition(dialect) {
+  if (dialect === 'postgres') return 'id SERIAL PRIMARY KEY';
+  if (dialect === 'mssql') return 'id INT IDENTITY(1,1) PRIMARY KEY';
+  return 'id INT AUTO_INCREMENT PRIMARY KEY';
+}
+
+// Dobiera sensowne ograniczenia dla kolumny na podstawie jej nazwy/kategorii:
+// - numery dokumentów (numerFaktury, numerZamowienia...), NIP i e-mail to zwykle unikalne klucze biznesowe -> NOT NULL UNIQUE
+// - imię/nazwisko/nazwa zwykle wymagane -> NOT NULL
+// - pole "status" (dokładnie to słowo) dostaje wartość domyślną startową
+// - pole "dataUtworzenia" (dokładnie to słowo) domyślnie ustawia bieżącą datę/czas
+function sqlConstraintsFor(attrName, category, dialect) {
+  const n = attrName.trim().toLowerCase();
+  if (category === 'CODE' || category === 'NIP' || category === 'EMAIL') return ' NOT NULL UNIQUE';
+  if (n === 'imie' || n === 'nazwisko' || n === 'nazwa') return ' NOT NULL';
+  if (n === 'status') return " DEFAULT 'nowy'";
+  if (n === 'datautworzenia') return dialect === 'mssql' ? ' DEFAULT GETDATE()' : ' DEFAULT CURRENT_TIMESTAMP';
+  return '';
+}
+
+function buildSQLDDL(dialect) {
+  const names = Object.keys(state.entities);
+  if (!names.length) return null;
+
+  const out = [];
+  out.push(`-- Wygenerowano automatycznie na podstawie Słownika Encji (sekcja 04)`);
+  out.push(`-- Dialekt: ${dialect.toUpperCase()} · typy i ograniczenia kolumn to sugestia na bazie nazw pól — zweryfikuj przed wdrożeniem.\n`);
+
+  const fkHandled = new Set(); // dedupe par relacji (A|B), aby nie tworzyć FK w obie strony
+
+  names.forEach((name, idx) => {
+    const e = state.entities[name];
+    const table = toSnakeCase(name);
+    const cols = [pkDefinition(dialect)];
+
+    e.attributes.forEach(rawAttr => {
+      const attr = rawAttr.trim();
+      if (!attr || attr.toLowerCase() === 'id') return;
+      const col = toSnakeCase(attr);
+      if (!col || col === 'id') return;
+      const category = sqlCategoryFor(attr);
+      const type = sqlTypeFor(category, dialect);
+      const constraints = sqlConstraintsFor(attr, category, dialect);
+      cols.push(`${col} ${type}${constraints}`);
+    });
+
+    const fkLines = [];
+    [...e.relations].forEach(rel => {
+      if (!state.entities[rel]) return;
+      const relIdx = names.indexOf(rel);
+      const pairKey = [name, rel].sort().join('|');
+      // FK trafia do encji, która pojawiła się później w słowniku (heurystyka: "dziecko" -> "rodzic")
+      if (relIdx < idx && !fkHandled.has(pairKey)) {
+        fkHandled.add(pairKey);
+        const fkCol = `${toSnakeCase(rel)}_id`;
+        cols.push(`${fkCol} INT NOT NULL`);
+        fkLines.push(`FOREIGN KEY (${fkCol}) REFERENCES ${toSnakeCase(rel)}(id)`);
+      }
+    });
+
+    out.push(`CREATE TABLE ${table} (`);
+    out.push('  ' + [...cols, ...fkLines].join(',\n  '));
+    out.push(');\n');
+  });
+
+  return out.join('\n');
+}
+
+function highlightSQL(sql) {
+  return sql
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^(--.*)$/gm, '<span class="sql-comment">$1</span>')
+    .replace(/\b(CREATE TABLE|PRIMARY KEY|FOREIGN KEY|REFERENCES|AUTO_INCREMENT|IDENTITY|NOT NULL|DEFAULT|SERIAL)\b/g, '<span class="sql-kw">$1</span>')
+    .replace(/^CREATE TABLE <span class="sql-kw">.*?<\/span> (\w+)/gm, (m, t) => m.replace(t, `<span class="sql-table">${t}</span>`));
+}
+
+document.getElementById('btnGenerateSQL').addEventListener('click', () => {
+  const dialect = document.getElementById('sqlDialect').value;
+  const sql = buildSQLDDL(dialect);
+  const outEl = document.getElementById('sqlOutput');
+  if (!sql) {
+    outEl.textContent = '-- Brak encji w Słowniku Encji (sekcja 04). Najpierw przeanalizuj notatki.';
+    return;
+  }
+  outEl.innerHTML = highlightSQL(sql);
+  outEl.dataset.raw = sql;
+});
+
+document.getElementById('btnCopySQL').addEventListener('click', () => {
+  const outEl = document.getElementById('sqlOutput');
+  const raw = outEl.dataset.raw || outEl.textContent;
+  navigator.clipboard.writeText(raw).catch(() => {});
+});
+
+document.getElementById('btnDownloadSQL').addEventListener('click', () => {
+  const outEl = document.getElementById('sqlOutput');
+  const raw = outEl.dataset.raw || outEl.textContent;
+  const blob = new Blob([raw], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'schema.sql';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+/* ============ RAPORT DLA ZARZĄDU (PDF) ============ */
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function plural(n, one, few, many) {
+  if (n === 1) return one;
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return few;
+  return many;
+}
+
+function humanizeAttr(a) {
+  let s = a.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/_/g, ' ').trim();
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+// Dzieli listę na fragmenty o zadanym rozmiarze — każdy fragment renderowany jako osobny,
+// niewielki diagram, który mieści się w całości na jednej stronie wydruku (bez "rozjeżdżania").
+function chunkArray(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+// Diagram przypadków użycia dla raportu: generowany od nowa, w fragmentach po kilku aktorów,
+// zamiast jednego wielkiego diagramu, który przy druku łamie się w środku węzłów.
+async function buildUsecaseChunksHTML() {
+  const actors = [...new Set(state.requirements.map(r => r.actor))].filter(Boolean);
+  if (!actors.length) return '';
+  const CHUNK_SIZE = 3;
+  const chunks = chunkArray(actors, CHUNK_SIZE);
+  let html = '';
+  for (let idx = 0; idx < chunks.length; idx++) {
+    const chunkActors = chunks[idx];
+    const lines = ['flowchart LR'];
+    chunkActors.forEach(a => lines.push(`  ${a.replace(/\s/g, '_')}(((👤 ${a})))`));
+    state.requirements.forEach((r, i) => {
+      if (r.actor && chunkActors.includes(r.actor)) {
+        const ucId = `RUC${idx}_${i}`;
+        lines.push(`  ${ucId}(["${r.useCase}"])`);
+        lines.push(`  ${r.actor.replace(/\s/g, '_')} -.-> ${ucId}`);
+      }
+    });
+    try {
+      const { svg } = await mermaid.render(`report_uc_${idx}`, lines.join('\n'));
+      html += `
+        <section class="report-section">
+          <h2>Diagram przypadków użycia${chunks.length > 1 ? ` (część ${idx + 1} z ${chunks.length})` : ''}</h2>
+          <div class="diagram-card">${svg}</div>
+        </section>`;
+    } catch (err) { /* pomijamy fragment, którego mermaid nie potrafił wyrenderować */ }
+  }
+  return html;
+}
+
+// Diagram klas dla raportu: analogicznie dzielony na fragmenty po kilka encji, plus pełny
+// zapis tekstowy CAŁEGO modelu na końcu (obejmujący też relacje pomiędzy fragmentami).
+async function buildClassChunksHTML() {
+  const names = Object.keys(state.entities);
+  if (!names.length) return '';
+  const CHUNK_SIZE = 3;
+  const chunks = chunkArray(names, CHUNK_SIZE);
+  let html = '';
+  for (let idx = 0; idx < chunks.length; idx++) {
+    const chunkNames = chunks[idx];
+    const lines = ['classDiagram'];
+    chunkNames.forEach(name => {
+      const e = state.entities[name];
+      lines.push(`  class ${name} {`);
+      e.attributes.forEach(a => lines.push(`    +${a}`));
+      lines.push(`  }`);
+      e.relations.forEach(rel => {
+        if (chunkNames.includes(rel) && state.entities[rel]) lines.push(`  ${name} -- ${rel} : powiązanie`);
+      });
+    });
+    try {
+      const { svg } = await mermaid.render(`report_cl_${idx}`, lines.join('\n'));
+      html += `
+        <section class="report-section">
+          <h2>Diagram klas (model danych)${chunks.length > 1 ? ` (część ${idx + 1} z ${chunks.length})` : ''}</h2>
+          <div class="diagram-card">${svg}</div>
+        </section>`;
+    } catch (err) { /* pomijamy fragment, którego mermaid nie potrafił wyrenderować */ }
+  }
+
+  const fullText = buildMermaidClass();
+  if (fullText) {
+    html += `
+      <section class="report-section">
+        <h2>Zapis tekstowy pełnego modelu klas (notacja UML)</h2>
+        <p class="note">${chunks.length > 1 ? 'Diagram graficzny powyżej podzielono na strony wg czytelności wydruku — poniższy zapis tekstowy obejmuje pełny model wraz ze wszystkimi relacjami, także tymi pomiędzy fragmentami.' : 'Poniżej znajduje się zapis tekstowy tego samego modelu — ta sama definicja, z której powstał powyższy diagram.'}</p>
+        <div class="uml-text-block">
+          <pre class="uml-text">${escHtml(fullText)}</pre>
+        </div>
+      </section>`;
+  }
+  return html;
+}
+
+async function buildReportHTML() {
+  const projectName = (document.getElementById('reportProjectName').value || '').trim() || 'Projekt bez nazwy';
+  const author = (document.getElementById('reportAuthor').value || '').trim();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('pl-PL', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const actorNames = state.actors.map(a => a.name).filter(Boolean);
+  const reqCount = state.requirements.length;
+  const entityNames = Object.keys(state.entities);
+
+  const summaryParagraph = `W toku analizy zebranych notatek ze spotkań analitycznych zidentyfikowano <strong>${reqCount}</strong> ${escHtml(plural(reqCount, 'wymaganie biznesowe', 'wymagania biznesowe', 'wymagań biznesowych'))}, zgłoszone przez <strong>${actorNames.length}</strong> ${escHtml(plural(actorNames.length, 'rolę', 'role', 'ról'))} w organizacji. Wymagania te zostały odwzorowane na <strong>${entityNames.length}</strong> ${escHtml(plural(entityNames.length, 'obszar danych', 'obszary danych', 'obszarów danych'))}, które będą stanowić podstawę modelu danych planowanego rozwiązania.`;
+
+  // Sekcje budowane WARUNKOWO — sekcja bez treści w ogóle nie trafia do raportu (brak pustych stron/elementów).
+  const summarySection = `
+    <section class="report-section">
+      <h2>Podsumowanie wykonawcze</h2>
+      <div class="summary-box">${summaryParagraph}</div>
+      <div class="stat-row">
+        <div class="stat"><span class="num">${reqCount}</span><span class="label">Wymagań biznesowych</span></div>
+        <div class="stat"><span class="num">${actorNames.length}</span><span class="label">Zidentyfikowanych ról</span></div>
+        <div class="stat"><span class="num">${entityNames.length}</span><span class="label">Obszarów danych</span></div>
+      </div>
+    </section>`;
+
+  const actorsSection = actorNames.length ? `
+    <section class="report-section">
+      <h2>Zidentyfikowane role w organizacji</h2>
+      <ul class="actor-list">${actorNames.map(a => `<li>${escHtml(a)}</li>`).join('')}</ul>
+    </section>` : '';
+
+  const reqSection = reqCount ? `
+    <section class="report-section">
+      <h2>Wymagania biznesowe</h2>
+      <table class="req-table">
+        <thead><tr><th>Lp.</th><th>Wymaganie</th><th>Rola odpowiedzialna</th><th>Powiązany obszar danych</th></tr></thead>
+        <tbody>${state.requirements.map((r, i) => `
+          <tr>
+            <td class="num">${i + 1}</td>
+            <td>
+              <div class="req-main">${escHtml(r.business)}</div>
+              ${r.technical ? `<div class="req-sub">Rekomendacja realizacyjna: ${escHtml(r.technical)}</div>` : ''}
+            </td>
+            <td>${escHtml(r.actor || '—')}</td>
+            <td>${escHtml((r.entities && r.entities.length) ? r.entities.join(', ') : '—')}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+    </section>` : '';
+
+  const entitySection = entityNames.length ? `
+    <section class="report-section">
+      <h2>Model danych — obszary informacji</h2>
+      ${entityNames.map(name => {
+        const e = state.entities[name];
+        const attrs = e.attributes.filter(a => a.trim().toLowerCase() !== 'id').map(humanizeAttr);
+        const rels = [...e.relations];
+        return `
+        <div class="entity-card">
+          <h4>${escHtml(name)}</h4>
+          <p><strong>Przechowywane dane:</strong> ${attrs.length ? escHtml(attrs.join(', ')) : '—'}</p>
+          ${rels.length ? `<p><strong>Powiązania z innymi obszarami:</strong> ${escHtml(rels.join(', '))}</p>` : ''}
+        </div>`;
+      }).join('')}
+    </section>` : '';
+
+  const usecaseSection = await buildUsecaseChunksHTML();
+  const classSection = await buildClassChunksHTML();
+
+  const sqlOutEl = document.getElementById('sqlOutput');
+  const sqlRaw = sqlOutEl ? sqlOutEl.dataset.raw : null;
+  const sqlSection = sqlRaw ? `
+    <section class="report-section">
+      <h2>Załącznik techniczny — proponowany schemat bazy danych</h2>
+      <p class="note">Poniższy materiał przeznaczony jest dla zespołu IT / wdrożeniowego i nie wymaga akceptacji biznesowej.</p>
+      <pre class="sql-appendix">${escHtml(sqlRaw)}</pre>
+    </section>` : '';
+
+  return `<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Raport — ${escHtml(projectName)}</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #1A2430; margin: 0; padding: 0 0 40px; background: #fff; line-height: 1.55; }
+  .no-print { position: sticky; top: 0; background: #1A2430; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px; z-index: 10; }
+  .no-print button { font-family: Arial, sans-serif; font-size: 13.5px; font-weight: 600; padding: 9px 18px; border: none; border-radius: 3px; background: #4A7FB5; color: #fff; cursor: pointer; }
+  .no-print span { font-size: 12.5px; opacity: .8; }
+  .page { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+  .cover { padding-top: 60px; padding-bottom: 40px; border-bottom: 3px solid #1A2430; margin-bottom: 36px; }
+  .cover .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #7A8A96; font-weight: 700; margin-bottom: 14px; }
+  .cover h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 32px; margin: 0 0 10px; color: #1A2430; line-height: 1.25; }
+  .cover .project-name { font-size: 18px; color: #4A7FB5; font-weight: 600; margin-bottom: 22px; }
+  .cover-meta { display: flex; gap: 40px; font-size: 12.5px; color: #55636E; }
+  .cover-meta b { display: block; color: #1A2430; font-size: 13.5px; margin-top: 2px; }
+  .report-section { margin-bottom: 38px; }
+  .report-section h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #1A2430; border-bottom: 1.5px solid #D7DEE3; padding-bottom: 8px; margin: 0 0 16px; }
+  .summary-box { background: #F4F7F9; border-left: 4px solid #4A7FB5; padding: 18px 22px; font-size: 14px; }
+  .stat-row { display: flex; gap: 28px; margin: 18px 0 4px; flex-wrap: wrap; }
+  .stat { background: #1A2430; color: #fff; padding: 14px 20px; border-radius: 4px; min-width: 130px; }
+  .stat .num { font-family: Georgia, serif; font-size: 26px; font-weight: 700; display: block; }
+  .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; opacity: .75; }
+  ul.actor-list { columns: 2; -webkit-columns: 2; gap: 24px; padding-left: 18px; font-size: 13.5px; }
+  ul.actor-list li { margin-bottom: 6px; break-inside: avoid; }
+  table.req-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.req-table th { text-align: left; background: #1A2430; color: #fff; padding: 9px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  table.req-table td { padding: 9px 10px; border-bottom: 1px solid #E1E7EA; vertical-align: top; }
+  table.req-table tr:nth-child(even) td { background: #F7F9FA; }
+  table.req-table td.num { text-align: center; color: #8A97A1; font-weight: 700; width: 26px; }
+  .req-main { font-weight: 600; color: #1A2430; }
+  .req-sub { font-size: 11.5px; color: #6B7A85; margin-top: 3px; font-style: italic; }
+  .entity-card { border: 1px solid #E1E7EA; border-left: 4px solid #4A7FB5; padding: 12px 16px; margin-bottom: 12px; border-radius: 3px; break-inside: avoid; }
+  .entity-card h4 { margin: 0 0 6px; font-size: 14.5px; color: #1A2430; }
+  .entity-card p { margin: 3px 0; font-size: 12.5px; color: #3D4A54; }
+  .diagram-card { background: #1A2028; border-radius: 6px; padding: 18px; margin-bottom: 20px; page-break-inside: avoid; break-inside: avoid; }
+  .diagram-card h4 { color: #E6ECF1; margin: 0 0 12px; font-size: 13px; font-family: Arial, sans-serif; }
+  .diagram-card svg { max-width: 100%; max-height: 230mm; width: auto; height: auto; display: block; margin: 0 auto; }
+  .uml-text-block { margin-top: 4px; }
+  .uml-text-block h4 { font-size: 12.5px; color: #55636E; text-transform: uppercase; letter-spacing: .04em; margin: 0 0 8px; }
+  .uml-text { background: #F4F7F9; border: 1px solid #D7DEE3; color: #1A2430; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6; padding: 16px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; }
+  .sql-appendix { background: #10151B; color: #D7E3EA; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.6; padding: 18px; border-radius: 6px; white-space: pre-wrap; word-break: break-word; }
+  .note { font-size: 12px; color: #6B7A85; font-style: italic; margin-top: -6px; margin-bottom: 12px; }
+  .empty-note { color: #8A97A1; font-style: italic; padding: 10px 0; }
+  .footer { margin-top: 50px; padding-top: 16px; border-top: 1px solid #E1E7EA; font-size: 11px; color: #8A97A1; display: flex; justify-content: space-between; }
+  /* Każdy element analizy (sekcja) zaczyna się na nowej stronie */
+  .report-section { page-break-before: always; break-before: page; }
+  .report-section h2 { page-break-after: avoid; break-after: avoid; }
+  table.req-table thead { display: table-header-group; }
+  table.req-table tr { page-break-inside: avoid; break-inside: avoid; }
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+    .no-print { display: none !important; }
+    .cover { padding-top: 10px; }
+  }
+</style>
+</head>
+<body>
+  <div class="no-print">
+    <span>Podgląd raportu — użyj Ctrl+P / Cmd+P, aby zapisać jako PDF (zaznacz "Grafika tła" / "Background graphics").</span>
+    <button onclick="window.print()">Drukuj / Zapisz jako PDF</button>
+  </div>
+  <div class="page">
+    <div class="cover">
+      <div class="eyebrow">Raport z analizy wymagań biznesowych</div>
+      <h1>${escHtml(projectName)}</h1>
+      <div class="project-name">Podsumowanie dla Zarządu</div>
+      <div class="cover-meta">
+        <div>Data<b>${escHtml(dateStr)}</b></div>
+        ${author ? `<div>Przygotował(a)<b>${escHtml(author)}</b></div>` : ''}
+      </div>
+    </div>
+
+    ${summarySection}
+    ${actorsSection}
+    ${reqSection}
+    ${entitySection}
+    ${usecaseSection}
+    ${classSection}
+    ${sqlSection}
+
+    <div class="footer">
+      <span>Wygenerowano automatycznie — Arkusz Analizy Wymagań (v2.0 Smart NLP)</span>
+      <span>${escHtml(dateStr)}</span>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+document.getElementById('btnExportReport').addEventListener('click', async () => {
+  if (!state.requirements.length && !Object.keys(state.entities).length) {
+    alert('Brak danych do wygenerowania raportu — najpierw przeanalizuj notatki w sekcji 01.');
+    return;
+  }
+  // Okno otwieramy od razu (synchronicznie), zanim zaczniemy asynchronicznie renderować diagramy —
+  // inaczej przeglądarka zablokuje window.open() jako niepowiązane z kliknięciem użytkownika.
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Przeglądarka zablokowała otwarcie nowej karty. Zezwól na wyskakujące okna dla tej strony i spróbuj ponownie.');
+    return;
+  }
+  win.document.write('<!DOCTYPE html><html lang="pl"><body style="font-family:Arial,sans-serif;padding:40px;color:#55636E;">Generowanie raportu — proszę czekać…</body></html>');
+
+  const reportHtml = await buildReportHTML();
+
+  win.document.open();
+  win.document.write(reportHtml);
+  win.document.close();
+});
 
 document.getElementById('btnGenerate').addEventListener('click', async () => {
   const { svg: ucSvg } = await mermaid.render('uc', buildMermaidUsecase());
@@ -443,6 +1216,179 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
   }
 });
 
+/* ============ PODGLĄD DIAGRAMU W OKNIE (ZOOM / PRZESUWANIE) ============ */
+function openDiagramViewer(title, svgMarkup) {
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Przeglądarka zablokowała otwarcie nowej karty. Zezwól na wyskakujące okna dla tej strony i spróbuj ponownie.');
+    return;
+  }
+  const doc = `<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>${title.replace(/&/g,'&amp;').replace(/</g,'&lt;')} — podgląd</title>
+<style>
+  html, body { margin:0; padding:0; height:100%; background:#0F1419; overflow:hidden; font-family:'IBM Plex Mono',monospace; }
+  .toolbar { position:fixed; top:0; left:0; right:0; height:52px; background:#1A2028; border-bottom:1px solid #3A4552; display:flex; align-items:center; gap:8px; padding:0 16px; z-index:10; }
+  .toolbar .title { color:#E6ECF1; font-size:13px; margin-right:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .toolbar button { font-family:'IBM Plex Mono',monospace; font-size:12px; padding:7px 12px; border:1.5px solid #3A4552; background:#0F1419; color:#E6ECF1; border-radius:2px; cursor:pointer; }
+  .toolbar button:hover { background:#242C35; }
+  .toolbar .zoomlevel { color:#8B9BA8; font-size:12px; min-width:48px; text-align:center; }
+  .hint { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); color:#5B6B78; font-size:11px; background:#1A2028; padding:6px 14px; border-radius:20px; border:1px solid #3A4552; pointer-events:none; }
+  .viewport { position:absolute; top:52px; left:0; right:0; bottom:0; overflow:auto; -webkit-overflow-scrolling:touch; cursor:grab; }
+  .viewport.dragging { cursor:grabbing; }
+  .stage { display:inline-block; }
+  .stage svg { display:block; }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <span class="title">${title.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>
+    <button id="zoomOut">−</button>
+    <span class="zoomlevel" id="zoomLevel">100%</span>
+    <button id="zoomIn">+</button>
+    <button id="fitBtn">Dopasuj</button>
+    <button id="resetBtn">100%</button>
+    <button id="downloadBtn">Pobierz SVG</button>
+  </div>
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">${svgMarkup}</div>
+  </div>
+  <div class="hint">Kółko myszy / szczypanie dwoma palcami = zoom · przeciągnij = przesuwanie · podwójne kliknięcie = przybliż</div>
+<script>
+(function(){
+  const viewport = document.getElementById('viewport');
+  const stage = document.getElementById('stage');
+  const zoomLevelEl = document.getElementById('zoomLevel');
+  let scale = 1, naturalW = 0, naturalH = 0;
+  let dragging = false, lastX = 0, lastY = 0, dragMoved = false;
+
+  // Zamiast CSS transform:scale() na całym (potencjalnie ogromnym) diagramie — co na telefonach
+  // potrafi przekroczyć limit rozmiaru warstwy GPU i dać rozmyty, "zaszumiony" obraz zamiast
+  // przybliżenia — realnie zmieniamy rozmiar <svg> (px) i przewijamy widocznym viewportem.
+  function measureNatural() {
+    const svg = stage.querySelector('svg');
+    if (!svg) return;
+    const vb = svg.viewBox && svg.viewBox.baseVal;
+    if (vb && vb.width && vb.height) { naturalW = vb.width; naturalH = vb.height; }
+    else { const r = svg.getBoundingClientRect(); naturalW = r.width || 800; naturalH = r.height || 600; }
+  }
+
+  function setScale(newScale, clientX, clientY) {
+    const svg = stage.querySelector('svg');
+    if (!svg || !naturalW) return;
+    newScale = Math.min(8, Math.max(0.02, newScale));
+    const rect = viewport.getBoundingClientRect();
+    const fx = clientX != null ? clientX : rect.left + viewport.clientWidth / 2;
+    const fy = clientY != null ? clientY : rect.top + viewport.clientHeight / 2;
+    // punkt zawartości pod kursorem/palcami PRZED zmianą skali
+    const contentX = (viewport.scrollLeft + (fx - rect.left)) / scale;
+    const contentY = (viewport.scrollTop + (fy - rect.top)) / scale;
+    scale = newScale;
+    svg.style.width = (naturalW * scale) + 'px';
+    svg.style.height = (naturalH * scale) + 'px';
+    zoomLevelEl.textContent = Math.round(scale * 100) + '%';
+    viewport.scrollLeft = contentX * scale - (fx - rect.left);
+    viewport.scrollTop = contentY * scale - (fy - rect.top);
+  }
+
+  function fitToScreen() {
+    measureNatural();
+    const svg = stage.querySelector('svg');
+    if (!svg || !naturalW) return;
+    const vw = viewport.clientWidth - 16, vh = viewport.clientHeight - 16;
+    scale = Math.max(0.02, Math.min(vw / naturalW, vh / naturalH, 4));
+    svg.style.width = (naturalW * scale) + 'px';
+    svg.style.height = (naturalH * scale) + 'px';
+    zoomLevelEl.textContent = Math.round(scale * 100) + '%';
+    viewport.scrollLeft = 0; viewport.scrollTop = 0;
+  }
+
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    setScale(scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY);
+  }, { passive: false });
+
+  // Przeciąganie myszą = przewijanie (na dotyku przewijanie jest natywne, nie trzeba go emulować)
+  viewport.addEventListener('mousedown', (e) => {
+    dragging = true; dragMoved = false; lastX = e.clientX; lastY = e.clientY;
+    viewport.classList.add('dragging');
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    dragMoved = true;
+    viewport.scrollLeft -= (e.clientX - lastX);
+    viewport.scrollTop -= (e.clientY - lastY);
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  window.addEventListener('mouseup', () => { dragging = false; viewport.classList.remove('dragging'); });
+
+  viewport.addEventListener('dblclick', (e) => {
+    setScale(scale * 1.6, e.clientX, e.clientY);
+  });
+
+  // Szczypanie dwoma palcami = zoom. Przesuwanie jednym palcem to natywny scroll przeglądarki
+  // (nie przechwytujemy go — dzięki temu jest płynny i niezawodny na telefonach).
+  function touchDist(t0, t1) { return Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY); }
+  let pinchStartDist = 0, pinchStartScale = 1;
+  viewport.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+      pinchStartScale = scale;
+    }
+  }, { passive: true });
+  viewport.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && pinchStartDist > 0) {
+      e.preventDefault();
+      const dist = touchDist(e.touches[0], e.touches[1]);
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      setScale(pinchStartScale * (dist / pinchStartDist), midX, midY);
+    }
+  }, { passive: false });
+  viewport.addEventListener('touchend', (e) => { if (e.touches.length < 2) pinchStartDist = 0; });
+
+  document.getElementById('zoomIn').addEventListener('click', () => setScale(scale * 1.25));
+  document.getElementById('zoomOut').addEventListener('click', () => setScale(scale / 1.25));
+  document.getElementById('resetBtn').addEventListener('click', () => setScale(1));
+  document.getElementById('fitBtn').addEventListener('click', fitToScreen);
+  document.getElementById('downloadBtn').addEventListener('click', () => {
+    const svg = stage.querySelector('svg');
+    if (!svg) return;
+    const clone = svg.cloneNode(true);
+    clone.style.width = ''; clone.style.height = ''; // eksport w naturalnym rozmiarze, nie w bieżącym zoomie
+    const blob = new Blob([clone.outerHTML], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'diagram.svg';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  requestAnimationFrame(fitToScreen);
+})();
+<\/script>
+</body>
+</html>`;
+  win.document.open();
+  win.document.write(doc);
+  win.document.close();
+}
+
+document.getElementById('btnExpandUsecase').addEventListener('click', () => {
+  const box = document.getElementById('usecaseBox');
+  if (!box.querySelector('svg')) { alert('Najpierw kliknij "Aktualizuj diagramy".'); return; }
+  openDiagramViewer('Diagram przypadków użycia', box.innerHTML);
+});
+document.getElementById('btnExpandClass').addEventListener('click', () => {
+  const box = document.getElementById('classBox');
+  if (!box.querySelector('svg')) { alert('Najpierw kliknij "Aktualizuj diagramy".'); return; }
+  openDiagramViewer('Diagram klas (model danych)', box.innerHTML);
+});
+
+
 /* ============ EVENT LISTENERS ============ */
 document.getElementById('btnAnalyze').addEventListener('click', () => {
   const text = document.getElementById('notesInput').value;
@@ -452,6 +1398,14 @@ document.getElementById('btnAnalyze').addEventListener('click', () => {
   state.actors = res.actors.map(name => ({ name }));
   renderAll();
   renderHighlights(text);
+});
+
+document.getElementById('btnAddEntity').addEventListener('click', () => {
+  const name = prompt('Nazwa nowej encji (np. Pracownik):');
+  if (!name || !name.trim()) return;
+  const clean = capitalize(name.trim());
+  if (!state.entities[clean]) state.entities[clean] = { attributes: ['id', 'imie', 'nazwisko'], relations: new Set() };
+  renderAll();
 });
 
 document.getElementById('btnToggleEdit').addEventListener('click', () => {
@@ -486,14 +1440,110 @@ Wtedy system wysyła powiadomienie do klienta o zmianie statusu dostawy.`;
   document.getElementById('btnToggleEdit').click(); // wymuś tryb edycji
 });
 
+document.getElementById('btnSampleProdukcja').addEventListener('click', () => {
+  document.getElementById('notesInput').value = `--- Dział Planowania Produkcji — Fabryka Maszyn Przemysłowych ---
+Planista produkcji musi tworzyć harmonogram produkcji na podstawie zatwierdzonych zamówień od klientów.
+Kierownik produkcji chcę zatwierdzać każde zlecenie produkcyjne przed uruchomieniem montażu maszyny.
+System powinien automatycznie przydzielać zasoby produkcyjne (stanowiska, pracowników) do zlecenia.
+Dyrektor produkcji wymaga podglądu obciążenia hali produkcyjnej w horyzoncie najbliższych czterech tygodni.
+
+Scenariusz: Rejestracja nowego zlecenia produkcyjnego.
+Mając zatwierdzone zamówienie od klienta na maszynę przemysłową typu CNC.
+Gdy planista produkcji tworzy nowe zlecenie produkcyjne w systemie.
+Wtedy system generuje numer zlecenia i przypisuje je do harmonogramu produkcji.
+
+Scenariusz: Zmiana priorytetu zlecenia produkcyjnego.
+Mając aktywne zlecenie produkcyjne w harmonogramie o priorytecie standardowym.
+Gdy kierownik produkcji oznacza zlecenie jako pilne na żądanie klienta.
+Wtedy system przelicza harmonogram i przesuwa zlecenie na początek kolejki produkcyjnej.
+
+--- Dział Montażu Maszyn ---
+Operator maszyny musi rejestrować czas rozpoczęcia i zakończenia pracy na zleceniu produkcyjnym.
+Brygadzista chcę monitorować postęp montażu maszyny w czasie rzeczywistym na tablecie.
+Technolog wymaga dostępu do aktualnej dokumentacji technicznej i instrukcji montażu dla każdego typu maszyny.
+Operator powinien mieć możliwość zgłoszenia braku komponentu bezpośrednio z linii montażowej.
+
+Scenariusz: Rozpoczęcie montażu partii maszyn.
+Mając zlecenie produkcyjne z przydzielonymi zasobami i dostępną dokumentacją techniczną.
+Gdy brygadzista rozpoczyna montaż pierwszej partii maszyn na zleceniu.
+Wtedy system zmienia status zlecenia na "w realizacji" i rejestruje czas startu.
+
+--- Dział Utrzymania Ruchu (UR) ---
+Specjalista utrzymania ruchu musi diagnozować przyczynę awarii maszyny w ciągu dwóch godzin od zgłoszenia.
+Mechanik chcę zamawiać brakujące części zamienne bezpośrednio z poziomu systemu.
+System powinien prowadzić pełną historię przeglądów technicznych dla każdej maszyny produkcyjnej.
+Kierownik utrzymania ruchu wymaga raportu awaryjności maszyn za ostatni kwartał.
+
+Scenariusz: Zgłoszenie awarii maszyny produkcyjnej.
+Mając pracującą maszynę produkcyjną na hali produkcyjnej.
+Gdy operator maszyny zauważa nieprawidłowe działanie i zgłasza awarię w systemie.
+Wtedy system tworzy zgłoszenie awarii, ustawia priorytet i powiadamia specjalistę utrzymania ruchu.
+
+Scenariusz: Wykonanie cyklicznego przeglądu technicznego maszyny.
+Mając zaplanowany cykliczny przegląd techniczny w harmonogramie konserwacji prewencyjnej.
+Gdy specjalista utrzymania ruchu rozpoczyna przegląd techniczny maszyny.
+Wtedy system rejestruje wynik przeglądu, listę wymienionych części i aktualizuje status maszyny na sprawną.
+
+--- Dział Kontroli Jakości ---
+Kontroler jakości musi weryfikować każdą wyprodukowaną partię maszyn przed wysyłką do klienta.
+Inżynier procesu wymaga generowania raportu jakości dla każdej zakończonej partii produkcyjnej.
+System musi wystawiać certyfikat zgodności dla maszyn spełniających normy CE.
+Kontroler jakości powinien mieć możliwość wstrzymania wysyłki partii, jeśli wykryto niezgodność.
+
+Scenariusz: Kontrola jakości partii produkcyjnej.
+Mając zakończony proces montażu i testów funkcjonalnych partii maszyn.
+Gdy kontroler jakości przeprowadza inspekcję końcową partii na hali.
+Wtedy system zapisuje wynik kontroli i generuje certyfikat, jeśli partia spełnia wymagania jakościowe.
+
+Scenariusz: Wykrycie niezgodności w partii produkcyjnej.
+Mając partię maszyn skierowaną do kontroli końcowej.
+Gdy kontroler jakości wykrywa niezgodność z dokumentacją techniczną na jednej z maszyn.
+Wtedy system blokuje wysyłkę całej partii i tworzy zgłoszenie do działu utrzymania ruchu.
+
+--- Dział Magazynu i Zaopatrzenia ---
+Magazynier musi prowadzić bieżącą ewidencję części zamiennych i komponentów na magazynie.
+Dostawca musi dostarczać komponenty zgodnie z harmonogramem produkcji uzgodnionym z planistą.
+System powinien automatycznie generować zamówienie do dostawcy, gdy stan magazynowy części spada poniżej minimum.
+Magazynier chcę skanować kod kreskowy części przy każdym wydaniu na halę produkcyjną.
+
+Scenariusz: Uzupełnienie stanu magazynowego części zamiennych.
+Mając stan magazynowy konkretnej części poniżej ustalonego poziomu minimalnego.
+Gdy system wykrywa niski stan magazynowy podczas nocnej synchronizacji danych.
+Wtedy system automatycznie tworzy zamówienie do dostawcy i powiadamia magazyniera e-mailem.
+
+--- Dział Obsługi Klienta i Reklamacji ---
+Kierownik działu obsługi klienta musi rejestrować reklamacje dotyczące dostarczonych maszyn.
+Klient chcę śledzić status realizacji swojego zlecenia produkcyjnego w panelu online.
+System wymaga przypisania każdej reklamacji do konkretnej maszyny i partii produkcyjnej w celu analizy przyczyn źródłowych.
+
+Scenariusz: Zgłoszenie reklamacji przez klienta.
+Mając dostarczoną do klienta maszynę objętą aktywną gwarancją.
+Gdy klient zgłasza reklamację dotyczącą wady technicznej maszyny.
+Wtedy system rejestruje reklamację, przypisuje ją do numeru seryjnego maszyny i powiadamia dział jakości.
+
+--- Zarząd i Raportowanie Strategiczne ---
+Dyrektor produkcji musi mieć dostęp do raportu efektywności produkcji (OEE) dla całej hali.
+Zarząd wymaga miesięcznego raportu podsumowującego liczbę wyprodukowanych maszyn, awarii i reklamacji.
+Kierownik projektu chcę powiązać każde zlecenie produkcyjne z budżetem i kontraktem klienta.
+Zarząd powinien otrzymywać automatyczne powiadomienie, gdy budżet projektu przekroczy założony próg.`;
+  document.getElementById('btnToggleEdit').click(); // wymuś tryb edycji
+});
+
 document.getElementById('btnClear').addEventListener('click', () => {
   document.getElementById('notesInput').value = '';
   state = { actors:[], requirements:[], entities:{} };
+  uid = 1;
   renderAll();
   document.getElementById('btnToggleEdit').click();
   document.getElementById('usecaseBox').innerHTML = '<div class="empty-state">Brak danych</div>';
   document.getElementById('classBox').innerHTML = '<div class="empty-state">Brak danych</div>';
+  const sqlOut = document.getElementById('sqlOutput');
+  sqlOut.textContent = '-- Kliknij "Generuj SQL", aby zbudować CREATE TABLE na podstawie Słownika Encji.';
+  delete sqlOut.dataset.raw;
+  scheduleAutosave();
 });
+
+initPersistenceUI();
 </script>
 <!-- LICZNIK WEJŚĆ — Wymagania -> UML -->
 <script>
