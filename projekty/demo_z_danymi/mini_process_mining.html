@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MPM-MFG · Mini Process Mining</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.5.4/papaparse.min.js" integrity="sha512-hYmRc4p9eo7IqfsQ6HvzWlaPQEqVltN3JDqiPyRsfUw5HC7nlW/tZsnZWQtd3Eu4Li53Q36zjR2h0YvnKepH/Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha512-n/G+dROKbKL3GVngGWmWfwK0yPctjZQM752diVYnXZtD/48agpUKLIn0xDQL9ydZ91x6BiOmTIFwWjjFi2kEFg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
   :root {
     --bg:       #080E1A;
@@ -541,6 +542,7 @@ const fmt = {
   ts: d => d ? new Date(d).toLocaleDateString('pl-PL') : '—'
 };
 
+function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function median(arr) {
   if (!arr.length) return 0;
   const s = [...arr].sort((a,b)=>a-b);
@@ -661,7 +663,7 @@ function setupMapping() {
   const fields = ['case_id','activity','timestamp','operator','machine','workcenter','quantity','scrap','cost'];
   fields.forEach(f => {
     const sel = document.getElementById('map-' + f);
-    sel.innerHTML = '<option value="">— pomiń —</option>' + sourceColumns.map(c => `<option value="${c}">${c}</option>`).join('');
+    sel.innerHTML = '<option value="">— pomiń —</option>' + sourceColumns.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     const auto = autoDetect(f);
     if (auto) sel.value = auto;
   });
@@ -1101,7 +1103,7 @@ function renderProcessMap() {
     svg += `<path d="M${x1},${y1} C${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}"
       fill="none" stroke="${col}" stroke-width="${w}" stroke-opacity=".75"
       marker-end="url(#${arrowId})"
-      data-from="${e.from}" data-to="${e.to}" data-count="${e.count}" data-avg="${Math.round((e.avg||0)/60000)}"
+      data-from="${escapeHtml(e.from)}" data-to="${escapeHtml(e.to)}" data-count="${e.count}" data-avg="${Math.round((e.avg||0)/60000)}"
       class="pm-edge" style="cursor:default"/>`;
     // Edge label (count)
     const mx = (x1+x2)/2, my = (y1+y2)/2 - 6;
@@ -1114,10 +1116,10 @@ function renderProcessMap() {
     const p = pos[n.id];
     if (!p) return;
     const label = n.id.length > 16 ? n.id.slice(0,14)+'…' : n.id;
-    svg += `<g class="pm-node" data-id="${n.id}" data-count="${n.count}">
+    svg += `<g class="pm-node" data-id="${escapeHtml(n.id)}" data-count="${n.count}">
       <rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="8"
         fill="#162035" stroke="#00C8E060" stroke-width="1.5"/>
-      <text x="${p.x+NW/2}" y="${p.y+NH/2-6}" fill="#E2EAF4" font-size="11" font-weight="600" text-anchor="middle">${label}</text>
+      <text x="${p.x+NW/2}" y="${p.y+NH/2-6}" fill="#E2EAF4" font-size="11" font-weight="600" text-anchor="middle">${escapeHtml(label)}</text>
       <text x="${p.x+NW/2}" y="${p.y+NH/2+9}" fill="#6B7FA3" font-size="9" text-anchor="middle">${n.count}×</text>
     </g>`;
   });
@@ -1130,7 +1132,7 @@ function renderProcessMap() {
   document.querySelectorAll('.pm-node').forEach(el => {
     el.addEventListener('mouseenter', e => {
       const d = e.currentTarget.dataset;
-      tooltip.innerHTML = `<b>${d.id}</b><br>Wystąpień: ${d.count}`;
+      tooltip.innerHTML = `<b>${escapeHtml(d.id)}</b><br>Wystąpień: ${escapeHtml(d.count)}`;
       tooltip.style.display = 'block';
     });
     el.addEventListener('mousemove', e => {
@@ -1142,7 +1144,7 @@ function renderProcessMap() {
   document.querySelectorAll('.pm-edge').forEach(el => {
     el.addEventListener('mouseenter', e => {
       const d = e.currentTarget.dataset;
-      tooltip.innerHTML = `${d.from} → ${d.to}<br>Przejść: ${d.count}<br>Śr. czas: ${d.avg} min`;
+      tooltip.innerHTML = `${escapeHtml(d.from)} → ${escapeHtml(d.to)}<br>Przejść: ${escapeHtml(d.count)}<br>Śr. czas: ${escapeHtml(d.avg)} min`;
       tooltip.style.display = 'block';
     });
     el.addEventListener('mousemove', e => {
@@ -1161,7 +1163,7 @@ function renderVariantsTab(variants, kpi) {
   const rows = variants.slice(0,20).map((v,i) => `
     <tr>
       <td style="color:var(--muted)">#${i+1}</td>
-      <td style="font-family:var(--sans);font-size:11px;max-width:300px;word-break:break-all">${v.path}</td>
+      <td style="font-family:var(--sans);font-size:11px;max-width:300px;word-break:break-all">${escapeHtml(v.path)}</td>
       <td><span class="badge badge-cyan">${v.count}</span></td>
       <td>
         ${fmt.pct(v.pct)}
@@ -1184,9 +1186,9 @@ function renderBottlenecksTab(bottlenecks) {
     const pctV = (b.avg/maxAvg*100).toFixed(0);
     const badge = i===0?'badge-red':i<3?'badge-amber':'badge-cyan';
     return `<tr>
-      <td>${b.from}</td>
+      <td>${escapeHtml(b.from)}</td>
       <td style="color:var(--muted)">→</td>
-      <td>${b.to}</td>
+      <td>${escapeHtml(b.to)}</td>
       <td><span class="badge ${badge}">${fmt.dur(b.avg)}</span></td>
       <td>${fmt.dur(b.median)}</td>
       <td>${fmt.dur(b.p90)}</td>
@@ -1204,7 +1206,7 @@ function renderBottlenecksTab(bottlenecks) {
 // ══════════════════════════════════════════════════════
 function renderResourcesTab(res) {
   const opRows = res.operators.map(o => `<tr>
-    <td>${o.name}</td><td>${o.activities}</td><td>${o.cases}</td>
+    <td>${escapeHtml(o.name)}</td><td>${escapeHtml(o.activities)}</td><td>${escapeHtml(o.cases)}</td>
     <td>${o.cost ? o.cost.toLocaleString('pl-PL')+' zł' : '—'}</td>
   </tr>`).join('');
   document.getElementById('operators-table').innerHTML = `<table>
@@ -1212,7 +1214,7 @@ function renderResourcesTab(res) {
     <tbody>${opRows}</tbody></table>`;
 
   const mRows = res.machines.map(m => `<tr>
-    <td>${m.name}</td><td>${m.activities}</td><td>${m.cases}</td>
+    <td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.activities)}</td><td>${escapeHtml(m.cases)}</td>
     <td>${m.qty ? m.qty.toLocaleString('pl-PL') : '—'}</td>
     <td>${m.scrap ? m.scrap.toLocaleString('pl-PL') : '—'}</td>
     <td><span class="badge ${m.scrapPct>5?'badge-red':'badge-green'}">${fmt.pct(m.scrapPct)}</span></td>
@@ -1243,7 +1245,7 @@ function renderQualityTab(kpi, reworkData) {
     return;
   }
   const rows = reworkData.rework.map(r=>`<tr>
-    <td>${r.activity}</td>
+    <td>${escapeHtml(r.activity)}</td>
     <td><span class="badge badge-amber">${r.cases}</span></td>
     <td>${r.totalRepeats}</td>
     <td>${fmt.pct(r.cases/Object.keys(cases).length*100)}</td>
@@ -1263,7 +1265,7 @@ function renderInsightsTab(insights) {
     document.getElementById('insights-list').innerHTML = '<div class="empty">Brak wniosków — dane wyglądają w normie.</div>'; return;
   }
   document.getElementById('insights-list').innerHTML = insights.map(function(i){
-    return '<div class="insight-card"><div class="insight-icon" style="background:' + bgMap[i.level] + '">' + iconMap[i.level] + '</div><div><div class="insight-title">' + i.title + '</div><div class="insight-text">' + i.text + '</div></div></div>';
+    return '<div class="insight-card"><div class="insight-icon" style="background:' + bgMap[i.level] + '">' + iconMap[i.level] + '</div><div><div class="insight-title">' + escapeHtml(i.title) + '</div><div class="insight-text">' + escapeHtml(i.text) + '</div></div></div>';
   }).join('');
 }
 
