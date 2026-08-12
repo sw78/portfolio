@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+  <meta http-equiv="Content-Security-Policy" content="frame-ancestors 'self';">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Arkusz Analizy v2.0 — Smart NLP & UML</title>
 <!-- Biblioteki (Licencje MIT / Apache 2.0 - darmowe do komercji) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.13.0/mermaid.min.js" integrity="sha512-dtJ3Ekirh8VcgixdsrjPuZ5rO6Hftz0ISFlQqcKbpyk+Qd0jkJX7K3I30m1UwMVMmdhdf1OrQnLOtatWPb6BPA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
@@ -671,15 +672,15 @@ function renderHighlights(text) {
 
 /* ============ UI RENDERERS ============ */
 function renderAll() {
-  renderList('actorList', state.actors, (a, i) => `<div class="chip"><input type="text" value="${a.name}" data-idx="${i}"><button data-idx="${i}">×</button></div>`, updateActor);
+  renderList('actorList', state.actors, (a, i) => `<div class="chip"><input type="text" value="${escHtml(a.name)}" data-idx="${i}"><button data-idx="${i}">×</button></div>`, updateActor);
   
   const reqHtml = state.requirements.map((r, i) => `
     <div class="reqrow">
       <div class="idcell">${i+1}</div>
-      <div class="reqcell biz-cell"><textarea data-f="business" data-idx="${i}">${r.business}</textarea></div>
+      <div class="reqcell biz-cell"><textarea data-f="business" data-idx="${i}">${escHtml(r.business)}</textarea></div>
       <div class="bridge">→</div>
-      <div class="reqcell tech-cell"><textarea data-f="technical" data-idx="${i}">${r.technical}</textarea></div>
-      <div class="reqcell meta"><input type="text" data-f="actor" data-idx="${i}" value="${r.actor}"><input type="text" data-f="useCase" data-idx="${i}" value="${r.useCase}"></div>
+      <div class="reqcell tech-cell"><textarea data-f="technical" data-idx="${i}">${escHtml(r.technical)}</textarea></div>
+      <div class="reqcell meta"><input type="text" data-f="actor" data-idx="${i}" value="${escHtml(r.actor)}"><input type="text" data-f="useCase" data-idx="${i}" value="${escHtml(r.useCase)}"></div>
       <div class="delcell" style="text-align:center;padding:10px;"><button data-idx="${i}">×</button></div>
     </div>`).join('');
   document.getElementById('reqList').innerHTML = reqHtml;
@@ -688,10 +689,10 @@ function renderAll() {
   const entHtml = Object.keys(state.entities).map(name => {
     const e = state.entities[name];
     return `<tr>
-      <td><input value="${name}" readonly style="background:transparent;border:none;font-weight:bold;"></td>
-      <td><input value="${e.attributes.join(', ')}" data-entity="${name}" data-f="attributes"></td>
-      <td><input value="${[...e.relations].join(', ')}" data-entity="${name}" data-f="relations"></td>
-      <td><button class="ghost small" data-del-entity="${name}" title="Usuń encję">×</button></td>
+      <td><input value="${escHtml(name)}" readonly style="background:transparent;border:none;font-weight:bold;"></td>
+      <td><input value="${escHtml(e.attributes.join(', '))}" data-entity="${escHtml(name)}" data-f="attributes"></td>
+      <td><input value="${escHtml([...e.relations].join(', '))}" data-entity="${escHtml(name)}" data-f="relations"></td>
+      <td><button class="ghost small" data-del-entity="${escHtml(name)}" title="Usuń encję">×</button></td>
     </tr>`;
   }).join('');
   document.getElementById('entityTableBody').innerHTML = entHtml;
