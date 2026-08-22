@@ -1,0 +1,2311 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizy Magazynowo-Finansowe</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#12161d;
+  --surface:#1a212b;
+  --surface-2:#212a36;
+  --border:#2b3441;
+  --text:#e7eaee;
+  --text-muted:#8b96a5;
+  --text-faint:#5b6674;
+  --amber:#e8a33d;
+  --amber-dim:#3a3222;
+  --teal:#4fb3a9;
+  --teal-dim:#1e3230;
+  --danger:#e0645a;
+  --danger-dim:#3a2422;
+  --success:#6fbf73;
+  --font-display:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+}
+@font-face{font-family:'Space Grotesk';src:local('Space Grotesk');}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:14px;
+  line-height:1.5;
+}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+
+/* ---------- LAYOUT ---------- */
+#app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px 1fr;height:100vh;}
+header{
+  grid-column:1/3;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--amber),#c97f22);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;color:#1a1206;font-size:15px;
+}
+.brand-text h1{font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:.2px;}
+.brand-text span{font-size:11px;color:var(--text-muted);font-family:var(--font-mono);}
+
+.source-control{display:flex;align-items:center;gap:10px;}
+.source-select{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  font-family:var(--font-mono);font-size:12px;padding:8px 10px;border-radius:6px;
+  cursor:pointer;
+}
+.status-pill{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--font-mono);font-size:11px;color:var(--text-muted);
+  padding:6px 10px;border:1px solid var(--border);border-radius:20px;
+}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint);}
+.status-dot.on{background:var(--success);box-shadow:0 0 6px var(--success);}
+
+nav#sidebar{
+  border-right:1px solid var(--border);
+  background:var(--surface);
+  padding:16px 10px;
+  overflow-y:auto;
+}
+.nav-group{margin-bottom:4px;}
+.nav-group-head{
+  display:flex;align-items:center;gap:9px;
+  width:100%;background:none;border:none;color:var(--text);
+  font-family:var(--font-body);font-size:13px;font-weight:600;
+  padding:10px 10px;border-radius:7px;cursor:pointer;text-align:left;
+}
+.nav-group-head:hover{background:var(--surface-2);}
+.nav-group-letter{
+  font-family:var(--font-mono);font-size:10px;color:var(--bg);
+  background:var(--text-faint);width:18px;height:18px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.nav-group.active .nav-group-letter{background:var(--amber);}
+.nav-group-head .chev{margin-left:auto;font-size:10px;color:var(--text-faint);transition:transform .15s;}
+.nav-group.open .chev{transform:rotate(90deg);}
+.nav-items{display:none;flex-direction:column;gap:1px;padding:2px 0 8px 27px;}
+.nav-group.open .nav-items{display:flex;}
+.nav-item{
+  background:none;border:none;color:var(--text-muted);text-align:left;
+  font-size:12.5px;padding:7px 10px;border-radius:6px;cursor:pointer;
+  border-left:2px solid transparent;
+}
+.nav-item:hover{color:var(--text);background:var(--surface-2);}
+.nav-item.active{color:var(--amber);border-left-color:var(--amber);background:var(--amber-dim);}
+.nav-item .badge{
+  font-family:var(--font-mono);font-size:9px;color:var(--text-faint);
+  border:1px solid var(--border);padding:1px 5px;border-radius:4px;margin-left:6px;
+}
+
+main{padding:26px 30px;overflow-y:auto;}
+.view{display:none;}
+.view.active{display:block;}
+.view-head{margin-bottom:22px;}
+.view-eyebrow{font-family:var(--font-mono);font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:1px;}
+.view-title{font-family:var(--font-display);font-size:24px;font-weight:600;margin-top:4px;}
+.view-desc{color:var(--text-muted);font-size:13px;margin-top:6px;max-width:640px;}
+
+/* ---------- COMPONENTS ---------- */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px;}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;
+}
+.kpi-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.kpi-value{font-family:var(--font-mono);font-size:26px;font-weight:600;margin-top:8px;}
+.kpi-value.amber{color:var(--amber);}
+.kpi-value.teal{color:var(--teal);}
+.kpi-value.danger{color:var(--danger);}
+.kpi-sub{font-size:11.5px;color:var(--text-faint);margin-top:4px;}
+
+.panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:18px 20px;margin-bottom:18px;
+}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-title{font-family:var(--font-display);font-size:15px;font-weight:600;}
+.panel-tools{display:flex;gap:8px;align-items:center;}
+.chip-btn{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text-muted);
+  font-size:11.5px;padding:6px 11px;border-radius:6px;cursor:pointer;font-family:var(--font-body);
+}
+.chip-btn:hover{color:var(--text);border-color:var(--amber);}
+.chip-btn.active{color:var(--amber);border-color:var(--amber);background:var(--amber-dim);}
+input.search-box{
+  background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  font-size:12.5px;padding:7px 10px;border-radius:6px;width:200px;
+}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{
+  text-align:left;color:var(--text-faint);font-weight:600;text-transform:uppercase;
+  font-size:10.5px;letter-spacing:.4px;padding:9px 10px;border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;position:sticky;top:0;background:var(--surface);
+}
+th:hover{color:var(--text-muted);}
+td{padding:9px 10px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;}
+tr:hover td{background:var(--surface-2);}
+.tbl-wrap{max-height:420px;overflow-y:auto;border-radius:8px;}
+.num{text-align:right;}
+.tag{font-family:var(--font-body);font-size:10.5px;padding:2px 8px;border-radius:20px;display:inline-block;}
+.tag.a{background:var(--amber-dim);color:var(--amber);}
+.tag.ok{background:rgba(111,191,115,.13);color:var(--success);}
+.tag.warn{background:var(--amber-dim);color:var(--amber);}
+.tag.bad{background:var(--danger-dim);color:var(--danger);}
+.tag.b{background:var(--teal-dim);color:var(--teal);}
+.tag.c{background:rgba(139,150,165,.15);color:var(--text-muted);}
+
+.grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;}
+.placeholder{
+  border:1px dashed var(--border);border-radius:10px;padding:40px 20px;text-align:center;
+  color:var(--text-faint);
+}
+.placeholder .pico{font-family:var(--font-mono);font-size:11px;color:var(--amber);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
+.placeholder p{max-width:420px;margin:6px auto 0;font-size:12.5px;color:var(--text-muted);}
+.chart-box{position:relative;height:230px;}
+.footnote{font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);margin-top:8px;}
+.credit{
+  font-family:var(--font-mono);font-size:10.5px;color:var(--text-faint);
+  text-align:center;padding:20px 0 8px;
+}
+.import-card{border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:14px;background:var(--surface);}
+.import-card-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
+.import-card-title{font-family:var(--font-display);font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:8px;}
+.import-status{font-family:var(--font-mono);font-size:11px;padding:3px 9px;border-radius:20px;}
+.import-status.empty{color:var(--text-faint);border:1px solid var(--border);}
+.import-status.ok{color:var(--success);background:rgba(111,191,115,.12);}
+.import-status.err{color:var(--danger);background:var(--danger-dim);}
+.file-input{
+  font-size:12px;color:var(--text-muted);background:var(--surface-2);border:1px dashed var(--border);
+  border-radius:7px;padding:9px 10px;cursor:pointer;
+}
+.mapping-row{display:grid;grid-template-columns:170px 1fr;gap:10px;align-items:center;padding:5px 0;font-size:12.5px;}
+.mapping-row label{color:var(--text-muted);}
+.mapping-row label .req{color:var(--danger);}
+.mapping-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;}
+@media (max-width:700px){.mapping-grid{grid-template-columns:1fr;}}
+.import-errors{margin-top:8px;max-height:120px;overflow-y:auto;font-family:var(--font-mono);font-size:11px;color:var(--danger);}
+.import-summary-bar{
+  position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);
+  padding:14px 18px;margin:20px -30px -26px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--amber),#c97f22);color:#1a1206;border:none;
+  font-weight:600;font-size:13px;padding:11px 20px;border-radius:8px;cursor:pointer;
+}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+@media (max-width:900px){
+  #app{grid-template-columns:1fr;grid-template-rows:64px auto 1fr;}
+  nav#sidebar{border-right:none;border-bottom:1px solid var(--border);}
+  .grid-2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">AF</div>
+      <div class="brand-text">
+        <h1>Analizy Magazynowo-Finansowe</h1>
+        <span id="sourceLabel">ŹRÓDŁO: DANE DEMO</span>
+      </div>
+    </div>
+    <div class="source-control">
+      <span class="status-pill"><span class="status-dot on" id="statusDot"></span><span id="statusText">Połączono — dane demo</span></span>
+      <select class="source-select" id="sourceSelect">
+        <option value="demo">Demo — dane przykładowe</option>
+        <option value="import">Import CSV / XLSX</option>
+        <option value="insert" disabled>InsERT (adapter — wkrótce)</option>
+        <option value="optima" disabled>Comarch Optima (adapter — wkrótce)</option>
+        <option value="enova" disabled>enova365 (adapter — wkrótce)</option>
+      </select>
+      <button class="chip-btn" id="btnZapiszStan" title="Zapisz bieżące dane do pliku JSON na dysku">💾 Zapisz do pliku</button>
+      <label class="chip-btn" style="cursor:pointer;" title="Wczytaj wcześniej zapisany plik JSON">📂 Wczytaj plik<input type="file" accept=".json" id="inputWczytajStan" style="display:none;"></label>
+      <button class="chip-btn" id="btnWyczyscDane" style="color:var(--danger);border-color:var(--danger-dim);" title="Usuń wszystkie dane (demo i zaimportowane) — baza wraca do stanu pustego">🗑 Wyczyść dane</button>
+    </div>
+  </header>
+
+  <nav id="sidebar"></nav>
+
+  <main id="main">
+    <div class="credit" style="display:none" id="creditTag">Szymon Wolniewicz &amp; AI — zbudowano z Chart.js</div>
+  </main>
+</div>
+
+<script>
+/* =====================================================================
+   1. WSPÓLNY MODEL DANYCH + DataProvider (kontrakt niezależny od źródła)
+   ===================================================================== */
+
+const MAGAZYNY = ["MAG-01 Główny","MAG-02 Regionalny"];
+const KATEGORIE = ["Elektronarzędzia","Chemia budowlana","Materiały wykończeniowe","Osprzęt instalacyjny","Odzież robocza","Narzędzia ręczne"];
+
+function seededRandom(seed){
+  let s = seed % 2147483647; if (s<=0) s += 2147483646;
+  return function(){ s = (s*16807) % 2147483647; return (s-1)/2147483646; };
+}
+const rnd = seededRandom(20260819);
+const pick = (arr)=>arr[Math.floor(rnd()*arr.length)];
+const round2 = (n)=>Math.round(n*100)/100;
+
+function generateDemoDataset(){
+  // --- Towary ---
+  const nazwyBaza = {
+    "Elektronarzędzia":["Wiertarka udarowa","Szlifierka kątowa","Wkrętarka akum.","Piła tarczowa","Opalarka","Młot wyburzeniowy"],
+    "Chemia budowlana":["Klej montażowy","Silikon sanitarny","Pianka montażowa","Zaprawa klejowa","Grunt głęboko penetrujący","Fuga elastyczna"],
+    "Materiały wykończeniowe":["Płytka gres 60x60","Panel podłogowy AC4","Listwa przypodłogowa","Profil dylatacyjny","Farba lateksowa","Tapeta flizelinowa"],
+    "Osprzęt instalacyjny":["Złączka PEX 16mm","Zawór kulowy 1/2","Rura kanalizacyjna 110","Rozdzielacz CO","Termostat pokojowy","Pompa obiegowa"],
+    "Odzież robocza":["Kurtka robocza","Spodnie ochronne","Rękawice antyprzecięciowe","Kask ochronny","Buty S3","Kamizelka odblaskowa"],
+    "Narzędzia ręczne":["Zestaw kluczy płasko-oczkowych","Poziomica 100cm","Miara zwijana 8m","Młotek ślusarski","Szczypce uniwersalne","Poziomnica laserowa"]
+  };
+  let towary = [];
+  let id = 1;
+  KATEGORIE.forEach(kat=>{
+    nazwyBaza[kat].forEach((nazwa,i)=>{
+      const cenaZakupu = round2(15 + rnd()*480);
+      const marza = 0.18 + rnd()*0.35;
+      const cenaSprzedazy = round2(cenaZakupu*(1+marza));
+      towary.push({
+        id: "TW-"+String(id).padStart(4,"0"),
+        kod: kat.slice(0,3).toUpperCase()+"-"+String(1000+id),
+        nazwa: nazwa,
+        kategoria: kat,
+        jednostka: pick(["szt","kpl","mb","kg"]),
+        cenaZakupu, cenaSprzedazy,
+        stanMin: Math.round(5+rnd()*15),
+        stanMax: Math.round(60+rnd()*140),
+        dostawcaId: "DOS-"+String(1+Math.floor(rnd()*8)).padStart(2,"0")
+      });
+      id++;
+    });
+  });
+
+  towary.forEach(t=>{ t.slowMover = rnd() < 0.22; }); // towary celowo "zalegające" — bez sprzedaży w ostatnich miesiącach
+
+  // --- Kontrahenci (dostawcy + klienci) ---
+  let kontrahenci = [];
+  for(let i=1;i<=8;i++){
+    kontrahenci.push({
+      id:"DOS-"+String(i).padStart(2,"0"), typ:"dostawca",
+      nazwa:["Hurt-Bud Sp. z o.o.","TechMet S.A.","Instal-Pol","NordBau Import","ElektroDystrybucja","MaxTools Polska","ProBud Materiały","Sanit-Plus"][i-1],
+      nip: "5"+Math.floor(1000000000+rnd()*8999999999).toString().slice(0,9),
+      ocena: round2(2.8+rnd()*2.2), terminowoscPct: Math.round(70+rnd()*28)
+    });
+  }
+  for(let i=1;i<=22;i++){
+    kontrahenci.push({
+      id:"KL-"+String(i).padStart(3,"0"), typ:"klient",
+      nazwa: pick(["Firma Budowlana","Zakład Instalacyjny","Hurtownia","P.H.U.","Grupa Remontowa","Serwis Techniczny"])+" "+pick(["Nowak","Kowalski","Wiśniewski","Zając","Górski","Lipiński","Mazur"]),
+      nip: "6"+Math.floor(1000000000+rnd()*8999999999).toString().slice(0,9),
+      segment: pick(["Detaliczny","Hurtowy","Kluczowy"])
+    });
+  }
+  const dostawcy = kontrahenci.filter(k=>k.typ==="dostawca");
+  const klienci = kontrahenci.filter(k=>k.typ==="klient");
+
+  // --- Stany magazynowe (bieżące) ---
+  let stanyMagazynowe = [];
+  towary.forEach(t=>{
+    MAGAZYNY.forEach(mag=>{
+      // towary zalegające zawsze trzymają wysoki, prawie nietknięty stan
+      const ilosc = t.slowMover ? Math.round(t.stanMax*(0.65+rnd()*0.5)) : Math.round(rnd()*t.stanMax);
+      stanyMagazynowe.push({
+        towarId: t.id, magazyn: mag, ilosc,
+        wartosc: round2(ilosc*t.cenaZakupu),
+        zalegajacyFlag: t.slowMover
+      });
+    });
+  });
+
+  // --- Dokumenty sprzedaży (12 miesięcy wstecz) + zakupu + zwroty ---
+  let dokumentySprzedazy = [];
+  let dokumentyZakupu = [];
+  let zwroty = [];
+  const dziśData = new Date("2026-08-19");
+  let docSeq = 1, docSeqZ = 1;
+
+  for(let m=11;m>=0;m--){
+    const miesiacData = new Date(dziśData.getFullYear(), dziśData.getMonth()-m, 1);
+    const liczbaDokSprzedazy = 40+Math.floor(rnd()*35);
+    // lekki trend wzrostowy + sezonowość (szczyt wiosna/jesień - typowe dla branży budowlanej)
+    const miesiacNr = miesiacData.getMonth();
+    const sezon = [0.75,0.78,1.05,1.25,1.3,1.15,1.0,0.95,1.2,1.15,0.9,0.8][miesiacNr];
+    const trend = 1 + (11-m)*0.012;
+
+    // towary "zalegające" nie sprzedają się w ostatnich 6 miesiącach — celowo brak ruchu
+    const pulaTowarow = m >= 6 ? towary : towary.filter(t=>!t.slowMover);
+
+    for(let d=0; d<liczbaDokSprzedazy*sezon*trend; d++){
+      const dzien = 1+Math.floor(rnd()*27);
+      const data = new Date(miesiacData.getFullYear(), miesiacData.getMonth(), dzien);
+      const klient = pick(klienci);
+      const liczbaPozycji = 1+Math.floor(rnd()*5);
+      let pozycje = [];
+      for(let p=0;p<liczbaPozycji;p++){
+        const t = pick(pulaTowarow);
+        const ilosc = 1+Math.floor(rnd()*12);
+        pozycje.push({towarId:t.id, ilosc, cenaSprzedazy:t.cenaSprzedazy, cenaZakupu:t.cenaZakupu});
+      }
+      dokumentySprzedazy.push({
+        id:"FS-"+String(docSeq++).padStart(5,"0"), typ:"FS", data: data.toISOString().slice(0,10),
+        kontrahentId: klient.id, pozycje
+      });
+    }
+
+    const liczbaDokZakupu = 6+Math.floor(rnd()*8);
+    for(let d=0; d<liczbaDokZakupu; d++){
+      const dzien = 1+Math.floor(rnd()*27);
+      const data = new Date(miesiacData.getFullYear(), miesiacData.getMonth(), dzien);
+      const dostawca = pick(dostawcy);
+      const liczbaPozycji = 2+Math.floor(rnd()*8);
+      let pozycje = [];
+      let towaryOdDostawcy = towary.filter(t=>t.dostawcaId===dostawca.id);
+      if(towaryOdDostawcy.length===0) towaryOdDostawcy = towary;
+      for(let p=0;p<liczbaPozycji;p++){
+        const t = pick(towaryOdDostawcy);
+        const ilosc = 10+Math.floor(rnd()*60);
+        pozycje.push({towarId:t.id, ilosc, cenaZakupu:t.cenaZakupu});
+      }
+      const terminDni = pick([14,21,30,45]);
+      const terminData = new Date(data); terminData.setDate(terminData.getDate()+terminDni);
+      dokumentyZakupu.push({
+        id:"FZ-"+String(docSeqZ++).padStart(5,"0"), typ:"FZ", data: data.toISOString().slice(0,10),
+        kontrahentId: dostawca.id, pozycje, terminPlatnosci: terminData.toISOString().slice(0,10)
+      });
+    }
+  }
+
+  // zwroty - losowe z ostatnich dokumentów sprzedaży
+  const powodyZwrotow = ["Wada towaru","Pomyłka w zamówieniu","Niezgodność z opisem","Uszkodzenie transportowe","Rezygnacja klienta"];
+  for(let i=0;i<45;i++){
+    const zrodlowy = pick(dokumentySprzedazy.slice(-400));
+    const pozycjaZrodlowa = pick(zrodlowy.pozycje);
+    zwroty.push({
+      id:"ZW-"+String(docSeqZ+i).padStart(5,"0"), dokumentZrodlowy: zrodlowy.id,
+      data: zrodlowy.data, towarId: pozycjaZrodlowa.towarId,
+      ilosc: 1+Math.floor(rnd()*Math.min(3,pozycjaZrodlowa.ilosc)),
+      powod: pick(powodyZwrotow)
+    });
+  }
+
+  // --- Rozrachunki (należności od klientów + zobowiązania wobec dostawców) ---
+  let rozrachunki = [];
+  dokumentyZakupu.slice(-40).forEach(fz=>{
+    const wartosc = round2(fz.pozycje.reduce((s,p)=>s+p.ilosc*p.cenaZakupu,0));
+    const zaplacone = rnd()<0.6;
+    rozrachunki.push({
+      id:"RR-Z-"+fz.id, kontrahentId: fz.kontrahentId, kierunek:"zobowiazanie",
+      kwota: wartosc, termin: fz.terminPlatnosci,
+      status: zaplacone ? "zaplacone" : (new Date(fz.terminPlatnosci) < dziśData ? "zalegle" : "oczekujace")
+    });
+  });
+  dokumentySprzedazy.slice(-90).forEach(fs=>{
+    const wartosc = round2(fs.pozycje.reduce((s,p)=>s+p.ilosc*p.cenaSprzedazy,0));
+    const dataDok = new Date(fs.data);
+    const termin = new Date(dataDok); termin.setDate(termin.getDate()+pick([7,14,30]));
+    const zaplacone = rnd()<0.7;
+    rozrachunki.push({
+      id:"RR-N-"+fs.id, kontrahentId: fs.kontrahentId, kierunek:"naleznosc",
+      kwota: wartosc, termin: termin.toISOString().slice(0,10),
+      status: zaplacone ? "zaplacone" : (termin < dziśData ? "zalegle" : "oczekujace")
+    });
+  });
+
+  return {towary, kontrahenci, stanyMagazynowe, dokumentySprzedazy, dokumentyZakupu, zwroty, rozrachunki};
+}
+
+/* ---- DataProvider: kontrakt wspólny dla wszystkich źródeł danych ---- */
+class DemoDataProvider{
+  constructor(){ this._data = generateDemoDataset(); }
+  async getTowary(){ return this._data.towary; }
+  async getKontrahenci(){ return this._data.kontrahenci; }
+  async getStanyMagazynowe(){ return this._data.stanyMagazynowe; }
+  async getDokumentySprzedazy(){ return this._data.dokumentySprzedazy; }
+  async getDokumentyZakupu(){ return this._data.dokumentyZakupu; }
+  async getZwroty(){ return this._data.zwroty; }
+  async getRozrachunki(){ return this._data.rozrachunki; }
+}
+// Miejsce na kolejne implementacje: CsvXlsxImportProvider, InsertAdapter, ComarchOptimaAdapter...
+
+let provider = new DemoDataProvider();
+let DATA = {}; // scache po załadowaniu
+
+async function loadAll(){
+  const [towary,kontrahenci,stanyMagazynowe,dokumentySprzedazy,dokumentyZakupu,zwroty,rozrachunki] = await Promise.all([
+    provider.getTowary(), provider.getKontrahenci(), provider.getStanyMagazynowe(),
+    provider.getDokumentySprzedazy(), provider.getDokumentyZakupu(), provider.getZwroty(), provider.getRozrachunki()
+  ]);
+  DATA = {towary,kontrahenci,stanyMagazynowe,dokumentySprzedazy,dokumentyZakupu,zwroty,rozrachunki};
+  DATA.towaryById = Object.fromEntries(towary.map(t=>[t.id,t]));
+  DATA.kontrahenciById = Object.fromEntries(kontrahenci.map(k=>[k.id,k]));
+}
+
+/* =====================================================================
+   2. NAWIGACJA — 7 grup modułów
+   ===================================================================== */
+const NAV = [
+  {letter:"D", title:"Dashboard", items:[{id:"dashboard", label:"Panel startowy"}]},
+  {letter:"A", title:"Magazyn", items:[
+    {id:"a1", label:"Stany magazynu i sprzedaży"},
+    {id:"a2", label:"Towary zalegające"},
+    {id:"a3", label:"Optymalizacja zapasów"},
+  ]},
+  {letter:"B", title:"Zamówienia i dostawcy", items:[
+    {id:"b1", label:"Planowanie zamówień"},
+    {id:"b2", label:"Dostawcy i zakupy"},
+    {id:"b3", label:"Kalendarz płatności"},
+  ]},
+  {letter:"C", title:"Prognozy", items:[
+    {id:"c1", label:"Prognozy popytu"},
+    {id:"c2", label:"Trendy i porównania okresów"},
+    {id:"c3", label:"Prognoza salda finansowego"},
+  ]},
+  {letter:"E", title:"Analizy strategiczne", items:[
+    {id:"e1", label:"Klasyfikacja ABC/XYZ"},
+    {id:"e2", label:"Rentowność i marże"},
+    {id:"e3", label:"Analiza koszyka zakupowego"},
+  ]},
+  {letter:"F", title:"BI / przestawne", items:[
+    {id:"f1", label:"Tabela przestawna"},
+  ]},
+  {letter:"G", title:"Zwroty", items:[
+    {id:"g1", label:"Zwroty i symulacje"},
+    {id:"g2", label:"Analiza zwrotów towarów"},
+  ]},
+  {letter:"H", title:"Finanse", items:[
+    {id:"h1", label:"Analiza finansowa i rozrachunki"},
+  ]},
+];
+
+function renderNav(){
+  const nav = document.getElementById("sidebar");
+  nav.innerHTML = "";
+  NAV.forEach((grp,gi)=>{
+    const wrap = document.createElement("div");
+    wrap.className = "nav-group"+(gi===0?" open active":"");
+    wrap.dataset.group = grp.letter;
+    const head = document.createElement("button");
+    head.className = "nav-group-head";
+    head.innerHTML = `<span class="nav-group-letter">${grp.letter}</span><span>${grp.title}</span><span class="chev">▸</span>`;
+    head.onclick = ()=>{ wrap.classList.toggle("open"); };
+    const itemsWrap = document.createElement("div");
+    itemsWrap.className = "nav-items";
+    grp.items.forEach(it=>{
+      const btn = document.createElement("button");
+      btn.className = "nav-item"+(it.id==="dashboard"?" active":"");
+      btn.dataset.view = it.id;
+      btn.innerHTML = it.label + (it.badge?`<span class="badge">${it.badge}</span>`:"");
+      btn.onclick = ()=>navigateTo(it.id, grp.letter);
+      itemsWrap.appendChild(btn);
+    });
+    wrap.appendChild(head); wrap.appendChild(itemsWrap);
+    nav.appendChild(wrap);
+  });
+}
+
+function navigateTo(viewId, groupLetter){
+  document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active", b.dataset.view===viewId));
+  document.querySelectorAll(".nav-group").forEach(g=>g.classList.toggle("active", g.dataset.group===groupLetter));
+  renderView(viewId);
+}
+
+/* =====================================================================
+   3. WIDOKI
+   ===================================================================== */
+const charts = {}; // trzymamy referencje Chart.js żeby niszczyć przed ponownym rysowaniem
+
+function destroyChart(key){ if(charts[key]){ charts[key].destroy(); delete charts[key]; } }
+function destroyAllCharts(){ Object.keys(charts).forEach(destroyChart); }
+
+function setMain(html){
+  const main = document.getElementById("main");
+  main.innerHTML = html + '<div class="credit">Szymon Wolniewicz &amp; AI — biblioteki: Chart.js</div>';
+}
+
+function fmtPLN(n){ return n.toLocaleString("pl-PL",{minimumFractionDigits:0,maximumFractionDigits:0})+" zł"; }
+
+/* ---- Obliczenia pomocnicze (wspólne dla modułów magazynowych) ---- */
+function ostatniaSprzedazTowaru(towarId){
+  let last = null;
+  DATA.dokumentySprzedazy.forEach(d=>{
+    if(d.pozycje.some(p=>p.towarId===towarId)){
+      if(!last || d.data>last) last = d.data;
+    }
+  });
+  return last;
+}
+function sprzedanaIloscOstatnie(towarId, dni){
+  const graniczna = new Date("2026-08-19"); graniczna.setDate(graniczna.getDate()-dni);
+  let suma = 0;
+  DATA.dokumentySprzedazy.forEach(d=>{
+    if(new Date(d.data) >= graniczna){
+      d.pozycje.forEach(p=>{ if(p.towarId===towarId) suma += p.ilosc; });
+    }
+  });
+  return suma;
+}
+
+function agregatStanowMagazynowych(){
+  // sumuje stany po towarach (obie lokalizacje razem) + dolicza sprzedaż/rotację
+  const map = {};
+  DATA.stanyMagazynowe.forEach(s=>{
+    if(!map[s.towarId]) map[s.towarId] = {towarId:s.towarId, ilosc:0, wartosc:0};
+    map[s.towarId].ilosc += s.ilosc;
+    map[s.towarId].wartosc += s.wartosc;
+  });
+  return Object.values(map).map(row=>{
+    const t = DATA.towaryById[row.towarId];
+    const sprzedaz90 = sprzedanaIloscOstatnie(row.towarId, 90);
+    const ostSprzedaz = ostatniaSprzedazTowaru(row.towarId);
+    const dniOdSprzedazy = ostSprzedaz ? Math.round((new Date("2026-08-19")-new Date(ostSprzedaz))/86400000) : 999;
+    return {...row, towar:t, sprzedaz90, ostSprzedaz, dniOdSprzedazy};
+  });
+}
+
+function renderView(viewId){
+  destroyChart("dashSales"); destroyChart("dashCat"); destroyChart("a2Chart");
+  destroyChart("b1Chart"); destroyChart("b2ChartVal"); destroyChart("b2ChartRel"); destroyChart("b3Chart");
+  destroyChart("c1Chart"); destroyChart("c2Chart"); destroyChart("c3Chart");
+  destroyChart("e1Chart"); destroyChart("e2Chart");
+  destroyChart("g1Chart"); destroyChart("g2Chart"); destroyChart("h1Chart"); destroyChart("h1ChartB");
+  if(viewId==="dashboard") return renderDashboard();
+  if(viewId==="a1") return renderA1();
+  if(viewId==="a2") return renderA2();
+  if(viewId==="a3") return renderA3();
+  if(viewId==="b1") return renderB1();
+  if(viewId==="b2") return renderB2();
+  if(viewId==="b3") return renderB3();
+  if(viewId==="c1") return renderC1();
+  if(viewId==="c2") return renderC2();
+  if(viewId==="c3") return renderC3();
+  if(viewId==="e1") return renderE1();
+  if(viewId==="e2") return renderE2();
+  if(viewId==="e3") return renderE3();
+  if(viewId==="f1") return renderF1();
+  if(viewId==="g1") return renderG1();
+  if(viewId==="g2") return renderG2();
+  if(viewId==="h1") return renderH1();
+  return renderPlaceholder(viewId);
+}
+
+function renderPlaceholder(viewId){
+  let label = "Ten moduł";
+  NAV.forEach(g=>g.items.forEach(i=>{ if(i.id===viewId) label = i.label; }));
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Etap realizacji</div>
+      <div class="view-title">${label}</div>
+      <div class="view-desc">Ten moduł jest zaplanowany w kolejnych etapach (patrz plan realizacji). Model danych i DataProvider są już gotowe — moduł zostanie dopięty do tych samych źródeł danych demo/import/adaptery.</div>
+    </div>
+    <div class="placeholder">
+      <div class="pico">W przygotowaniu</div>
+      <p>Gdy zbudujemy ten moduł, będzie korzystał z tego samego <code>DataProvider</code> co Dashboard i sekcja Magazyn — więc zadziała identycznie z danymi demo, importem CSV i (docelowo) z prawdziwym adapterem InsERT / Optima / enova.</p>
+    </div>
+  `);
+}
+
+/* ---- DASHBOARD ---- */
+function renderDashboard(){
+  const wartoscMagazynu = DATA.stanyMagazynowe.reduce((s,x)=>s+x.wartosc,0);
+  const sprzedaz30 = DATA.dokumentySprzedazy.filter(d=> (new Date("2026-08-19")-new Date(d.data))/86400000 <= 30)
+    .reduce((s,d)=>s+d.pozycje.reduce((a,p)=>a+p.ilosc*p.cenaSprzedazy,0),0);
+  const naleznosciZalegle = DATA.rozrachunki.filter(r=>r.kierunek==="naleznosc"&&r.status==="zalegle").reduce((s,r)=>s+r.kwota,0);
+  const zobowiazaniaZalegle = DATA.rozrachunki.filter(r=>r.kierunek==="zobowiazanie"&&r.status==="zalegle").reduce((s,r)=>s+r.kwota,0);
+  const zalegajaceCount = agregatStanowMagazynowych().filter(r=>r.dniOdSprzedazy>60 && r.ilosc>0).length;
+
+  // sprzedaż w czasie (12 mies.)
+  const miesiace = [];
+  for(let m=11;m>=0;m--){
+    const d = new Date(2026,7-m,1);
+    miesiace.push({label:d.toLocaleDateString("pl-PL",{month:"short",year:"2-digit"}), key:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")});
+  }
+  const sprzedazPoMiesiacach = miesiace.map(m=>{
+    const suma = DATA.dokumentySprzedazy.filter(d=>d.data.slice(0,7)===m.key)
+      .reduce((s,d)=>s+d.pozycje.reduce((a,p)=>a+p.ilosc*p.cenaSprzedazy,0),0);
+    return round2(suma);
+  });
+
+  // sprzedaż wg kategorii
+  const katMap = {};
+  DATA.dokumentySprzedazy.forEach(d=>d.pozycje.forEach(p=>{
+    const kat = DATA.towaryById[p.towarId].kategoria;
+    katMap[kat] = (katMap[kat]||0) + p.ilosc*p.cenaSprzedazy;
+  }));
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Etap 2 — Szkielet UI</div>
+      <div class="view-title">Panel startowy</div>
+      <div class="view-desc">Podsumowanie działa na danych z <code>DemoDataProvider</code> — te same wskaźniki będą liczone identycznie po podłączeniu importu CSV lub realnego adaptera systemu ERP.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Wartość magazynu</div><div class="kpi-value amber">${fmtPLN(wartoscMagazynu)}</div><div class="kpi-sub">wg cen zakupu, 2 magazyny</div></div>
+      <div class="kpi-card"><div class="kpi-label">Sprzedaż — 30 dni</div><div class="kpi-value teal">${fmtPLN(sprzedaz30)}</div><div class="kpi-sub">wartość netto dokumentów FS</div></div>
+      <div class="kpi-card"><div class="kpi-label">Należności zaległe</div><div class="kpi-value danger">${fmtPLN(naleznosciZalegle)}</div><div class="kpi-sub">po terminie płatności</div></div>
+      <div class="kpi-card"><div class="kpi-label">Zobowiązania zaległe</div><div class="kpi-value danger">${fmtPLN(zobowiazaniaZalegle)}</div><div class="kpi-sub">wobec dostawców, po terminie</div></div>
+      <div class="kpi-card"><div class="kpi-label">Towary zalegające</div><div class="kpi-value">${zalegajaceCount}</div><div class="kpi-sub">brak sprzedaży &gt; 60 dni, stan &gt; 0</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Sprzedaż w czasie — 12 miesięcy</div></div>
+        <div class="chart-box"><canvas id="chartDashSales"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Sprzedaż wg kategorii</div></div>
+        <div class="chart-box"><canvas id="chartDashCat"></canvas></div>
+      </div>
+    </div>
+  `);
+
+  const ctx1 = document.getElementById("chartDashSales");
+  charts.dashSales = new Chart(ctx1, {
+    type:"line",
+    data:{ labels: miesiace.map(m=>m.label), datasets:[{
+      data: sprzedazPoMiesiacach, borderColor:"#e8a33d", backgroundColor:"rgba(232,163,61,.12)",
+      fill:true, tension:.35, pointRadius:3, pointBackgroundColor:"#e8a33d"
+    }]},
+    options: chartOpts({y:{ticks:{callback:v=>(v/1000)+"k"}}})
+  });
+  const ctx2 = document.getElementById("chartDashCat");
+  charts.dashCat = new Chart(ctx2, {
+    type:"doughnut",
+    data:{ labels:Object.keys(katMap), datasets:[{
+      data:Object.values(katMap).map(round2),
+      backgroundColor:["#e8a33d","#4fb3a9","#8b96a5","#6fbf73","#e0645a","#c97f22"],
+      borderColor:"#1a212b", borderWidth:2
+    }]},
+    options:{ plugins:{legend:{position:"right", labels:{color:"#8b96a5", font:{size:10.5}, boxWidth:10}}}, cutout:"62%" }
+  });
+}
+
+function chartOpts(extra){
+  return Object.assign({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ ticks:{color:"#5b6674", font:{size:10.5}}, grid:{color:"#2b3441"} },
+      y:{ ticks:{color:"#5b6674", font:{size:10.5}}, grid:{color:"#2b3441"} }
+    }
+  }, extra||{});
+}
+
+/* ---- A1: Stany magazynu i sprzedaży ---- */
+function renderA1(){
+  const rows = agregatStanowMagazynowych().sort((a,b)=>b.wartosc-a.wartosc);
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa A — Magazyn</div>
+      <div class="view-title">Stany magazynu i sprzedaży</div>
+      <div class="view-desc">Bieżący stan (2 magazyny łącznie) zestawiony ze sprzedażą z ostatnich 90 dni i datą ostatniego ruchu.</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Towary — ${rows.length} pozycji</div>
+        <div class="panel-tools"><input class="search-box" id="a1search" placeholder="Szukaj towaru / kodu..."></div>
+      </div>
+      <div class="tbl-wrap"><table id="a1table">
+        <thead><tr>
+          <th>Kod</th><th>Nazwa</th><th>Kategoria</th>
+          <th class="num">Stan</th><th class="num">Wartość</th>
+          <th class="num">Sprzedaż 90d</th><th>Ostatnia sprzedaż</th>
+        </tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr>
+            <td>${r.towar.kod}</td>
+            <td>${r.towar.nazwa}</td>
+            <td>${r.towar.kategoria}</td>
+            <td class="num">${r.ilosc} ${r.towar.jednostka}</td>
+            <td class="num">${fmtPLN(r.wartosc)}</td>
+            <td class="num">${r.sprzedaz90}</td>
+            <td>${r.ostSprzedaz||"brak"} <span class="footnote">(${r.dniOdSprzedazy}d)</span></td>
+          </tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  document.getElementById("a1search").addEventListener("input", (e)=>{
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll("#a1table tbody tr").forEach(tr=>{
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+}
+
+/* ---- A2: Towary zalegające ---- */
+function renderA2(){
+  const rows = agregatStanowMagazynowych()
+    .filter(r=>r.ilosc>0 && r.dniOdSprzedazy>45)
+    .sort((a,b)=>b.wartosc-a.wartosc);
+  const wartoscZamrozona = rows.reduce((s,r)=>s+r.wartosc,0);
+  const top10 = rows.slice(0,10);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa A — Magazyn</div>
+      <div class="view-title">Towary zalegające</div>
+      <div class="view-desc">Towary bez sprzedaży od ponad 45 dni, z dodatnim stanem magazynowym — kandydaci do promocji, wyprzedaży lub wycofania z oferty.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Zamrożony kapitał</div><div class="kpi-value danger">${fmtPLN(wartoscZamrozona)}</div><div class="kpi-sub">wartość zalegających towarów</div></div>
+      <div class="kpi-card"><div class="kpi-label">Liczba pozycji</div><div class="kpi-value">${rows.length}</div><div class="kpi-sub">towarów bez ruchu &gt; 45 dni</div></div>
+      <div class="kpi-card"><div class="kpi-label">Najdłużej zalegający</div><div class="kpi-value amber">${rows[0]?rows[0].dniOdSprzedazy:0} dni</div><div class="kpi-sub">${rows[0]?rows[0].towar.nazwa:"—"}</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Top 10 wg zamrożonej wartości</div></div>
+        <div class="chart-box"><canvas id="chartA2"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Pełna lista</div></div>
+        <div class="tbl-wrap" style="max-height:280px;"><table>
+          <thead><tr><th>Nazwa</th><th class="num">Stan</th><th class="num">Wartość</th><th class="num">Dni bez ruchu</th></tr></thead>
+          <tbody>${rows.map(r=>`
+            <tr><td>${r.towar.nazwa}</td><td class="num">${r.ilosc}</td><td class="num">${fmtPLN(r.wartosc)}</td>
+            <td class="num"><span class="tag ${r.dniOdSprzedazy>120?'bad':'warn'}">${r.dniOdSprzedazy}</span></td></tr>`).join("")}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  `);
+  charts.a2Chart = new Chart(document.getElementById("chartA2"), {
+    type:"bar",
+    data:{ labels: top10.map(r=>r.towar.nazwa.slice(0,16)), datasets:[{
+      data: top10.map(r=>round2(r.wartosc)), backgroundColor:"#e0645a", borderRadius:4
+    }]},
+    options: chartOpts({indexAxis:"y", scales:{x:{ticks:{color:"#5b6674",font:{size:10}},grid:{color:"#2b3441"}}, y:{ticks:{color:"#8b96a5",font:{size:10.5}},grid:{display:false}}}})
+  });
+}
+
+/* ---- A3: Optymalizacja zapasów (ROP / EOQ / zapas bezpieczeństwa) ---- */
+function renderA3(){
+  const LEAD_TIME_DNI = 10; // uproszczone założenie — docelowo z danych dostawcy
+  const KOSZT_ZAMOWIENIA = 45; // zł / zamówienie (uproszczone)
+  const KOSZT_UTRZYMANIA_PCT = 0.22; // rocznie, % wartości zapasu
+
+  const rows = agregatStanowMagazynowych().map(r=>{
+    const t = r.towar;
+    const popytDzienny = r.sprzedaz90/90;
+    const popytRoczny = popytDzienny*365;
+    const zapasBezp = Math.round(popytDzienny * LEAD_TIME_DNI * 0.5);
+    const rop = Math.round(popytDzienny*LEAD_TIME_DNI + zapasBezp);
+    const eoq = popytRoczny>0 ? Math.round(Math.sqrt((2*popytRoczny*KOSZT_ZAMOWIENIA)/(t.cenaZakupu*KOSZT_UTRZYMANIA_PCT || 1))) : 0;
+    const status = r.ilosc<=rop ? "bad" : (r.ilosc<=rop*1.3 ? "warn" : "ok");
+    return {...r, popytDzienny:round2(popytDzienny), zapasBezp, rop, eoq, status};
+  }).sort((a,b)=> (a.status==="bad"?0:a.status==="warn"?1:2) - (b.status==="bad"?0:b.status==="warn"?1:2));
+
+  const doZamowienia = rows.filter(r=>r.status==="bad").length;
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa A — Magazyn</div>
+      <div class="view-title">Optymalizacja zapasów</div>
+      <div class="view-desc">Punkt zamówienia (ROP), zapas bezpieczeństwa i optymalna wielkość zamówienia (EOQ) liczone na bazie sprzedaży z ostatnich 90 dni. Parametry (czas dostawy, koszt zamówienia, koszt utrzymania) są uproszczone — docelowo pobierane per dostawca/towar.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Poniżej punktu zamówienia</div><div class="kpi-value danger">${doZamowienia}</div><div class="kpi-sub">towarów wymaga zamówienia teraz</div></div>
+      <div class="kpi-card"><div class="kpi-label">Założony czas dostawy</div><div class="kpi-value">${LEAD_TIME_DNI} dni</div><div class="kpi-sub">uproszczone — wspólne dla wszystkich</div></div>
+      <div class="kpi-card"><div class="kpi-label">Koszt utrzymania zapasu</div><div class="kpi-value">${Math.round(KOSZT_UTRZYMANIA_PCT*100)}%</div><div class="kpi-sub">rocznie, od wartości zapasu</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Rekomendacje zamówień</div>
+        <div class="panel-tools"><input class="search-box" id="a3search" placeholder="Szukaj towaru..."></div>
+      </div>
+      <div class="tbl-wrap"><table id="a3table">
+        <thead><tr>
+          <th>Towar</th><th class="num">Stan</th><th class="num">Popyt/dzień</th>
+          <th class="num">Zapas bezp.</th><th class="num">ROP</th><th class="num">EOQ (zamów)</th><th>Status</th>
+        </tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr>
+            <td>${r.towar.nazwa}</td>
+            <td class="num">${r.ilosc}</td>
+            <td class="num">${r.popytDzienny}</td>
+            <td class="num">${r.zapasBezp}</td>
+            <td class="num">${r.rop}</td>
+            <td class="num">${r.eoq}</td>
+            <td><span class="tag ${r.status}">${r.status==='bad'?'Zamów teraz':r.status==='warn'?'Zbliża się':'OK'}</span></td>
+          </tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  document.getElementById("a3search").addEventListener("input", (e)=>{
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll("#a3table tbody tr").forEach(tr=>{
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+}
+
+/* ---- Wspólne obliczenia dla Grupy B (Zamówienia i dostawcy) ---- */
+const DZIS = new Date("2026-08-19");
+const dniDo = (dataStr)=> Math.round((new Date(dataStr)-DZIS)/86400000);
+
+function planZamowien(){
+  // reużywa logiki ROP/EOQ z A3, ale grupuje propozycje wg dostawcy
+  const LEAD_TIME_DNI = 10, KOSZT_ZAMOWIENIA = 45, KOSZT_UTRZYMANIA_PCT = 0.22;
+  return agregatStanowMagazynowych().map(r=>{
+    const t = r.towar;
+    const popytDzienny = r.sprzedaz90/90;
+    const popytRoczny = popytDzienny*365;
+    const zapasBezp = Math.round(popytDzienny*LEAD_TIME_DNI*0.5);
+    const rop = Math.round(popytDzienny*LEAD_TIME_DNI + zapasBezp);
+    const eoq = popytRoczny>0 ? Math.max(1,Math.round(Math.sqrt((2*popytRoczny*KOSZT_ZAMOWIENIA)/(t.cenaZakupu*KOSZT_UTRZYMANIA_PCT||1)))) : 0;
+    const potrzebaZamowienia = r.ilosc<=rop;
+    return {...r, popytDzienny:round2(popytDzienny), rop, eoq, potrzebaZamowienia,
+      dostawca: DATA.kontrahenciById[t.dostawcaId], wartoscZamowienia: round2(eoq*t.cenaZakupu)};
+  }).filter(r=>r.potrzebaZamowienia && r.eoq>0);
+}
+
+function statystykiDostawcow(){
+  const map = {};
+  DATA.dokumentyZakupu.forEach(fz=>{
+    const wartosc = round2(fz.pozycje.reduce((s,p)=>s+p.ilosc*p.cenaZakupu,0));
+    if(!map[fz.kontrahentId]) map[fz.kontrahentId] = {kontrahentId:fz.kontrahentId, liczbaZamowien:0, wartosc:0, ostatnieZamowienie:null};
+    map[fz.kontrahentId].liczbaZamowien += 1;
+    map[fz.kontrahentId].wartosc += wartosc;
+    if(!map[fz.kontrahentId].ostatnieZamowienie || fz.data>map[fz.kontrahentId].ostatnieZamowienie) map[fz.kontrahentId].ostatnieZamowienie = fz.data;
+  });
+  return Object.values(map).map(row=>{
+    const k = DATA.kontrahenciById[row.kontrahentId];
+    return {...row, dostawca:k, wartosc:round2(row.wartosc), sredniaWartosc: round2(row.wartosc/row.liczbaZamowien)};
+  }).sort((a,b)=>b.wartosc-a.wartosc);
+}
+
+function kalendarzPlatnosci(){
+  return DATA.rozrachunki.filter(r=>r.status!=="zaplacone").map(r=>{
+    const d = dniDo(r.termin);
+    let bucket;
+    if(d<0) bucket = "Zaległe";
+    else if(d<=7) bucket = "0–7 dni";
+    else if(d<=14) bucket = "8–14 dni";
+    else if(d<=30) bucket = "15–30 dni";
+    else if(d<=60) bucket = "31–60 dni";
+    else bucket = "60+ dni";
+    return {...r, dni:d, bucket, kontrahent: DATA.kontrahenciById[r.kontrahentId]};
+  }).sort((a,b)=>a.dni-b.dni);
+}
+
+/* ---- B1: Planowanie zamówień ---- */
+function renderB1(){
+  const rows = planZamowien().sort((a,b)=>b.wartoscZamowienia-a.wartoscZamowienia);
+  const wartoscLaczna = rows.reduce((s,r)=>s+r.wartoscZamowienia,0);
+  const dostawcyMap = {};
+  rows.forEach(r=>{
+    const id = r.dostawca ? r.dostawca.id : "brak";
+    if(!dostawcyMap[id]) dostawcyMap[id] = {dostawca:r.dostawca, pozycje:0, wartosc:0};
+    dostawcyMap[id].pozycje += 1; dostawcyMap[id].wartosc += r.wartoscZamowienia;
+  });
+  const grupy = Object.values(dostawcyMap).sort((a,b)=>b.wartosc-a.wartosc);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa B — Zamówienia i dostawcy</div>
+      <div class="view-title">Planowanie zamówień</div>
+      <div class="view-desc">Towary, których stan spadł poniżej punktu zamówienia (ROP), z sugerowaną ilością zamówienia (EOQ), pogrupowane wg dostawcy — gotowe do przełożenia na zamówienia zakupu.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Pozycji do zamówienia</div><div class="kpi-value danger">${rows.length}</div><div class="kpi-sub">poniżej punktu zamówienia</div></div>
+      <div class="kpi-card"><div class="kpi-label">Wartość propozycji</div><div class="kpi-value amber">${fmtPLN(wartoscLaczna)}</div><div class="kpi-sub">łącznie wg cen zakupu</div></div>
+      <div class="kpi-card"><div class="kpi-label">Dostawców zaangażowanych</div><div class="kpi-value">${grupy.length}</div><div class="kpi-sub">osobne zamówienia zakupu</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Propozycje zamówień wg dostawcy</div></div>
+      <div class="tbl-wrap" style="max-height:180px;"><table>
+        <thead><tr><th>Dostawca</th><th class="num">Pozycji</th><th class="num">Wartość zamówienia</th><th>Ocena / terminowość</th></tr></thead>
+        <tbody>${grupy.map(g=>`
+          <tr><td>${g.dostawca?g.dostawca.nazwa:"— brak przypisanego dostawcy —"}</td>
+          <td class="num">${g.pozycje}</td><td class="num">${fmtPLN(g.wartosc)}</td>
+          <td>${g.dostawca?`★ ${g.dostawca.ocena} · ${g.dostawca.terminowoscPct}% na czas`:"—"}</td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Szczegółowa lista pozycji</div>
+        <div class="panel-tools"><input class="search-box" id="b1search" placeholder="Szukaj towaru / dostawcy..."></div>
+      </div>
+      <div class="tbl-wrap"><table id="b1table">
+        <thead><tr><th>Towar</th><th>Dostawca</th><th class="num">Stan</th><th class="num">ROP</th><th class="num">Sugerowana ilość (EOQ)</th><th class="num">Wartość</th></tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr><td>${r.towar.nazwa}</td><td>${r.dostawca?r.dostawca.nazwa:"—"}</td>
+          <td class="num">${r.ilosc}</td><td class="num">${r.rop}</td>
+          <td class="num"><span class="tag bad">${r.eoq} ${r.towar.jednostka}</span></td>
+          <td class="num">${fmtPLN(r.wartoscZamowienia)}</td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  document.getElementById("b1search").addEventListener("input",(e)=>{
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll("#b1table tbody tr").forEach(tr=>{
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+}
+
+/* ---- B2: Dostawcy i zakupy ---- */
+function renderB2(){
+  const rows = statystykiDostawcow();
+  if(rows.length===0){
+    setMain(`
+      <div class="view-head">
+        <div class="view-eyebrow">Grupa B — Zamówienia i dostawcy</div>
+        <div class="view-title">Dostawcy i zakupy</div>
+        <div class="view-desc">Ranking dostawców wg wartości zakupów.</div>
+      </div>
+      <div class="placeholder"><div class="pico">Brak danych</div><p>Nie zaimportowano dokumentów zakupu (plik „Pozycje zakupu” jest opcjonalny). Wgraj go w ekranie importu, żeby zobaczyć ten moduł.</p></div>
+    `);
+    return;
+  }
+  const top8 = rows.slice(0,8);
+  const wartoscLaczna = rows.reduce((s,r)=>s+r.wartosc,0);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa B — Zamówienia i dostawcy</div>
+      <div class="view-title">Dostawcy i zakupy</div>
+      <div class="view-desc">Ranking dostawców wg wartości zakupów w ostatnich 12 miesiącach, zestawiony z ich oceną i terminowością dostaw.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Zakupy łącznie</div><div class="kpi-value amber">${fmtPLN(wartoscLaczna)}</div><div class="kpi-sub">12 miesięcy, ${rows.reduce((s,r)=>s+r.liczbaZamowien,0)} zamówień</div></div>
+      <div class="kpi-card"><div class="kpi-label">Najlepsza terminowość</div><div class="kpi-value teal">${Math.max(...rows.map(r=>r.dostawca.terminowoscPct))}%</div><div class="kpi-sub">${rows.slice().sort((a,b)=>b.dostawca.terminowoscPct-a.dostawca.terminowoscPct)[0].dostawca.nazwa}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Wymaga uwagi</div><div class="kpi-value danger">${rows.filter(r=>r.dostawca.terminowoscPct<80).length}</div><div class="kpi-sub">dostawców z terminowością &lt; 80%</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Top dostawcy wg wartości zakupów</div></div>
+        <div class="chart-box"><canvas id="chartB2Val"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Terminowość dostaw</div></div>
+        <div class="chart-box"><canvas id="chartB2Rel"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Wszyscy dostawcy</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Dostawca</th><th class="num">Zamówienia</th><th class="num">Wartość łączna</th><th class="num">Śr. wartość zam.</th><th class="num">Ocena</th><th class="num">Terminowość</th></tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr><td>${r.dostawca.nazwa}</td><td class="num">${r.liczbaZamowien}</td>
+          <td class="num">${fmtPLN(r.wartosc)}</td><td class="num">${fmtPLN(r.sredniaWartosc)}</td>
+          <td class="num">★ ${r.dostawca.ocena}</td>
+          <td class="num"><span class="tag ${r.dostawca.terminowoscPct>=90?'ok':r.dostawca.terminowoscPct>=80?'warn':'bad'}">${r.dostawca.terminowoscPct}%</span></td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  charts.b2ChartVal = new Chart(document.getElementById("chartB2Val"), {
+    type:"bar",
+    data:{ labels: top8.map(r=>r.dostawca.nazwa.slice(0,14)), datasets:[{
+      data: top8.map(r=>r.wartosc), backgroundColor:"#e8a33d", borderRadius:4
+    }]},
+    options: chartOpts({indexAxis:"y", scales:{x:{ticks:{color:"#5b6674",font:{size:10}},grid:{color:"#2b3441"}}, y:{ticks:{color:"#8b96a5",font:{size:10.5}},grid:{display:false}}}})
+  });
+  charts.b2ChartRel = new Chart(document.getElementById("chartB2Rel"), {
+    type:"bar",
+    data:{ labels: rows.map(r=>r.dostawca.nazwa.slice(0,10)), datasets:[{
+      data: rows.map(r=>r.dostawca.terminowoscPct),
+      backgroundColor: rows.map(r=>r.dostawca.terminowoscPct>=90?"#6fbf73":r.dostawca.terminowoscPct>=80?"#e8a33d":"#e0645a"),
+      borderRadius:4
+    }]},
+    options: chartOpts({scales:{x:{ticks:{color:"#5b6674",font:{size:9}},grid:{display:false}}, y:{min:0,max:100,ticks:{color:"#5b6674",font:{size:10.5},callback:v=>v+"%"},grid:{color:"#2b3441"}}}})
+  });
+}
+
+/* ---- B3: Kalendarz płatności przyszłych i zaległych ---- */
+function renderB3(){
+  let filtr = {kierunek:"wszystkie"};
+  const wszystkie = kalendarzPlatnosci();
+  const kolejnoscBuckets = ["Zaległe","0–7 dni","8–14 dni","15–30 dni","31–60 dni","60+ dni"];
+
+  function podsumuj(list){
+    const zalegle = list.filter(r=>r.dni<0);
+    const naleznosci = list.filter(r=>r.kierunek==="naleznosc").reduce((s,r)=>s+r.kwota,0);
+    const zobowiazania = list.filter(r=>r.kierunek==="zobowiazanie").reduce((s,r)=>s+r.kwota,0);
+    return {zalegleKwota: zalegle.reduce((s,r)=>s+r.kwota,0), zalegleLiczba: zalegle.length, naleznosci, zobowiazania};
+  }
+
+  function draw(){
+    const list = wszystkie.filter(r=> filtr.kierunek==="wszystkie" || r.kierunek===filtr.kierunek);
+    const sum = podsumuj(list);
+    const perBucket = kolejnoscBuckets.map(b=>({
+      bucket:b,
+      naleznosci: round2(list.filter(r=>r.bucket===b&&r.kierunek==="naleznosc").reduce((s,r)=>s+r.kwota,0)),
+      zobowiazania: round2(list.filter(r=>r.bucket===b&&r.kierunek==="zobowiazanie").reduce((s,r)=>s+r.kwota,0))
+    }));
+
+    setMain(`
+      <div class="view-head">
+        <div class="view-eyebrow">Grupa B — Zamówienia i dostawcy</div>
+        <div class="view-title">Kalendarz płatności przyszłych i zaległych</div>
+        <div class="view-desc">Wszystkie nierozliczone należności i zobowiązania, ułożone wg terminu płatności względem dziś (19.08.2026).</div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Zaległe łącznie</div><div class="kpi-value danger">${fmtPLN(sum.zalegleKwota)}</div><div class="kpi-sub">${sum.zalegleLiczba} pozycji po terminie</div></div>
+        <div class="kpi-card"><div class="kpi-label">Należności (wpływy)</div><div class="kpi-value teal">${fmtPLN(sum.naleznosci)}</div><div class="kpi-sub">od klientów, nierozliczone</div></div>
+        <div class="kpi-card"><div class="kpi-label">Zobowiązania (wypływy)</div><div class="kpi-value amber">${fmtPLN(sum.zobowiazania)}</div><div class="kpi-sub">wobec dostawców, nierozliczone</div></div>
+        <div class="kpi-card"><div class="kpi-label">Saldo netto (do rozliczenia)</div><div class="kpi-value ${sum.naleznosci-sum.zobowiazania>=0?'teal':'danger'}">${fmtPLN(sum.naleznosci-sum.zobowiazania)}</div><div class="kpi-sub">należności − zobowiązania</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Wpływy i wypływy wg terminu</div></div>
+        <div class="chart-box"><canvas id="chartB3"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Lista płatności — ${list.length}</div>
+          <div class="panel-tools">
+            <button class="chip-btn ${filtr.kierunek==='wszystkie'?'active':''}" data-k="wszystkie">Wszystkie</button>
+            <button class="chip-btn ${filtr.kierunek==='naleznosc'?'active':''}" data-k="naleznosc">Należności</button>
+            <button class="chip-btn ${filtr.kierunek==='zobowiazanie'?'active':''}" data-k="zobowiazanie">Zobowiązania</button>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Kontrahent</th><th>Kierunek</th><th class="num">Kwota</th><th>Termin</th><th>Status</th></tr></thead>
+          <tbody>${list.map(r=>`
+            <tr><td>${r.kontrahent?r.kontrahent.nazwa:"—"}</td>
+            <td><span class="tag ${r.kierunek==='naleznosc'?'b':'a'}">${r.kierunek==='naleznosc'?'Należność':'Zobowiązanie'}</span></td>
+            <td class="num">${fmtPLN(r.kwota)}</td>
+            <td>${r.termin} <span class="footnote">(${r.dni<0?r.dni+'d':'+'+r.dni+'d'})</span></td>
+            <td><span class="tag ${r.dni<0?'bad':r.dni<=14?'warn':'c'}">${r.bucket}</span></td></tr>`).join("")}
+          </tbody>
+        </table></div>
+      </div>
+    `);
+    document.querySelectorAll(".chip-btn[data-k]").forEach(btn=>{
+      btn.onclick = ()=>{ filtr.kierunek = btn.dataset.k; draw(); };
+    });
+    destroyChart("b3Chart");
+    charts.b3Chart = new Chart(document.getElementById("chartB3"), {
+      type:"bar",
+      data:{ labels: perBucket.map(b=>b.bucket), datasets:[
+        {label:"Należności", data:perBucket.map(b=>b.naleznosci), backgroundColor:"#4fb3a9", borderRadius:4},
+        {label:"Zobowiązania", data:perBucket.map(b=>b.zobowiazania), backgroundColor:"#e8a33d", borderRadius:4}
+      ]},
+      options: Object.assign(chartOpts(), {plugins:{legend:{display:true, position:"top", labels:{color:"#8b96a5", font:{size:11}, boxWidth:12}}}})
+    });
+  }
+  draw();
+}
+
+/* ---- Wspólne obliczenia dla Grupy C (Prognozy) ---- */
+function listaMiesiecy(n){
+  const out = [];
+  for(let m=n-1;m>=0;m--){
+    const d = new Date(2026,7-m,1);
+    out.push({label:d.toLocaleDateString("pl-PL",{month:"short",year:"2-digit"}), key:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")});
+  }
+  return out;
+}
+
+function sprzedazMiesiecznaTowaru(towarId, miesiace){
+  return miesiace.map(m=>{
+    let suma = 0;
+    DATA.dokumentySprzedazy.forEach(d=>{
+      if(d.data.slice(0,7)===m.key) d.pozycje.forEach(p=>{ if(p.towarId===towarId) suma += p.ilosc; });
+    });
+    return suma;
+  });
+}
+
+// proste wygładzanie wykładnicze (SES) — prognoza na kolejny okres
+function prognozaSES(szereg, alpha){
+  if(szereg.every(v=>v===0)) return 0;
+  let s = szereg[0];
+  for(let i=1;i<szereg.length;i++) s = alpha*szereg[i] + (1-alpha)*s;
+  return s;
+}
+function trendLiniowy(szereg){
+  const n = szereg.length; if(n<2) return 0;
+  const xs = szereg.map((_,i)=>i), meanX = xs.reduce((a,b)=>a+b,0)/n, meanY = szereg.reduce((a,b)=>a+b,0)/n;
+  let num=0, den=0;
+  for(let i=0;i<n;i++){ num += (xs[i]-meanX)*(szereg[i]-meanY); den += (xs[i]-meanX)**2; }
+  return den===0?0:num/den;
+}
+
+/* ---- C1: Prognozy popytu ---- */
+function renderC1(){
+  const miesiace = listaMiesiecy(12);
+  const rows = DATA.towary.map(t=>{
+    const szereg = sprzedazMiesiecznaTowaru(t.id, miesiace);
+    const prognoza = Math.round(prognozaSES(szereg, 0.35));
+    const nachylenie = trendLiniowy(szereg);
+    const ostatnie3 = szereg.slice(-3).reduce((a,b)=>a+b,0);
+    const poprzednie3 = szereg.slice(-6,-3).reduce((a,b)=>a+b,0);
+    const kierunek = nachylenie>0.3?"rosnący":nachylenie<-0.3?"malejący":"stabilny";
+    return {towar:t, szereg, prognoza, kierunek, nachylenie, ostatnie3, poprzednie3};
+  }).sort((a,b)=>b.prognoza-a.prognoza);
+
+  if(rows.length===0){
+    setMain(`
+      <div class="view-head">
+        <div class="view-eyebrow">Grupa C — Prognozy</div>
+        <div class="view-title">Prognozy zmian popytu na towary</div>
+        <div class="view-desc">Prognoza popytu na kolejny miesiąc.</div>
+      </div>
+      <div class="placeholder"><div class="pico">Brak danych</div><p>Baza jest pusta — wybierz dane demo albo zaimportuj przynajmniej kartotekę towarów, żeby zobaczyć prognozy.</p></div>
+    `);
+    return;
+  }
+
+  const wybranyId = rows[0].towar.id;
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa C — Prognozy</div>
+      <div class="view-title">Prognozy zmian popytu na towary</div>
+      <div class="view-desc">Prognoza na kolejny miesiąc liczona metodą wygładzania wykładniczego (SES, α=0,35) na bazie sprzedaży z 12 ostatnich miesięcy, z kierunkiem trendu z regresji liniowej.</div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Sprzedaż i prognoza — wybrany towar</div>
+          <div class="panel-tools">
+            <select class="source-select" id="c1select">
+              ${rows.slice(0,25).map(r=>`<option value="${r.towar.id}">${r.towar.nazwa}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="chartC1"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Rosnący popyt — top 8</div></div>
+        <div class="tbl-wrap" style="max-height:280px;"><table>
+          <thead><tr><th>Towar</th><th class="num">Ost. 3 mies.</th><th class="num">Poprz. 3 mies.</th><th>Kierunek</th></tr></thead>
+          <tbody>${rows.filter(r=>r.kierunek==="rosnący").sort((a,b)=>b.nachylenie-a.nachylenie).slice(0,8).map(r=>`
+            <tr><td>${r.towar.nazwa}</td><td class="num">${r.ostatnie3}</td><td class="num">${r.poprzednie3}</td>
+            <td><span class="tag ok">↑ rosnący</span></td></tr>`).join("")}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Prognoza popytu — wszystkie towary</div>
+        <div class="panel-tools"><input class="search-box" id="c1search" placeholder="Szukaj towaru..."></div>
+      </div>
+      <div class="tbl-wrap"><table id="c1table">
+        <thead><tr><th>Towar</th><th>Kategoria</th><th class="num">Śr. sprzedaż/mies.</th><th class="num">Prognoza (nast. mies.)</th><th>Trend</th></tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr><td>${r.towar.nazwa}</td><td>${r.towar.kategoria}</td>
+          <td class="num">${Math.round(r.szereg.reduce((a,b)=>a+b,0)/12)}</td>
+          <td class="num">${r.prognoza}</td>
+          <td><span class="tag ${r.kierunek==='rosnący'?'ok':r.kierunek==='malejący'?'bad':'c'}">${r.kierunek==='rosnący'?'↑':r.kierunek==='malejący'?'↓':'→'} ${r.kierunek}</span></td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+
+  function drawC1(towarId){
+    destroyChart("c1Chart");
+    const row = rows.find(r=>r.towar.id===towarId);
+    const dane = [...row.szereg, row.prognoza];
+    const etykiety = [...miesiace.map(m=>m.label), "Prognoza"];
+    charts.c1Chart = new Chart(document.getElementById("chartC1"), {
+      type:"bar",
+      data:{ labels: etykiety, datasets:[{
+        data: dane,
+        backgroundColor: dane.map((_,i)=> i===dane.length-1 ? "#4fb3a9" : "#e8a33d"),
+        borderRadius:4
+      }]},
+      options: chartOpts()
+    });
+  }
+  drawC1(wybranyId);
+  document.getElementById("c1select").addEventListener("change",(e)=>drawC1(e.target.value));
+  document.getElementById("c1search").addEventListener("input",(e)=>{
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll("#c1table tbody tr").forEach(tr=>{
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+}
+
+/* ---- C2: Trendy i porównania okresów sprzedaży ---- */
+function renderC2(){
+  const miesiace = listaMiesiecy(12);
+  function wartoscMiesiaca(key){
+    return round2(DATA.dokumentySprzedazy.filter(d=>d.data.slice(0,7)===key)
+      .reduce((s,d)=>s+d.pozycje.reduce((a,p)=>a+p.ilosc*p.cenaSprzedazy,0),0));
+  }
+  const wartosci = miesiace.map(m=>wartoscMiesiaca(m.key));
+
+  const biezacy = wartosci[11], poprzedni = wartosci[10];
+  const zmianaMM = poprzedni ? round2(((biezacy-poprzedni)/poprzedni)*100) : 0;
+  const q4 = wartosci.slice(9).reduce((a,b)=>a+b,0), q3 = wartosci.slice(6,9).reduce((a,b)=>a+b,0);
+  const zmianaQQ = q3 ? round2(((q4-q3)/q3)*100) : 0;
+
+  // porównanie wg kategorii: ostatnie 3 mies. vs poprzednie 3 mies.
+  const graniczna1 = new Date(2026,4,1); // 12 maja-ish start ostatnich 3 mies (cze-sie)
+  const katRows = KATEGORIE.map(kat=>{
+    let ost3=0, poprz3=0;
+    DATA.dokumentySprzedazy.forEach(d=>{
+      const key = d.data.slice(0,7);
+      const idx = miesiace.findIndex(m=>m.key===key);
+      if(idx<0) return;
+      const wart = d.pozycje.filter(p=>DATA.towaryById[p.towarId].kategoria===kat).reduce((s,p)=>s+p.ilosc*p.cenaSprzedazy,0);
+      if(idx>=9) ost3 += wart; else if(idx>=6) poprz3 += wart;
+    });
+    const zmiana = poprz3 ? round2(((ost3-poprz3)/poprz3)*100) : 0;
+    return {kat, ost3:round2(ost3), poprz3:round2(poprz3), zmiana};
+  }).sort((a,b)=>b.ost3-a.ost3);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa C — Prognozy</div>
+      <div class="view-title">Trendy i porównania okresów sprzedaży</div>
+      <div class="view-desc">Porównanie miesiąc do miesiąca i kwartał do kwartału (na bazie dostępnych 12 miesięcy danych), z rozbiciem zmiany na kategorie.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Bieżący miesiąc</div><div class="kpi-value amber">${fmtPLN(biezacy)}</div>
+        <div class="kpi-sub">vs poprzedni: <span class="${zmianaMM>=0?'':'danger'}">${zmianaMM>=0?'+':''}${zmianaMM}%</span></div></div>
+      <div class="kpi-card"><div class="kpi-label">Bieżący kwartał</div><div class="kpi-value teal">${fmtPLN(q4)}</div>
+        <div class="kpi-sub">vs poprzedni kwartał: <span class="${zmianaQQ>=0?'':'danger'}">${zmianaQQ>=0?'+':''}${zmianaQQ}%</span></div></div>
+      <div class="kpi-card"><div class="kpi-label">Najszybciej rosnąca kategoria</div><div class="kpi-value">${katRows.slice().sort((a,b)=>b.zmiana-a.zmiana)[0].kat}</div>
+        <div class="kpi-sub">+${katRows.slice().sort((a,b)=>b.zmiana-a.zmiana)[0].zmiana}% ost. 3 mies.</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Sprzedaż miesięczna — 12 miesięcy</div></div>
+      <div class="chart-box"><canvas id="chartC2"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Zmiana wg kategorii — ostatnie 3 mies. vs poprzednie 3 mies.</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kategoria</th><th class="num">Ostatnie 3 mies.</th><th class="num">Poprzednie 3 mies.</th><th class="num">Zmiana</th></tr></thead>
+        <tbody>${katRows.map(r=>`
+          <tr><td>${r.kat}</td><td class="num">${fmtPLN(r.ost3)}</td><td class="num">${fmtPLN(r.poprz3)}</td>
+          <td class="num"><span class="tag ${r.zmiana>=0?'ok':'bad'}">${r.zmiana>=0?'+':''}${r.zmiana}%</span></td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  charts.c2Chart = new Chart(document.getElementById("chartC2"), {
+    type:"line",
+    data:{ labels: miesiace.map(m=>m.label), datasets:[{
+      data: wartosci, borderColor:"#4fb3a9", backgroundColor:"rgba(79,179,169,.12)",
+      fill:true, tension:.35, pointRadius:3, pointBackgroundColor:"#4fb3a9"
+    }]},
+    options: chartOpts({y:{ticks:{callback:v=>(v/1000)+"k"}}})
+  });
+}
+
+/* ---- C3: Prognoza zmian salda środków finansowych ---- */
+function renderC3(){
+  const SALDO_POCZATKOWE = 150000; // uproszczone założenie — docelowo z konta bankowego / Gratyfikanta
+  const nierozliczone = kalendarzPlatnosci(); // z Grupy B — jeden wspólny model rozrachunków
+
+  // buckety tygodniowe na najbliższe 12 tygodni
+  const tygodnie = [];
+  for(let i=0;i<12;i++){
+    const start = new Date(DZIS); start.setDate(start.getDate()+i*7);
+    const end = new Date(start); end.setDate(end.getDate()+6);
+    tygodnie.push({label:"Tydz. "+(i+1), start, end});
+  }
+  let saldo = SALDO_POCZATKOWE;
+  // zaległości (dni<0) traktujemy jako spodziewane wpłynięcie/spłatę w pierwszym tygodniu
+  const zalegleNaleznosci = nierozliczone.filter(r=>r.kierunek==="naleznosc"&&r.dni<0).reduce((s,r)=>s+r.kwota,0);
+  const zalegleZobowiazania = nierozliczone.filter(r=>r.kierunek==="zobowiazanie"&&r.dni<0).reduce((s,r)=>s+r.kwota,0);
+
+  const rows = tygodnie.map((tyg,i)=>{
+    let wplywy = i===0 ? zalegleNaleznosci : 0;
+    let wyplywy = i===0 ? zalegleZobowiazania : 0;
+    nierozliczone.forEach(r=>{
+      if(r.dni<0) return;
+      const termin = new Date(r.termin);
+      if(termin>=tyg.start && termin<=tyg.end){
+        if(r.kierunek==="naleznosc") wplywy += r.kwota; else wyplywy += r.kwota;
+      }
+    });
+    saldo = round2(saldo + wplywy - wyplywy);
+    return {...tyg, wplywy:round2(wplywy), wyplywy:round2(wyplywy), saldo};
+  });
+  const minSaldo = Math.min(...rows.map(r=>r.saldo));
+  const tydzienRyzyka = rows.find(r=>r.saldo<0);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa C — Prognozy</div>
+      <div class="view-title">Prognoza zmian salda środków finansowych</div>
+      <div class="view-desc">Projekcja salda na 12 tygodni w przód: saldo początkowe (uproszczone założenie ${fmtPLN(SALDO_POCZATKOWE)} — docelowo pobierane z systemu finansowo-księgowego) + zaplanowane wpływy (należności) − zaplanowane wypływy (zobowiązania) z tego samego rejestru rozrachunków co kalendarz płatności w grupie B.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Saldo za 12 tygodni</div><div class="kpi-value ${rows[11].saldo>=0?'teal':'danger'}">${fmtPLN(rows[11].saldo)}</div><div class="kpi-sub">prognoza końcowa</div></div>
+      <div class="kpi-card"><div class="kpi-label">Minimalne saldo w okresie</div><div class="kpi-value ${minSaldo>=0?'':'danger'}">${fmtPLN(minSaldo)}</div><div class="kpi-sub">${tydzienRyzyka?('ryzyko w '+tydzienRyzyka.label):'saldo nie spada poniżej zera'}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Śr. tygodniowe wpływy</div><div class="kpi-value teal">${fmtPLN(round2(rows.reduce((s,r)=>s+r.wplywy,0)/12))}</div><div class="kpi-sub">z tytułu należności</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Projekcja salda — 12 tygodni</div></div>
+      <div class="chart-box"><canvas id="chartC3"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Szczegóły tygodniowe</div></div>
+      <div class="tbl-wrap" style="max-height:340px;"><table>
+        <thead><tr><th>Okres</th><th class="num">Wpływy</th><th class="num">Wypływy</th><th class="num">Saldo na koniec</th></tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr><td>${r.label} <span class="footnote">(${r.start.toLocaleDateString("pl-PL")}–${r.end.toLocaleDateString("pl-PL")})</span></td>
+          <td class="num">${fmtPLN(r.wplywy)}</td><td class="num">${fmtPLN(r.wyplywy)}</td>
+          <td class="num"><span class="tag ${r.saldo>=0?'ok':'bad'}">${fmtPLN(r.saldo)}</span></td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  charts.c3Chart = new Chart(document.getElementById("chartC3"), {
+    type:"line",
+    data:{ labels: rows.map(r=>r.label), datasets:[{
+      data: rows.map(r=>r.saldo), borderColor: minSaldo<0?"#e0645a":"#4fb3a9",
+      backgroundColor: minSaldo<0?"rgba(224,101,90,.12)":"rgba(79,179,169,.12)",
+      fill:true, tension:.3, pointRadius:3
+    }]},
+    options: chartOpts({y:{ticks:{callback:v=>(v/1000)+"k"}}})
+  });
+}
+
+/* ---- Wspólne obliczenia dla Grupy E (Analizy strategiczne) ---- */
+function klasyfikacjaABCXYZ(){
+  const miesiace = listaMiesiecy(12);
+  let rows = DATA.towary.map(t=>{
+    const szereg = sprzedazMiesiecznaTowaru(t.id, miesiace);
+    const suma = szereg.reduce((a,b)=>a+b,0);
+    const wartosc = round2(suma*t.cenaSprzedazy);
+    const mean = suma/12;
+    const std = Math.sqrt(szereg.reduce((s,x)=>s+(x-mean)**2,0)/12);
+    const cv = mean>0 ? round2(std/mean) : null;
+    return {towar:t, wartosc, cv};
+  });
+  const total = rows.reduce((s,r)=>s+r.wartosc,0);
+  rows.sort((a,b)=>b.wartosc-a.wartosc);
+  let cum=0;
+  rows.forEach(r=>{
+    cum += r.wartosc;
+    r.udzialPct = total? round2(r.wartosc/total*100) : 0;
+    r.cumPct = total? round2(cum/total*100) : 0;
+    r.klasaABC = r.cumPct<=80?"A":(r.cumPct<=95?"B":"C");
+    r.klasaXYZ = (r.cv===null) ? "Z" : (r.cv<=0.5?"X":(r.cv<=1.0?"Y":"Z"));
+    r.klasaLaczna = r.klasaABC + r.klasaXYZ;
+  });
+  return rows;
+}
+
+/* ---- E1: Klasyfikacja ABC/XYZ ---- */
+function renderE1(){
+  const rows = klasyfikacjaABCXYZ();
+  const kombinacje = ["AX","AY","AZ","BX","BY","BZ","CX","CY","CZ"];
+  const macierz = Object.fromEntries(kombinacje.map(k=>[k, rows.filter(r=>r.klasaLaczna===k)]));
+  const opisKlasy = {
+    A:"wysoka wartość sprzedaży", B:"średnia wartość", C:"niska wartość",
+    X:"stabilny popyt", Y:"zmienny popyt", Z:"nieregularny popyt"
+  };
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa E — Analizy strategiczne</div>
+      <div class="view-title">Klasyfikacja ABC/XYZ</div>
+      <div class="view-desc">ABC — wg wartości sprzedaży (12 mies., progi kumulacji 80% / 95%). XYZ — wg zmienności popytu (współczynnik zmienności CV miesięcznej sprzedaży: X ≤ 0,5 · Y ≤ 1,0 · Z &gt; 1,0).</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Macierz ABC × XYZ</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        ${kombinacje.map(k=>{
+          const grupa = macierz[k];
+          const wart = grupa.reduce((s,r)=>s+r.wartosc,0);
+          const priorytet = k[0]==='A'&&k[1]==='X' ? 'ok' : (k[0]==='C'&&k[1]==='Z' ? 'bad' : (k[0]==='A'||k[1]==='Z'?'warn':'c'));
+          return `<div class="kpi-card" style="text-align:center;">
+            <div class="kpi-label">${k} <span class="footnote">— ${opisKlasy[k[0]]}, ${opisKlasy[k[1]]}</span></div>
+            <div class="kpi-value ${priorytet==='ok'?'teal':priorytet==='bad'?'danger':'amber'}">${grupa.length}</div>
+            <div class="kpi-sub">${fmtPLN(wart)}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Pełna klasyfikacja — ${rows.length} towarów</div>
+        <div class="panel-tools">
+          <input class="search-box" id="e1search" placeholder="Szukaj towaru...">
+        </div>
+      </div>
+      <div class="tbl-wrap"><table id="e1table">
+        <thead><tr><th>Towar</th><th class="num">Wartość sprzedaży (12m)</th><th class="num">Udział</th><th class="num">CV popytu</th><th>Klasa</th></tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr><td>${r.towar.nazwa}</td><td class="num">${fmtPLN(r.wartosc)}</td>
+          <td class="num">${r.udzialPct}%</td><td class="num">${r.cv===null?'—':r.cv}</td>
+          <td><span class="tag ${r.klasaABC==='A'?'a':r.klasaABC==='B'?'b':'c'}">${r.klasaLaczna}</span></td></tr>`).join("")}
+        </tbody>
+      </table></div>
+    </div>
+  `);
+  document.getElementById("e1search").addEventListener("input",(e)=>{
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll("#e1table tbody tr").forEach(tr=>{
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+}
+
+/* ---- E2: Rentowność i marże ---- */
+function renderE2(){
+  const rows = DATA.towary.map(t=>{
+    let ilosc=0, wartosc=0, koszt=0;
+    DATA.dokumentySprzedazy.forEach(d=>d.pozycje.forEach(p=>{
+      if(p.towarId===t.id){ ilosc+=p.ilosc; wartosc += p.ilosc*p.cenaSprzedazy; koszt += p.ilosc*p.cenaZakupu; }
+    }));
+    const zysk = round2(wartosc-koszt);
+    const marzaPct = wartosc? round2(zysk/wartosc*100) : 0;
+    return {towar:t, ilosc, wartosc:round2(wartosc), koszt:round2(koszt), zysk, marzaPct};
+  }).filter(r=>r.ilosc>0);
+
+  if(rows.length===0){
+    setMain(`
+      <div class="view-head">
+        <div class="view-eyebrow">Grupa E — Analizy strategiczne</div>
+        <div class="view-title">Rentowność i marże</div>
+        <div class="view-desc">Zysk brutto i marża % na bazie dokumentów sprzedaży.</div>
+      </div>
+      <div class="placeholder"><div class="pico">Brak danych</div><p>Brak sprzedanych pozycji do policzenia rentowności — sprawdź, czy plik sprzedaży został zaimportowany i czy kody towarów w nim zgadzają się z kartoteką towarów.</p></div>
+    `);
+    return;
+  }
+
+  const zyskLaczny = rows.reduce((s,r)=>s+r.zysk,0);
+  const wartoscLaczna = rows.reduce((s,r)=>s+r.wartosc,0);
+  const sredniaMarza = wartoscLaczna? round2(zyskLaczny/wartoscLaczna*100) : 0;
+
+  const katMap = {};
+  rows.forEach(r=>{
+    const k = r.towar.kategoria;
+    if(!katMap[k]) katMap[k] = {kat:k, wartosc:0, zysk:0};
+    katMap[k].wartosc += r.wartosc; katMap[k].zysk += r.zysk;
+  });
+  const katRows = Object.values(katMap).map(k=>({...k, wartosc:round2(k.wartosc), zysk:round2(k.zysk), marzaPct: k.wartosc? round2(k.zysk/k.wartosc*100):0}))
+    .sort((a,b)=>b.zysk-a.zysk);
+
+  const topMarza = rows.slice().sort((a,b)=>b.marzaPct-a.marzaPct).slice(0,8);
+  const dolMarza = rows.slice().sort((a,b)=>a.marzaPct-b.marzaPct).slice(0,8);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa E — Analizy strategiczne</div>
+      <div class="view-title">Rentowność i marże</div>
+      <div class="view-desc">Zysk brutto i marża % liczone jako (wartość sprzedaży − koszt zakupu) na bazie wszystkich dokumentów sprzedaży z 12 miesięcy.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Zysk brutto łącznie</div><div class="kpi-value teal">${fmtPLN(zyskLaczny)}</div><div class="kpi-sub">12 miesięcy</div></div>
+      <div class="kpi-card"><div class="kpi-label">Średnia marża</div><div class="kpi-value amber">${sredniaMarza}%</div><div class="kpi-sub">ważona wartością sprzedaży</div></div>
+      <div class="kpi-card"><div class="kpi-label">Najbardziej rentowna kategoria</div><div class="kpi-value">${katRows[0].kat}</div><div class="kpi-sub">${katRows[0].marzaPct}% marży, ${fmtPLN(katRows[0].zysk)} zysku</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Marża % wg kategorii</div></div>
+      <div class="chart-box"><canvas id="chartE2"></canvas></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Najwyższa marża — top 8</div></div>
+        <div class="tbl-wrap" style="max-height:280px;"><table>
+          <thead><tr><th>Towar</th><th class="num">Marża</th><th class="num">Zysk</th></tr></thead>
+          <tbody>${topMarza.map(r=>`<tr><td>${r.towar.nazwa}</td><td class="num"><span class="tag ok">${r.marzaPct}%</span></td><td class="num">${fmtPLN(r.zysk)}</td></tr>`).join("")}</tbody>
+        </table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Najniższa marża — top 8</div></div>
+        <div class="tbl-wrap" style="max-height:280px;"><table>
+          <thead><tr><th>Towar</th><th class="num">Marża</th><th class="num">Zysk</th></tr></thead>
+          <tbody>${dolMarza.map(r=>`<tr><td>${r.towar.nazwa}</td><td class="num"><span class="tag ${r.marzaPct<20?'bad':'warn'}">${r.marzaPct}%</span></td><td class="num">${fmtPLN(r.zysk)}</td></tr>`).join("")}</tbody>
+        </table></div>
+      </div>
+    </div>
+  `);
+  charts.e2Chart = new Chart(document.getElementById("chartE2"), {
+    type:"bar",
+    data:{ labels: katRows.map(k=>k.kat), datasets:[{
+      data: katRows.map(k=>k.marzaPct), backgroundColor:"#4fb3a9", borderRadius:4
+    }]},
+    options: chartOpts({y:{ticks:{callback:v=>v+"%"}}})
+  });
+}
+
+/* ---- E3: Analiza koszyka zakupowego ---- */
+function analizaKoszyka(){
+  const pary = {}; const licznikTowaru = {}; let liczbaDokumentow = 0;
+  DATA.dokumentySprzedazy.forEach(d=>{
+    const uniqueIds = [...new Set(d.pozycje.map(p=>p.towarId))];
+    if(uniqueIds.length<2) return;
+    liczbaDokumentow++;
+    uniqueIds.forEach(id=> licznikTowaru[id]=(licznikTowaru[id]||0)+1);
+    for(let i=0;i<uniqueIds.length;i++) for(let j=i+1;j<uniqueIds.length;j++){
+      const key = [uniqueIds[i],uniqueIds[j]].sort().join("|");
+      pary[key] = (pary[key]||0)+1;
+    }
+  });
+  const rows = Object.entries(pary).map(([key,count])=>{
+    const [id1,id2] = key.split("|");
+    return {
+      t1: DATA.towaryById[id1], t2: DATA.towaryById[id2], count,
+      support: round2(count/liczbaDokumentow*100),
+      conf12: round2(count/licznikTowaru[id1]*100),
+      conf21: round2(count/licznikTowaru[id2]*100)
+    };
+  }).sort((a,b)=>b.count-a.count);
+  return {rows, liczbaDokumentow};
+}
+
+function renderE3(){
+  const {rows, liczbaDokumentow} = analizaKoszyka();
+  if(rows.length===0){
+    setMain(`
+      <div class="view-head">
+        <div class="view-eyebrow">Grupa E — Analizy strategiczne</div>
+        <div class="view-title">Analiza koszyka zakupowego</div>
+        <div class="view-desc">Które towary są najczęściej kupowane razem.</div>
+      </div>
+      <div class="placeholder"><div class="pico">Brak danych</div><p>Nie znaleziono dokumentów sprzedaży z więcej niż jedną pozycją — albo dane sprzedażowe nie zostały jeszcze zaimportowane, albo w tym zbiorze każdy dokument ma tylko jedną pozycję.</p></div>
+    `);
+    return;
+  }
+  const top20 = rows.slice(0,20);
+  const najlepsza = rows[0];
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa E — Analizy strategiczne</div>
+      <div class="view-title">Analiza koszyka zakupowego</div>
+      <div class="view-desc">Które towary są najczęściej kupowane razem — na bazie ${liczbaDokumentow} dokumentów sprzedaży z więcej niż jedną pozycją. Support = odsetek dokumentów zawierających obie pozycje. Confidence A→B = jak często zakup A idzie w parze z B.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Przeanalizowane dokumenty</div><div class="kpi-value">${liczbaDokumentow}</div><div class="kpi-sub">z ≥ 2 pozycjami</div></div>
+      <div class="kpi-card"><div class="kpi-label">Najsilniejsza para</div><div class="kpi-value amber" style="font-size:15px;">${najlepsza.t1.nazwa} + ${najlepsza.t2.nazwa}</div><div class="kpi-sub">${najlepsza.count} wspólnych dokumentów</div></div>
+      <div class="kpi-card"><div class="kpi-label">Śr. support top 10</div><div class="kpi-value teal">${round2(top20.slice(0,10).reduce((s,r)=>s+r.support,0)/10)}%</div><div class="kpi-sub">dokumentów zawiera obie pozycje</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Top 20 najczęściej kupowanych razem</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Towar A</th><th>Towar B</th><th class="num">Wspólne dok.</th><th class="num">Support</th><th class="num">Conf. A→B</th><th class="num">Conf. B→A</th></tr></thead>
+        <tbody>${top20.map(r=>`
+          <tr><td>${r.t1.nazwa}</td><td>${r.t2.nazwa}</td><td class="num">${r.count}</td>
+          <td class="num">${r.support}%</td><td class="num">${r.conf12}%</td><td class="num">${r.conf21}%</td></tr>`).join("")}
+        </tbody>
+      </table></div>
+      <div class="footnote">Wskazówka: wysoki confidence A→B przy niższym B→A sugeruje, że B warto proponować jako dosprzedaż (cross-sell) przy zakupie A.</div>
+    </div>
+  `);
+}
+
+/* ---- Wspólne obliczenia dla Grupy F (BI / przestawne) ---- */
+function liniePozycjiSprzedazy(){
+  if(DATA._flatLines) return DATA._flatLines;
+  let out = [];
+  DATA.dokumentySprzedazy.forEach(d=>{
+    const klient = DATA.kontrahenciById[d.kontrahentId];
+    d.pozycje.forEach(p=>{
+      const t = DATA.towaryById[p.towarId];
+      out.push({
+        dokumentId:d.id, miesiac:d.data.slice(0,7), kategoria:t.kategoria, towar:t.nazwa,
+        klient: klient?klient.nazwa:"—", segment: klient?(klient.segment||"—"):"—",
+        wartosc: p.ilosc*p.cenaSprzedazy, ilosc:p.ilosc,
+        zysk: p.ilosc*(p.cenaSprzedazy-p.cenaZakupu)
+      });
+    });
+  });
+  DATA._flatLines = out;
+  return out;
+}
+const DIM_WYMIARY = {
+  kategoria:{label:"Kategoria", get:l=>l.kategoria}, towar:{label:"Towar", get:l=>l.towar},
+  klient:{label:"Klient", get:l=>l.klient}, segment:{label:"Segment klienta", get:l=>l.segment},
+  miesiac:{label:"Miesiąc", get:l=>l.miesiac}
+};
+const METRYKI_PIVOT = {
+  wartosc:{label:"Wartość sprzedaży", agg:ls=>round2(ls.reduce((s,l)=>s+l.wartosc,0)), fmt:fmtPLN},
+  ilosc:{label:"Ilość", agg:ls=>ls.reduce((s,l)=>s+l.ilosc,0), fmt:v=>v+""},
+  zysk:{label:"Zysk", agg:ls=>round2(ls.reduce((s,l)=>s+l.zysk,0)), fmt:fmtPLN},
+  liczbaDok:{label:"Liczba dokumentów", agg:ls=>new Set(ls.map(l=>l.dokumentId)).size, fmt:v=>v+""}
+};
+function buildPivot(rowDim, colDim, metricKey){
+  const lines = liniePozycjiSprzedazy(), metryka = METRYKI_PIVOT[metricKey], rowGet = DIM_WYMIARY[rowDim].get;
+  const rowVals = [...new Set(lines.map(rowGet))].sort();
+  let colVals = ["Wartość"], colGet = ()=>"Wartość";
+  if(colDim!=="brak"){ colGet = DIM_WYMIARY[colDim].get; colVals = [...new Set(lines.map(colGet))].sort(); }
+  const table = rowVals.map(rv=>{
+    const rowLines = lines.filter(l=>rowGet(l)===rv);
+    const cells = colVals.map(cv=> metryka.agg(colDim==="brak"?rowLines:rowLines.filter(l=>colGet(l)===cv)) );
+    return {rv, cells, total: metryka.agg(rowLines)};
+  });
+  const colTotals = colVals.map(cv=> metryka.agg(colDim==="brak"?lines:lines.filter(l=>colGet(l)===cv)) );
+  return {rowVals, colVals, table, colTotals, grandTotal: metryka.agg(lines), metryka};
+}
+
+/* ---- F1: Tabela przestawna ---- */
+function renderF1(){
+  let stan = {row:"kategoria", col:"miesiac", metric:"wartosc"};
+  function draw(){
+    const p = buildPivot(stan.row, stan.col, stan.metric);
+    setMain(`
+      <div class="view-head">
+        <div class="view-eyebrow">Grupa F — BI / przestawne</div>
+        <div class="view-title">Tabela przestawna</div>
+        <div class="view-desc">Dowolne zestawienie sprzedaży — wybierz wymiar wierszy, kolumn i metrykę. Dane liczone „na żywo" z tych samych dokumentów sprzedaży co pozostałe moduły.</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">Ustawienia przestawki</div>
+          <div class="panel-tools">
+            <select class="source-select" id="fRow">${Object.entries(DIM_WYMIARY).map(([k,v])=>`<option value="${k}" ${stan.row===k?'selected':''}>Wiersze: ${v.label}</option>`).join("")}</select>
+            <select class="source-select" id="fCol"><option value="brak" ${stan.col==='brak'?'selected':''}>Kolumny: brak</option>${Object.entries(DIM_WYMIARY).map(([k,v])=>`<option value="${k}" ${stan.col===k?'selected':''}>Kolumny: ${v.label}</option>`).join("")}</select>
+            <select class="source-select" id="fMetric">${Object.entries(METRYKI_PIVOT).map(([k,v])=>`<option value="${k}" ${stan.metric===k?'selected':''}>${v.label}</option>`).join("")}</select>
+          </div>
+        </div>
+        <div class="tbl-wrap" style="max-height:480px;"><table>
+          <thead><tr><th>${DIM_WYMIARY[stan.row].label}</th>${p.colVals.map(cv=>`<th class="num">${cv}</th>`).join("")}<th class="num">Razem</th></tr></thead>
+          <tbody>${p.table.map(r=>`
+            <tr><td>${r.rv}</td>${r.cells.map(c=>`<td class="num">${p.metryka.fmt(c)}</td>`).join("")}<td class="num" style="color:var(--amber);">${p.metryka.fmt(r.total)}</td></tr>`).join("")}
+            <tr style="font-weight:600;"><td>Razem</td>${p.colTotals.map(c=>`<td class="num">${p.metryka.fmt(c)}</td>`).join("")}<td class="num" style="color:var(--amber);">${p.metryka.fmt(p.grandTotal)}</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    `);
+    document.getElementById("fRow").onchange = e=>{ stan.row=e.target.value; draw(); };
+    document.getElementById("fCol").onchange = e=>{ stan.col=e.target.value; draw(); };
+    document.getElementById("fMetric").onchange = e=>{ stan.metric=e.target.value; draw(); };
+  }
+  draw();
+}
+
+/* ---- Wspólne obliczenia dla Grupy G (Zwroty) ---- */
+function analizaZwrotow(){
+  const wzbogacone = DATA.zwroty.map(z=>{
+    const t = DATA.towaryById[z.towarId];
+    return {...z, towar:t, wartosc: round2(z.ilosc*t.cenaSprzedazy), utraconyZysk: round2(z.ilosc*(t.cenaSprzedazy-t.cenaZakupu))};
+  });
+  const sprzedaneSztuki = DATA.dokumentySprzedazy.reduce((s,d)=>s+d.pozycje.reduce((a,p)=>a+p.ilosc,0),0);
+  const zwroconeSztuki = wzbogacone.reduce((s,z)=>s+z.ilosc,0);
+  return {wzbogacone, sprzedaneSztuki, zwroconeSztuki,
+    wartoscLaczna: round2(wzbogacone.reduce((s,z)=>s+z.wartosc,0)),
+    utraconyZyskLaczny: round2(wzbogacone.reduce((s,z)=>s+z.utraconyZysk,0))};
+}
+
+/* ---- G1: Zwroty i symulacje ---- */
+function renderG1(){
+  const {wzbogacone, sprzedaneSztuki, zwroconeSztuki, wartoscLaczna, utraconyZyskLaczny} = analizaZwrotow();
+  const wskaznikZwrotow = sprzedaneSztuki? round2(zwroconeSztuki/sprzedaneSztuki*100) : 0;
+  const miesiace = listaMiesiecy(12);
+  const zwrotyMiesiac = miesiace.map(m=> round2(wzbogacone.filter(z=>z.data.slice(0,7)===m.key).reduce((s,z)=>s+z.wartosc,0)));
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa G — Zwroty</div>
+      <div class="view-title">Zwroty i symulacje</div>
+      <div class="view-desc">Skala zwrotów i ich wpływ na wynik, z symulacją: o ile wzrósłby zysk, gdyby udało się ograniczyć liczbę zwrotów.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Wskaźnik zwrotów</div><div class="kpi-value ${wskaznikZwrotow>3?'danger':'amber'}">${wskaznikZwrotow}%</div><div class="kpi-sub">${zwroconeSztuki} z ${sprzedaneSztuki} sprzedanych szt.</div></div>
+      <div class="kpi-card"><div class="kpi-label">Wartość zwrotów</div><div class="kpi-value danger">${fmtPLN(wartoscLaczna)}</div><div class="kpi-sub">12 miesięcy</div></div>
+      <div class="kpi-card"><div class="kpi-label">Utracony zysk</div><div class="kpi-value danger">${fmtPLN(utraconyZyskLaczny)}</div><div class="kpi-sub">marża na zwróconych towarach</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Wartość zwrotów w czasie</div></div>
+      <div class="chart-box"><canvas id="chartG1"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Symulacja — redukcja liczby zwrotów</div></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+        <input type="range" id="g1slider" min="0" max="80" value="20" style="flex:1;accent-color:#e8a33d;">
+        <span class="tag a" id="g1sliderVal" style="font-family:var(--font-mono);font-size:13px;">-20%</span>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Odzyskany zysk (symulacja)</div><div class="kpi-value teal" id="g1odzyskany">${fmtPLN(round2(utraconyZyskLaczny*0.2))}</div><div class="kpi-sub">przy redukcji o wskazany %</div></div>
+        <div class="kpi-card"><div class="kpi-label">Nowy wskaźnik zwrotów</div><div class="kpi-value" id="g1nowyWskaznik">${round2(wskaznikZwrotow*0.8)}%</div><div class="kpi-sub">po symulowanej redukcji</div></div>
+      </div>
+      <div class="footnote">Symulacja liniowa — zakłada proporcjonalną redukcję zwrotów we wszystkich kategoriach; docelowo można różnicować wg przyczyny zwrotu.</div>
+    </div>
+  `);
+  const slider = document.getElementById("g1slider");
+  slider.addEventListener("input",()=>{
+    const pct = Number(slider.value);
+    document.getElementById("g1sliderVal").textContent = "-"+pct+"%";
+    document.getElementById("g1odzyskany").textContent = fmtPLN(round2(utraconyZyskLaczny*pct/100));
+    document.getElementById("g1nowyWskaznik").textContent = round2(wskaznikZwrotow*(1-pct/100))+"%";
+  });
+  charts.g1Chart = new Chart(document.getElementById("chartG1"), {
+    type:"bar",
+    data:{ labels: miesiace.map(m=>m.label), datasets:[{ data: zwrotyMiesiac, backgroundColor:"#e0645a", borderRadius:4 }]},
+    options: chartOpts()
+  });
+}
+
+/* ---- G2: Analiza zwrotów towarów ---- */
+function renderG2(){
+  const {wzbogacone} = analizaZwrotow();
+  const perTowar = {};
+  wzbogacone.forEach(z=>{
+    if(!perTowar[z.towarId]) perTowar[z.towarId] = {towar:z.towar, ilosc:0, wartosc:0, liczba:0};
+    perTowar[z.towarId].ilosc += z.ilosc; perTowar[z.towarId].wartosc += z.wartosc; perTowar[z.towarId].liczba += 1;
+  });
+  const rows = Object.values(perTowar).map(r=>({...r, wartosc:round2(r.wartosc)})).sort((a,b)=>b.wartosc-a.wartosc);
+  const perPowod = {};
+  wzbogacone.forEach(z=>{ perPowod[z.powod] = (perPowod[z.powod]||0)+1; });
+  const powodyRows = Object.entries(perPowod).sort((a,b)=>b[1]-a[1]);
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa G — Zwroty</div>
+      <div class="view-title">Analiza zwrotów towarów</div>
+      <div class="view-desc">Które towary są zwracane najczęściej i dlaczego.</div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Najczęściej zwracane towary</div></div>
+        <div class="tbl-wrap" style="max-height:340px;"><table>
+          <thead><tr><th>Towar</th><th class="num">Liczba zwrotów</th><th class="num">Szt.</th><th class="num">Wartość</th></tr></thead>
+          <tbody>${rows.map(r=>`<tr><td>${r.towar.nazwa}</td><td class="num">${r.liczba}</td><td class="num">${r.ilosc}</td><td class="num">${fmtPLN(r.wartosc)}</td></tr>`).join("")}</tbody>
+        </table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Powody zwrotów</div></div>
+        <div class="chart-box"><canvas id="chartG2"></canvas></div>
+      </div>
+    </div>
+  `);
+  charts.g2Chart = new Chart(document.getElementById("chartG2"), {
+    type:"doughnut",
+    data:{ labels: powodyRows.map(p=>p[0]), datasets:[{ data: powodyRows.map(p=>p[1]),
+      backgroundColor:["#e0645a","#e8a33d","#4fb3a9","#8b96a5","#6fbf73"], borderColor:"#1a212b", borderWidth:2 }]},
+    options:{ plugins:{legend:{position:"right", labels:{color:"#8b96a5", font:{size:10.5}, boxWidth:10}}}, cutout:"58%" }
+  });
+}
+
+/* ---- H1: Analiza finansowa i rozrachunki ---- */
+function renderH1(){
+  const rozrachunki = DATA.rozrachunki;
+  const naleznosciNiezaplacone = rozrachunki.filter(r=>r.kierunek==="naleznosc"&&r.status!=="zaplacone");
+  const zobowiazaniaNiezaplacone = rozrachunki.filter(r=>r.kierunek==="zobowiazanie"&&r.status!=="zaplacone");
+  const naleznosciZalegle = naleznosciNiezaplacone.filter(r=>dniDo(r.termin)<0);
+  const zobowiazaniaZalegle = zobowiazaniaNiezaplacone.filter(r=>dniDo(r.termin)<0);
+
+  function wiekowanie(list){
+    const kosze = [{label:"0–30 dni",min:0,max:30},{label:"31–60 dni",min:31,max:60},{label:"61–90 dni",min:61,max:90},{label:"90+ dni",min:91,max:99999}];
+    return kosze.map(k=>{
+      const suma = list.filter(r=>{ const d=-dniDo(r.termin); return d>=k.min && d<=k.max; }).reduce((s,r)=>s+r.kwota,0);
+      return {label:k.label, wartosc:round2(suma)};
+    });
+  }
+  const wiekN = wiekowanie(naleznosciZalegle), wiekZ = wiekowanie(zobowiazaniaZalegle);
+
+  function topDluznicy(list, n){
+    const map = {};
+    list.forEach(r=>{ map[r.kontrahentId] = (map[r.kontrahentId]||0)+r.kwota; });
+    return Object.entries(map).map(([id,kwota])=>({kontrahent:DATA.kontrahenciById[id], kwota:round2(kwota)}))
+      .sort((a,b)=>b.kwota-a.kwota).slice(0,n);
+  }
+  const topKlienci = topDluznicy(naleznosciZalegle, 8);
+  const topDostawcy = topDluznicy(zobowiazaniaZalegle, 8);
+
+  const wskaznikPlynnosci = zobowiazaniaNiezaplacone.length ?
+    round2(naleznosciNiezaplacone.reduce((s,r)=>s+r.kwota,0) / zobowiazaniaNiezaplacone.reduce((s,r)=>s+r.kwota,0)) : null;
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Grupa H — Finanse</div>
+      <div class="view-title">Analiza finansowa i rozrachunki</div>
+      <div class="view-desc">Wiekowanie zaległych należności i zobowiązań oraz ranking kontrahentów generujących największe zaległości.</div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Zaległe należności</div><div class="kpi-value danger">${fmtPLN(naleznosciZalegle.reduce((s,r)=>s+r.kwota,0))}</div><div class="kpi-sub">${naleznosciZalegle.length} pozycji</div></div>
+      <div class="kpi-card"><div class="kpi-label">Zaległe zobowiązania</div><div class="kpi-value danger">${fmtPLN(zobowiazaniaZalegle.reduce((s,r)=>s+r.kwota,0))}</div><div class="kpi-sub">${zobowiazaniaZalegle.length} pozycji</div></div>
+      <div class="kpi-card"><div class="kpi-label">Wskaźnik płynności bieżącej</div><div class="kpi-value ${wskaznikPlynnosci>1?'teal':'danger'}">${wskaznikPlynnosci===null?'—':wskaznikPlynnosci}</div><div class="kpi-sub">należności / zobowiązania (nierozliczone)</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Wiekowanie zaległych należności</div></div>
+        <div class="chart-box"><canvas id="chartH1a"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Wiekowanie zaległych zobowiązań</div></div>
+        <div class="chart-box"><canvas id="chartH1b"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Top klienci — zaległe należności</div></div>
+        <div class="tbl-wrap" style="max-height:260px;"><table>
+          <thead><tr><th>Klient</th><th class="num">Zaległość</th></tr></thead>
+          <tbody>${topKlienci.map(r=>`<tr><td>${r.kontrahent?r.kontrahent.nazwa:'—'}</td><td class="num"><span class="tag bad">${fmtPLN(r.kwota)}</span></td></tr>`).join("")}</tbody>
+        </table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">Top dostawcy — zaległe zobowiązania</div></div>
+        <div class="tbl-wrap" style="max-height:260px;"><table>
+          <thead><tr><th>Dostawca</th><th class="num">Zaległość</th></tr></thead>
+          <tbody>${topDostawcy.map(r=>`<tr><td>${r.kontrahent?r.kontrahent.nazwa:'—'}</td><td class="num"><span class="tag bad">${fmtPLN(r.kwota)}</span></td></tr>`).join("")}</tbody>
+        </table></div>
+      </div>
+    </div>
+  `);
+  charts.h1Chart = new Chart(document.getElementById("chartH1a"), {
+    type:"bar", data:{ labels: wiekN.map(w=>w.label), datasets:[{ data: wiekN.map(w=>w.wartosc), backgroundColor:"#4fb3a9", borderRadius:4 }]},
+    options: chartOpts()
+  });
+  charts.h1ChartB = new Chart(document.getElementById("chartH1b"), {
+    type:"bar", data:{ labels: wiekZ.map(w=>w.label), datasets:[{ data: wiekZ.map(w=>w.wartosc), backgroundColor:"#e8a33d", borderRadius:4 }]},
+    options: chartOpts()
+  });
+}
+
+/* =====================================================================
+   5. IMPORT CSV/XLSX — realne eksporty z dowolnego systemu ERP
+   ===================================================================== */
+const ENTITIES = [
+  {id:"towary", label:"Towary", required:false, zalecane:true, fields:[
+    {key:"kod", label:"Kod towaru", required:true, type:"string", aliases:["kod","kod towaru","symbol","indeks","sku"]},
+    {key:"nazwa", label:"Nazwa", required:true, type:"string", aliases:["nazwa","nazwa towaru","opis"]},
+    {key:"kategoria", label:"Kategoria", required:true, type:"string", aliases:["kategoria","grupa","grupa towarowa"]},
+    {key:"jednostka", label:"Jednostka", required:false, type:"string", aliases:["jednostka","jm","j.m."]},
+    {key:"cena_zakupu", label:"Cena zakupu", required:true, type:"number", aliases:["cena zakupu","koszt","cena zakupu netto"]},
+    {key:"cena_sprzedazy", label:"Cena sprzedaży", required:true, type:"number", aliases:["cena sprzedazy","cena sprzedaży","cena netto"]},
+    {key:"dostawca", label:"Dostawca (opc.)", required:false, type:"string", aliases:["dostawca","kod dostawcy"]},
+  ], example:{kod:"TW-0001", nazwa:"Wiertarka udarowa", kategoria:"Elektronarzędzia", jednostka:"szt", cena_zakupu:250, cena_sprzedazy:349, dostawca:"Hurt-Bud"}},
+
+  {id:"stany", label:"Stany magazynowe", required:false, fields:[
+    {key:"towar", label:"Towar (kod)", required:true, type:"string", aliases:["towar","kod towaru","symbol"]},
+    {key:"magazyn", label:"Magazyn", required:false, type:"string", aliases:["magazyn","kod magazynu"]},
+    {key:"ilosc", label:"Ilość", required:true, type:"number", aliases:["ilosc","ilość","stan"]},
+  ], example:{towar:"TW-0001", magazyn:"MAG-01", ilosc:24}},
+
+  {id:"sprzedaz", label:"Pozycje sprzedaży", required:false, zalecane:true, fields:[
+    {key:"dokument", label:"Nr dokumentu", required:false, type:"string", aliases:["dokument","nr dokumentu","numer"]},
+    {key:"data", label:"Data", required:true, type:"date", aliases:["data","data wystawienia"]},
+    {key:"kontrahent", label:"Klient", required:true, type:"string", aliases:["kontrahent","klient","nabywca"]},
+    {key:"towar", label:"Towar (kod)", required:true, type:"string", aliases:["towar","kod towaru","symbol"]},
+    {key:"ilosc", label:"Ilość", required:true, type:"number", aliases:["ilosc","ilość"]},
+    {key:"cena_sprzedazy", label:"Cena sprzedaży", required:true, type:"number", aliases:["cena sprzedazy","cena sprzedaży","cena netto"]},
+    {key:"cena_zakupu", label:"Koszt (opc.)", required:false, type:"number", aliases:["koszt","cena zakupu","koszt jednostkowy"]},
+  ], example:{dokument:"FS-00001", data:"2026-06-12", kontrahent:"Firma Budowlana Nowak", towar:"TW-0001", ilosc:2, cena_sprzedazy:349, cena_zakupu:250}},
+
+  {id:"zakupy", label:"Pozycje zakupu", required:false, fields:[
+    {key:"dokument", label:"Nr dokumentu", required:false, type:"string", aliases:["dokument","nr dokumentu","numer"]},
+    {key:"data", label:"Data", required:true, type:"date", aliases:["data","data wystawienia"]},
+    {key:"dostawca", label:"Dostawca", required:true, type:"string", aliases:["dostawca","kontrahent"]},
+    {key:"termin_platnosci", label:"Termin płatności", required:false, type:"date", aliases:["termin platnosci","termin płatności","termin"]},
+    {key:"towar", label:"Towar (kod)", required:true, type:"string", aliases:["towar","kod towaru","symbol"]},
+    {key:"ilosc", label:"Ilość", required:true, type:"number", aliases:["ilosc","ilość"]},
+    {key:"cena_zakupu", label:"Cena zakupu", required:true, type:"number", aliases:["cena zakupu","koszt"]},
+  ], example:{dokument:"FZ-00001", data:"2026-06-05", dostawca:"Hurt-Bud", termin_platnosci:"2026-07-05", towar:"TW-0001", ilosc:20, cena_zakupu:250}},
+
+  {id:"zwroty", label:"Zwroty", required:false, fields:[
+    {key:"dokument_zrodlowy", label:"Dok. źródłowy (opc.)", required:false, type:"string", aliases:["dokument zrodlowy","dokument źródłowy"]},
+    {key:"data", label:"Data", required:true, type:"date", aliases:["data"]},
+    {key:"towar", label:"Towar (kod)", required:true, type:"string", aliases:["towar","kod towaru"]},
+    {key:"ilosc", label:"Ilość", required:true, type:"number", aliases:["ilosc","ilość"]},
+    {key:"powod", label:"Powód (opc.)", required:false, type:"string", aliases:["powod","powód","przyczyna"]},
+  ], example:{dokument_zrodlowy:"FS-00001", data:"2026-06-20", towar:"TW-0001", ilosc:1, powod:"Wada towaru"}},
+
+  {id:"kontrahenci", label:"Kontrahenci", required:false, fields:[
+    {key:"nazwa", label:"Nazwa", required:true, type:"string", aliases:["nazwa","kontrahent"]},
+    {key:"typ", label:"Typ (klient/dostawca)", required:true, type:"string", aliases:["typ","rodzaj"]},
+    {key:"nip", label:"NIP (opc.)", required:false, type:"string", aliases:["nip"]},
+    {key:"segment", label:"Segment (opc.)", required:false, type:"string", aliases:["segment"]},
+    {key:"ocena", label:"Ocena (opc.)", required:false, type:"number", aliases:["ocena","rating"]},
+    {key:"terminowosc", label:"Terminowość % (opc.)", required:false, type:"number", aliases:["terminowosc","terminowość"]},
+  ], example:{nazwa:"Hurt-Bud Sp. z o.o.", typ:"dostawca", nip:"5211234567", segment:"", ocena:4.2, terminowosc:88}},
+
+  {id:"rozrachunki", label:"Rozrachunki", required:false, fields:[
+    {key:"kontrahent", label:"Kontrahent", required:true, type:"string", aliases:["kontrahent","nazwa"]},
+    {key:"kierunek", label:"Kierunek (należność/zobowiązanie)", required:true, type:"string", aliases:["kierunek","typ"]},
+    {key:"kwota", label:"Kwota", required:true, type:"number", aliases:["kwota"]},
+    {key:"termin", label:"Termin płatności", required:true, type:"date", aliases:["termin","termin platnosci","termin płatności"]},
+    {key:"status", label:"Status (opc.)", required:false, type:"string", aliases:["status"]},
+  ], example:{kontrahent:"Firma Budowlana Nowak", kierunek:"naleznosc", kwota:857, termin:"2026-09-01", status:""}},
+];
+
+let importState = {}; // id -> {headers, rawRows, mapping, parsedRows, errors}
+
+function normalizeHeader(s){
+  return (s===undefined||s===null?"":s.toString()).trim().toLowerCase()
+    .replace(/ą/g,"a").replace(/ć/g,"c").replace(/ę/g,"e").replace(/ł/g,"l")
+    .replace(/ń/g,"n").replace(/ó/g,"o").replace(/ś/g,"s").replace(/ź/g,"z").replace(/ż/g,"z");
+}
+function autoMap(headers, fields){
+  const norm = headers.map(h=>({orig:h, n:normalizeHeader(h)}));
+  const mapping = {};
+  fields.forEach(f=>{
+    const found = norm.find(h=> f.aliases.some(a=> h.n===normalizeHeader(a) || h.n.includes(normalizeHeader(a))));
+    mapping[f.key] = found ? found.orig : "";
+  });
+  return mapping;
+}
+function parseDate(v){
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  if(typeof v === "string"){
+    let m = v.match(/^(\d{4})-(\d{2})-(\d{2})/); if(m) return m[0];
+    m = v.match(/^(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/); if(m) return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");
+    const d = new Date(v); if(!isNaN(d)) return d.toISOString().slice(0,10);
+  }
+  return null;
+}
+function slug(str){
+  return (str===undefined||str===null?"":str.toString()).trim().toUpperCase()
+    .replace(/[^A-Z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,24) || "BRAK";
+}
+function znajdzTowar(kodLubNazwa, towary){
+  if(!kodLubNazwa) return undefined;
+  const q = normalizeHeader(kodLubNazwa);
+  return towary.find(t=> normalizeHeader(t.kod)===q || normalizeHeader(t.id)===q || normalizeHeader(t.nazwa)===q);
+}
+
+function applyMapping(entityId){
+  const st = importState[entityId];
+  const spec = ENTITIES.find(e=>e.id===entityId);
+  if(!st) return;
+  const missingRequired = spec.fields.filter(f=>f.required && !st.mapping[f.key]);
+  if(missingRequired.length){
+    st.parsedRows = [];
+    st.errors = ["Brak mapowania dla wymaganych pól: "+missingRequired.map(f=>f.label).join(", ")];
+    return;
+  }
+  const parsed = [], errors = [];
+  st.rawRows.forEach((raw,idx)=>{
+    const row = {}; let rowError = null;
+    spec.fields.forEach(f=>{
+      const col = st.mapping[f.key];
+      let val = col ? raw[col] : undefined;
+      if(val==="" ) val = undefined;
+      if(f.type==="number" && val!==undefined){
+        const num = Number(String(val).replace(",", "."));
+        if(isNaN(num)) rowError = rowError || ("nieprawidłowa liczba w polu „"+f.label+"”");
+        else val = num;
+      }
+      if(f.type==="date" && val!==undefined){
+        const d = parseDate(val);
+        if(!d) rowError = rowError || ("nieprawidłowa data w polu „"+f.label+"”");
+        else val = d;
+      }
+      if(f.required && val===undefined) rowError = rowError || ("brak wartości w polu „"+f.label+"”");
+      row[f.key] = val;
+    });
+    if(rowError) errors.push("Wiersz "+(idx+2)+": "+rowError);
+    else parsed.push(row);
+  });
+  st.parsedRows = parsed;
+  st.errors = errors;
+}
+
+async function wczytajPlik(entityId, file){
+  const spec = ENTITIES.find(e=>e.id===entityId);
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:"array", cellDates:true});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {defval:""});
+  const headers = rows.length ? Object.keys(rows[0]) : [];
+  const mapping = autoMap(headers, spec.fields);
+  importState[entityId] = {fileName:file.name, headers, rawRows:rows, mapping, parsedRows:[], errors:[]};
+  applyMapping(entityId);
+}
+
+function pobierzSzablon(entityId){
+  const spec = ENTITIES.find(e=>e.id===entityId);
+  const headers = spec.fields.map(f=>f.key);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet([spec.example], {header:headers});
+  XLSX.utils.book_append_sheet(wb, ws, "Szablon");
+  XLSX.writeFile(wb, "szablon_"+entityId+".xlsx");
+}
+
+/* ---- Budowa finalnego zestawu danych ze zaimportowanych plików ---- */
+function grupujPozycjeWDokumenty(rows, towary, upsertKontrahent, typKontrahenta, jestZakup){
+  const mapaDok = {}; let licznik=0;
+  rows.forEach(r=>{
+    const t = znajdzTowar(r.towar, towary); if(!t) return;
+    const nazwaKontrahenta = jestZakup ? r.dostawca : r.kontrahent;
+    const kontrahent = upsertKontrahent(nazwaKontrahenta, typKontrahenta);
+    if(!kontrahent) return;
+    const docId = r.dokument || ((jestZakup?"FZ-IMP-":"FS-IMP-")+(licznik++));
+    if(!mapaDok[docId]){
+      mapaDok[docId] = {id:docId, typ: jestZakup?"FZ":"FS", data: r.data, kontrahentId: kontrahent.id, pozycje:[]};
+      if(jestZakup) mapaDok[docId].terminPlatnosci = r.termin_platnosci || r.data;
+    }
+    mapaDok[docId].pozycje.push({
+      towarId: t.id, ilosc: r.ilosc||1,
+      cenaSprzedazy: jestZakup ? undefined : (r.cena_sprzedazy!==undefined ? r.cena_sprzedazy : t.cenaSprzedazy),
+      cenaZakupu: r.cena_zakupu!==undefined ? r.cena_zakupu : t.cenaZakupu
+    });
+  });
+  return Object.values(mapaDok);
+}
+
+function zbudujDataZImportu(){
+  const towaryRaw = importState.towary ? importState.towary.parsedRows : [];
+  const towary = towaryRaw.map(r=>({
+    id: r.kod, kod: r.kod, nazwa: r.nazwa, kategoria: r.kategoria,
+    jednostka: r.jednostka || "szt", cenaZakupu: r.cena_zakupu, cenaSprzedazy: r.cena_sprzedazy,
+    dostawcaId: r.dostawca ? "K-"+slug(r.dostawca) : null, stanMin:0, stanMax:0
+  }));
+
+  const kontrahenciMap = {};
+  (importState.kontrahenci ? importState.kontrahenci.parsedRows : []).forEach(r=>{
+    const id = "K-"+slug(r.nazwa);
+    kontrahenciMap[id] = {id, typ: normalizeHeader(r.typ).includes("dost") ? "dostawca":"klient",
+      nazwa:r.nazwa, nip:r.nip||"", segment:r.segment||"",
+      ocena: r.ocena!==undefined?r.ocena:4.0, terminowoscPct: r.terminowosc!==undefined?r.terminowosc:90};
+  });
+  function upsertKontrahent(nazwa, typHint){
+    if(!nazwa) return null;
+    const id = "K-"+slug(nazwa);
+    if(!kontrahenciMap[id]) kontrahenciMap[id] = {id, typ:typHint, nazwa, nip:"", segment:"", ocena:4.0, terminowoscPct:90};
+    return kontrahenciMap[id];
+  }
+  // towary z przypisanym dostawcą — zarejestruj kontrahenta, jeśli jeszcze nie istnieje
+  towary.forEach(t=>{ if(t.dostawcaId && !kontrahenciMap[t.dostawcaId]){
+    const nazwa = towaryRaw.find(r=>r.kod===t.kod).dostawca;
+    upsertKontrahent(nazwa, "dostawca");
+  }});
+
+  const stanyMagazynowe = (importState.stany ? importState.stany.parsedRows : []).map(r=>{
+    const t = znajdzTowar(r.towar, towary);
+    if(!t) return null;
+    return {towarId:t.id, magazyn: r.magazyn||"MAG-01", ilosc:r.ilosc, wartosc: round2(r.ilosc*t.cenaZakupu)};
+  }).filter(Boolean);
+
+  const dokumentySprzedazy = grupujPozycjeWDokumenty(importState.sprzedaz?importState.sprzedaz.parsedRows:[], towary, upsertKontrahent, "klient", false);
+  const dokumentyZakupu = grupujPozycjeWDokumenty(importState.zakupy?importState.zakupy.parsedRows:[], towary, upsertKontrahent, "dostawca", true);
+
+  const zwroty = (importState.zwroty?importState.zwroty.parsedRows:[]).map((r,i)=>{
+    const t = znajdzTowar(r.towar, towary); if(!t) return null;
+    return {id:"ZW-IMP-"+i, dokumentZrodlowy:r.dokument_zrodlowy||"", data:r.data, towarId:t.id, ilosc:r.ilosc||1, powod:r.powod||"Nieokreślony"};
+  }).filter(Boolean);
+
+  const rozrachunki = (importState.rozrachunki?importState.rozrachunki.parsedRows:[]).map((r,i)=>{
+    const k = upsertKontrahent(r.kontrahent, normalizeHeader(r.kierunek).includes("zobow")?"dostawca":"klient");
+    if(!k) return null;
+    const kierunek = normalizeHeader(r.kierunek).includes("zobow") ? "zobowiazanie" : "naleznosc";
+    const status = r.status || (dniDo(r.termin)<0 ? "zalegle" : "oczekujace");
+    return {id:"RR-IMP-"+i, kontrahentId:k.id, kierunek, kwota:r.kwota, termin:r.termin, status};
+  }).filter(Boolean);
+
+  return {towary, kontrahenci:Object.values(kontrahenciMap), stanyMagazynowe, dokumentySprzedazy, dokumentyZakupu, zwroty, rozrachunki};
+}
+
+/* ---- DataProvider zwracający już zbudowany zestaw (import lub przyszły adapter) ---- */
+class StaticDataProvider{
+  constructor(dataset){ this._d = dataset; }
+  async getTowary(){ return this._d.towary; }
+  async getKontrahenci(){ return this._d.kontrahenci; }
+  async getStanyMagazynowe(){ return this._d.stanyMagazynowe; }
+  async getDokumentySprzedazy(){ return this._d.dokumentySprzedazy; }
+  async getDokumentyZakupu(){ return this._d.dokumentyZakupu; }
+  async getZwroty(){ return this._d.zwroty; }
+  async getRozrachunki(){ return this._d.rozrachunki; }
+}
+
+/* ---- Widok importu ---- */
+function renderImportView(){
+  const MODULY_ZA_ENCJE = {
+    towary:"A, C1, E1, E2, E3, F1", stany:"A1, A2, A3",
+    sprzedaz:"C, E, F1, dashboard", zakupy:"B1, B2",
+    zwroty:"G1, G2", kontrahenci:"B2, nazwy klientów/dostawców wszędzie", rozrachunki:"B3, C3, H1"
+  };
+  function karta(spec){
+    const st = importState[spec.id];
+    const status = !st ? `<span class="import-status empty">nie wczytano</span>`
+      : (st.errors.length ? `<span class="import-status err">${st.errors.length} błędów</span>`
+      : `<span class="import-status ok">✓ ${st.parsedRows.length} wierszy</span>`);
+    const znacznik = spec.zalecane
+      ? '<span class="footnote">zalecane — odblokowuje najwięcej modułów</span>'
+      : '<span class="footnote">opcjonalne</span>';
+    return `
+      <div class="import-card">
+        <div class="import-card-head">
+          <div class="import-card-title">${spec.label} ${znacznik} ${status}</div>
+          <div style="display:flex;gap:8px;">
+            <button class="chip-btn" onclick="pobierzSzablon('${spec.id}')">Pobierz szablon</button>
+            <label class="chip-btn" style="cursor:pointer;">Wybierz plik<input type="file" accept=".csv,.xlsx,.xls" style="display:none;" onchange="onPlikWybrany('${spec.id}', this.files[0])"></label>
+          </div>
+        </div>
+        <div class="footnote" style="margin-bottom:8px;">Zasila moduły: ${MODULY_ZA_ENCJE[spec.id]}</div>
+        ${st ? `
+          <div class="footnote" style="margin-bottom:8px;">Plik: ${st.fileName} · ${st.rawRows.length} wierszy wykrytych</div>
+          <div class="mapping-grid">
+            ${spec.fields.map(f=>`
+              <div class="mapping-row">
+                <label>${f.label}${f.required?' <span class="req">*</span>':''}</label>
+                <select class="source-select" onchange="onMapowanieZmiana('${spec.id}','${f.key}', this.value)">
+                  <option value="">— nie mapuj —</option>
+                  ${st.headers.map(h=>`<option value="${h}" ${st.mapping[f.key]===h?'selected':''}>${h}</option>`).join("")}
+                </select>
+              </div>`).join("")}
+          </div>
+          ${st.errors.length ? `<div class="import-errors">${st.errors.slice(0,8).map(e=>"⚠ "+e).join("<br>")}${st.errors.length>8?`<br>… i ${st.errors.length-8} więcej`:''}</div>` : ''}
+        ` : `<div class="footnote">Wgraj plik CSV lub XLSX z eksportu systemu (Subiekt/Optima/enova/Wapro/inny) albo pobierz szablon, żeby zobaczyć oczekiwany układ kolumn.</div>`}
+      </div>`;
+  }
+
+  const zaimportowane = ENTITIES.filter(e=> importState[e.id] && importState[e.id].parsedRows.length>0 && importState[e.id].errors.length===0);
+  const czyCokolwiekGotowe = zaimportowane.length>0;
+
+  setMain(`
+    <div class="view-head">
+      <div class="view-eyebrow">Etap 10 — Import realnych danych</div>
+      <div class="view-title">Import CSV / XLSX</div>
+      <div class="view-desc">Wgraj eksporty z prawdziwego systemu (dowolnego — InsERT, Comarch Optima, enova365, Wapro...). Aplikacja sama proponuje mapowanie kolumn na podstawie nazw nagłówków — zawsze można je poprawić ręcznie. <strong>Możesz zaimportować tylko jeden plik</strong>, np. same Rozrachunki — moduły, które go nie potrzebują, po prostu pokażą pusty stan zamiast się wywalić.</div>
+    </div>
+    ${ENTITIES.map(karta).join("")}
+    <div class="import-summary-bar">
+      <div class="footnote" style="font-size:11.5px;">
+        ${czyCokolwiekGotowe
+          ? "Gotowe do analizy: "+zaimportowane.map(e=>e.label).join(", ")+" — odblokują moduły: "+zaimportowane.map(e=>MODULY_ZA_ENCJE[e.id]).join(", ")
+          : "Wczytaj przynajmniej jeden plik, żeby odblokować przycisk analizy."}
+      </div>
+      <button class="btn-primary" id="btnUruchomImport" ${czyCokolwiekGotowe?'':'disabled'}>Uruchom analizy na zaimportowanych danych</button>
+    </div>
+  `);
+
+  const btn = document.getElementById("btnUruchomImport");
+  if(btn) btn.onclick = async ()=>{
+    const dataset = zbudujDataZImportu();
+    provider = new StaticDataProvider(dataset);
+    await loadAll();
+    document.getElementById("sourceLabel").textContent = "ŹRÓDŁO: IMPORT — "+dataset.towary.length+" towarów, "+dataset.dokumentySprzedazy.length+" dok. sprzedaży";
+    document.getElementById("statusText").textContent = "Połączono — dane zaimportowane";
+    navigateTo("dashboard", "D");
+  };
+}
+
+async function onPlikWybrany(entityId, file){
+  if(!file) return;
+  await wczytajPlik(entityId, file);
+  renderImportView();
+}
+function onMapowanieZmiana(entityId, fieldKey, headerValue){
+  importState[entityId].mapping[fieldKey] = headerValue;
+  applyMapping(entityId);
+  renderImportView();
+}
+
+/* ---- Zapis / wczytanie danych do pliku JSON (bez localStorage/sessionStorage) ---- */
+function eksportStanuDoPliku(){
+  const payload = {
+    format: "analizy-magazynowo-finansowe/zapis", wersja: 1,
+    zapisano: new Date().toISOString(),
+    dataset: {
+      towary: DATA.towary, kontrahenci: DATA.kontrahenci, stanyMagazynowe: DATA.stanyMagazynowe,
+      dokumentySprzedazy: DATA.dokumentySprzedazy, dokumentyZakupu: DATA.dokumentyZakupu,
+      zwroty: DATA.zwroty, rozrachunki: DATA.rozrachunki
+    }
+  };
+  const blob = new Blob([JSON.stringify(payload)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "analizy-dane-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function wczytajStanZPliku(file){
+  if(!file) return;
+  let payload;
+  try{ payload = JSON.parse(await file.text()); }
+  catch(e){ alert("Nie udało się odczytać pliku — upewnij się, że to plik zapisany przyciskiem „Zapisz do pliku”."); return; }
+  if(!payload || !payload.dataset || !Array.isArray(payload.dataset.towary)){
+    alert("Plik nie zawiera rozpoznawalnego zestawu danych.");
+    return;
+  }
+  provider = new StaticDataProvider(payload.dataset);
+  await loadAll();
+  const data = payload.zapisano ? new Date(payload.zapisano).toLocaleString("pl-PL") : "nieznana data";
+  document.getElementById("sourceLabel").textContent = "ŹRÓDŁO: WCZYTANY PLIK (zapisano "+data+")";
+  document.getElementById("statusText").textContent = "Połączono — wczytano zapis z pliku";
+  destroyAllCharts();
+  navigateTo("dashboard","D");
+}
+
+document.getElementById("btnZapiszStan").addEventListener("click", eksportStanuDoPliku);
+document.getElementById("inputWczytajStan").addEventListener("change",(e)=> wczytajStanZPliku(e.target.files[0]));
+document.getElementById("btnWyczyscDane").addEventListener("click", wyczyscWszystkoDane);
+
+async function wyczyscWszystkoDane(){
+  const ok = confirm("Usunąć wszystkie dane (dane demo i wszystko, co zostało zaimportowane)? Baza wróci do stanu pustego. Jeśli chcesz je zachować, najpierw kliknij „Zapisz do pliku”.");
+  if(!ok) return;
+  importState = {};
+  provider = new StaticDataProvider({towary:[], kontrahenci:[], stanyMagazynowe:[], dokumentySprzedazy:[], dokumentyZakupu:[], zwroty:[], rozrachunki:[]});
+  await loadAll();
+  destroyAllCharts();
+  document.getElementById("sourceLabel").textContent = "ŹRÓDŁO: BRAK DANYCH (wyczyszczono)";
+  document.getElementById("statusText").textContent = "Baza pusta — wybierz demo lub wgraj dane";
+  document.getElementById("statusDot").classList.remove("on");
+  navigateTo("dashboard","D");
+}
+
+/* =====================================================================
+   6. START
+   ===================================================================== */
+async function init(){
+  document.getElementById("statusText").textContent = "Ładowanie danych demo...";
+  await loadAll();
+  document.getElementById("statusText").textContent = "Połączono — dane demo";
+  renderNav();
+  renderDashboard();
+}
+
+document.getElementById("sourceSelect").addEventListener("change",(e)=>{
+  const v = e.target.value;
+  if(v==="demo"){
+    document.getElementById("sourceLabel").textContent = "ŹRÓDŁO: DANE DEMO";
+    document.getElementById("statusText").textContent = "Połączono — dane demo";
+    provider = new DemoDataProvider();
+    loadAll().then(()=> navigateTo("dashboard","D"));
+  } else if(v==="import"){
+    document.getElementById("sourceLabel").textContent = "ŹRÓDŁO: IMPORT CSV/XLSX — konfiguracja";
+    document.getElementById("statusText").textContent = "Oczekiwanie na pliki";
+    document.querySelectorAll(".nav-item").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".nav-group").forEach(g=>g.classList.remove("active"));
+    destroyAllCharts();
+    renderImportView();
+  }
+});
+
+init();
+</script>
+
+<!-- LICZNIK WEJŚĆ — System Analiz (Magazyn i Finanse) -->
+<script>
+(function () {
+var COUNTER_KEY = "sw78_app_analizybi_9f3k2";
+var LAST_VISIT_KEY = COUNTER_KEY + "_last";
+var THIRTY_MIN = 30 * 60 * 1000;
+
+function sendHit() {
+var now = Date.now();
+var last = parseInt(localStorage.getItem(LAST_VISIT_KEY) || "0", 10);
+if (now - last < THIRTY_MIN) return;
+
+fetch("https://countapi.mileshilliard.com/api/v1/hit/" + COUNTER_KEY)
+.then(function (r) { return r.json(); })
+.then(function () {
+localStorage.setItem(LAST_VISIT_KEY, String(now));
+})
+.catch(function () {});
+}
+
+if (document.visibilityState === "visible") {
+sendHit();
+} else {
+document.addEventListener("visibilitychange", function once() {
+if (document.visibilityState === "visible") {
+document.removeEventListener("visibilitychange", once);
+sendHit();
+}
+});
+}
+})();
+</script>
+</body>
+</html>
